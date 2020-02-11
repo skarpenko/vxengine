@@ -158,7 +158,7 @@ void mul(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
 
 	if(hw::signb(o_ex)) {
 		o_uf = true;	// Underflow o_ex < 0
-	} else if (hw::andr(o_ex, EWIDTH, 0)) {
+	} else if (hw::bit(o_ex, EWIDTH)) {
 		o_of = true;	// Overflow test o_ex >= max. exponent
 	}
 
@@ -222,7 +222,7 @@ void norm(const T& i_ex, const X& i_sg, T& o_ex, X& o_sg, bool& o_uf, bool& o_of
 
 	if(hw::signb(o_ex)) {
 		o_uf = true;	// Underflow o_ex < 0
-	} else if (hw::andr(o_ex, EWIDTH, 0)) {
+	} else if (hw::bit(o_ex, EWIDTH)) {
 		o_of = true;	// Overflow test o_ex >= max. exponent
 	}
 }
