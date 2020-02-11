@@ -1,0 +1,6 @@
+# Floating point pack testbench
+
++define+TRACE_FILE="tb_flp_pack.vcd"
++timescale+1us/100ns
+src/flp_pack.v
+tb/tb_flp_pack.v
