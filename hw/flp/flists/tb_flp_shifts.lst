@@ -1,0 +1,7 @@
+# Shifts testbench
+
++define+TRACE_FILE="tb_flp_shifts.vcd"
++timescale+1us/100ns
+src/flp_shlpad.v
+src/flp_shrjam.v
+tb/tb_flp_shifts.v
