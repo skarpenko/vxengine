@@ -5,7 +5,8 @@
 # Available testbenches
 TESTBENCHES := \
 	tb_flp_unpack \
-	tb_flp_pack
+	tb_flp_pack \
+	tb_flp_imult
 
 
 TB ?=

@@ -1,0 +1,6 @@
+# Integer multiplier testbench
+
++define+TRACE_FILE="tb_flp_imult.vcd"
++timescale+1us/100ns
+src/flp_imult.v
+tb/tb_flp_imult.v
