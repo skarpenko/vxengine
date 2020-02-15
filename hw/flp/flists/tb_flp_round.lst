@@ -1,0 +1,6 @@
+# Floating point rounding testbench
+
++define+TRACE_FILE="tb_flp_round.vcd"
++timescale+1us/100ns
+src/flp_round.v
+tb/tb_flp_round.v

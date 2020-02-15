@@ -8,7 +8,8 @@ TESTBENCHES := \
 	tb_flp_pack \
 	tb_flp_imult \
 	tb_flp_shifts \
-	tb_flp_norm
+	tb_flp_norm \
+	tb_flp_round
 
 
 TB ?=
