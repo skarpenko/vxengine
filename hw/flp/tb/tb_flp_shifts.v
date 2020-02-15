@@ -92,11 +92,11 @@ module tb_flp_shifts();
 
 	/* Shift right module instance */
 	flp_shrjam #(
-		.INWIDTH(40),
+		.INWIDTH(32),
 		.OUTWIDTH(32),
 		.SHAMT(8)
 	) shr (
-		.in({8'h00, shr_i}),
+		.in(shr_i),
 		.out(shr_o)
 	);
 

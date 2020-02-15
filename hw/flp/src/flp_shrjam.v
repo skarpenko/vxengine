@@ -38,7 +38,9 @@ parameter SHAMT = 2;		/* Shift amount */
 input wire [INWIDTH-1:0]	in;
 output wire [OUTWIDTH-1:0]	out;
 
+wire [INWIDTH+SHAMT-1:0] pad_in = { {SHAMT{1'b0}}, in };
+
 /* Assign output with shifted out bits jammed in LSB */
-assign out = { in[OUTWIDTH+SHAMT-1:SHAMT+1], |in[SHAMT:0] };
+assign out = { pad_in[OUTWIDTH+SHAMT-1:SHAMT+1], |pad_in[SHAMT:0] };
 
 endmodule /* flp_shrjam */
