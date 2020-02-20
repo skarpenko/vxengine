@@ -34,7 +34,7 @@ module flp_round(
 );
 parameter EWIDTH = 8;	/* Exponent width */
 parameter SWIDTH = 23;	/* Significand width */
-parameter RSWIDTH = 2;	/* Reserved witdth for rounding */
+parameter RSWIDTH = 2;	/* Reserved width for rounding */
 localparam INWIDTH = 1 + SWIDTH + RSWIDTH;
 /* Inputs */
 input wire [INWIDTH-1:0] i_sg;	/* Significand */
