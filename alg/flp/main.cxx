@@ -64,7 +64,7 @@ uint32_t mul_test(uint32_t a, uint32_t b)
 
 	hwfmac::mul<uint32_t, uint64_t, 8, 23, 2>(a, b, r);
 
-	float_t af, bf, rf;
+	aux::float_t af, bf, rf;
 	af.v = a;
 	bf.v = b;
 	rf.v = r;
@@ -94,7 +94,7 @@ uint32_t add_test(uint32_t a, uint32_t b)
 
 	hwfmac::add<uint32_t, uint64_t, 8, 23, 3>(a, b, r);
 
-	float_t af, bf, rf;
+	aux::float_t af, bf, rf;
 	af.v = a;
 	bf.v = b;
 	rf.v = r;
@@ -120,8 +120,8 @@ uint32_t add_test(uint32_t a, uint32_t b)
 
 int main()
 {
-	float_t a;
-	float_t b;
+	aux::float_t a;
+	aux::float_t b;
 
 	srand(SRAND_SEED);
 

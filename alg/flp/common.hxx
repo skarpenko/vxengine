@@ -31,6 +31,9 @@
 #pragma once
 
 
+namespace aux {
+
+
 // Float type bit fields
 typedef struct {
 	uint32_t man : 23;	// Significand
@@ -45,3 +48,6 @@ typedef union {
 	uint32_t v;
 	float_s s;
 } float_t;
+
+
+} // namespace aux
