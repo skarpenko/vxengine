@@ -37,10 +37,10 @@ parameter SWIDTH = 23;	/* Significand width */
 parameter RSWIDTH = 2;	/* Reserved width for rounding */
 localparam INWIDTH = 1 + SWIDTH + RSWIDTH;
 /* Inputs */
-input wire [INWIDTH-1:0] i_sg;	/* Significand */
+input wire [INWIDTH-1:0]	i_sg;	/* Significand */
 /* Outputs */
-output reg [SWIDTH:0] o_sg;	/* Rounded significand */
-output reg [EWIDTH+1:0] o_exd;	/* Exponent delta */
+output reg [SWIDTH:0]		o_sg;	/* Rounded significand */
+output reg [EWIDTH+1:0]		o_exd;	/* Exponent delta */
 
 
 wire s = |i_sg[RSWIDTH-2:0];	/* Sticky bit */

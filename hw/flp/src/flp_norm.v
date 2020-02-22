@@ -38,10 +38,10 @@ parameter SWIDTH = 23;		/* Significand width */
 parameter RSWIDTH = 2;		/* Reserved width for rounding */
 localparam OUTWIDTH = 1 + SWIDTH + RSWIDTH;
 /* Inputs */
-input wire [INWIDTH-1:0] i_sg;	/* Significand */
+input wire [INWIDTH-1:0]	i_sg;	/* Significand */
 /* Outputs */
-output reg [OUTWIDTH-1:0] o_sg;	/* Normalized significand */
-output reg [EWIDTH+1:0] o_exd;	/* Exponent delta */
+output reg [OUTWIDTH-1:0]	o_sg;	/* Normalized significand */
+output reg [EWIDTH+1:0]		o_exd;	/* Exponent delta */
 
 
 wire [OUTWIDTH-1:0]	sg[0:INWIDTH-1];	/* Shifted significands */
