@@ -1,0 +1,6 @@
+# Integer adder testbench
+
++define+TRACE_FILE="tb_flp_iadd.vcd"
++timescale+1us/100ns
+src/flp_iadd.v
+tb/tb_flp_iadd.v

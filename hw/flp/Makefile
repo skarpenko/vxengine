@@ -11,7 +11,8 @@ TESTBENCHES := \
 	tb_flp_norm \
 	tb_flp_round \
 	tb_flp_mul_test \
-	tb_flp_align
+	tb_flp_align \
+	tb_flp_iadd
 
 
 TB ?=
