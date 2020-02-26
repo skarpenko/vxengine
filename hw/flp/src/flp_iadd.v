@@ -51,7 +51,7 @@ output wire		o_zero;
 wire [WIDTH+1:0]	sum = { {2{i_sn1}}, (i_sn1 ? -i_sg1 : i_sg1) } +
 				{ {2{i_sn2}}, (i_sn2 ? -i_sg2 : i_sg2) };
 
-assign o_sn = sum[WIDTH+1];
+assign o_sn = sum[WIDTH+1] | (i_sn1 & i_sn2);
 assign o_zero = ~|sum;
 assign o_sg = o_sn ? -sum[WIDTH:0] : sum[WIDTH:0];
 
