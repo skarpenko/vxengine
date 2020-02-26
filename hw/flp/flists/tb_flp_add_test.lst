@@ -1,0 +1,14 @@
+# Testbench for floating point adder logic
+
++define+TRACE_FILE="tb_flp_add_test.vcd"
++timescale+1us/100ns
+src/flp_add_test.v
+src/flp_iadd.v
+src/flp_pack.v
+src/flp_unpack.v
+src/flp_round.v
+src/flp_norm.v
+src/flp_align.v
+src/flp_shlpad.v
+src/flp_shrjam.v
+tb/tb_flp_add_test.v

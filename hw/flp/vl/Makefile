@@ -4,7 +4,8 @@
 
 # Available testbenches
 TESTBENCHES := \
-	vl_flp_mul_test
+	vl_flp_mul_test	\
+	vl_flp_add_test
 
 
 TB ?=
