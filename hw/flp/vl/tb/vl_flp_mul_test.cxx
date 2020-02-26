@@ -31,6 +31,8 @@
 #include <ctime>
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <algorithm>
 #include <verilated.h>		// Defines common routines
 #if VM_TRACE
 # include <verilated_vcd_c.h>	// Trace file format header
@@ -43,18 +45,46 @@
 #include "common.hxx"
 
 
-#define SRAND_SEED	time(NULL)
-#define NITER		10000000000
-#define NPRIN		100000
+#define SRAND_SEED()	std::time(NULL)
+
+constexpr uint64_t NITER = 10000000000;
+constexpr uint64_t NPRIN = 100000;
 
 
 vluint64_t main_time = 0;	// Current simulation time
+
+#if VM_TRACE
+VerilatedVcdC* tfp = 0;		// Trace file
+#endif
 
 
 // Called by $time in Verilog
 double sc_time_stamp()
 {
 	return main_time;
+}
+
+
+// Check result
+bool check_result(const aux::float_t& rm, const aux::float_t& rh)
+{
+	bool res = true;
+
+	if(rm.v != rh.v) {
+		std::ios state(nullptr);
+		state.copyfmt(std::cout);
+		std::cout << "[!] "
+			<< std::setfill('0') << std::hex
+			<< std::setw(8) << rm.v << " != "
+			<< std::setw(8) << rh.v
+			<< "\t"
+			<< rm.f << " != " << rh.f
+			<< std::endl;
+		std::cout.copyfmt(state);
+		res = false;
+	}
+
+	return res;
 }
 
 
@@ -69,11 +99,14 @@ uint32_t mul_test(uint32_t a, uint32_t b)
 }
 
 
+void corner_case(model_top<Vvl_flp_mul_test>& top);	// Corner cases test
+
 // MAIN
 int main(int argc, char **argv)
 {
 	std::cout << "FP multiplier logic test" << std::endl;
-	std::cout << "NITER = " << NITER << std::endl;
+
+	srand(SRAND_SEED());
 
 	Verilated::commandArgs(argc, argv);	// Pass args to Verilator
 
@@ -81,7 +114,6 @@ int main(int argc, char **argv)
 	model_top<Vvl_flp_mul_test> top;
 
 #if VM_TRACE
-	VerilatedVcdC* tfp = 0;
 	Verilated::traceEverOn(true);	// Enable traces
 	tfp = new VerilatedVcdC;
 	top->trace (tfp, 99);		// Trace 99 levels of hierarchy
@@ -92,10 +124,12 @@ int main(int argc, char **argv)
 	aux::float_t b;
 	aux::float_t rm, rh;
 
-	srand(SRAND_SEED);
+	corner_case(top);
+
+	std::cout << "NITER = " << NITER << std::endl;
 
 	// Main simulation loop
-	for (long long i = 0; i < NITER && !Verilated::gotFinish(); ++i) {
+	for(uint64_t i = 0; i < NITER && !Verilated::gotFinish(); ++i) {
 		int r1 = rand();
 		int r2 = rand();
 		int r3 = rand();
@@ -119,19 +153,7 @@ int main(int argc, char **argv)
 		if(tfp) tfp->dump(main_time);	// Dump waveforms
 #endif
 
-		// Check result
-		if(rm.v != rh.v) {
-			std::ios state(nullptr);
-			state.copyfmt(std::cout);
-			std::cout << "[!] "
-				<< std::setfill('0') << std::hex
-				<< std::setw(8) << rm.v << " != "
-				<< std::setw(8) << rh.v
-				<< "\t"
-				<< rm.f << " != " << rh.f
-				<< std::endl;
-			std::cout.copyfmt(state);
-		}
+		check_result(rm, rh);		// Check result
 
 		// Print progress
 		if(!(i % NPRIN))
@@ -149,4 +171,59 @@ int main(int argc, char **argv)
 #endif
 
 	return 0;
+}
+
+
+void corner_case(model_top<Vvl_flp_mul_test>& top)
+{
+	std::cout << "Corner cases..." << std::endl;
+
+	const aux::float_t pos_zero = { .v = 0x00000000 };
+	const aux::float_t neg_zero = { .v = 0x80000000 };
+	const aux::float_t pos_inf = { .v = 0x7f800000 };
+	const aux::float_t neg_inf = { .v = 0xff800000 };
+	const aux::float_t pos_nan = { .v = 0x7fffffff };
+	const aux::float_t neg_nan = { .v = 0xffffffff };
+	// These two cause significand overflow while rounding after add
+	const aux::float_t rof_val1 = { .v = 0x40efffff };
+	const aux::float_t rof_val2 = { .v = 0x3f000007 };
+	// Positive and negative value
+	const aux::float_t pos_val1 = { .v = 0x4087ae14 };
+	const aux::float_t neg_val2 = { .v = 0xc087ae14 };
+
+	std::vector<uint32_t> a, b;
+
+	a.push_back(pos_zero.v);
+	a.push_back(neg_zero.v);
+	a.push_back(pos_inf.v);
+	a.push_back(neg_inf.v);
+	a.push_back(pos_nan.v);
+	a.push_back(neg_nan.v);
+	a.push_back(rof_val1.v);
+	a.push_back(rof_val2.v);
+	a.push_back(pos_val1.v);
+	a.push_back(neg_val2.v);
+
+	b = a;
+
+	aux::float_t rm, rh;
+
+	do {
+		for(size_t i = 0; i < a.size(); ++i) {
+			rm.v = mul_test(a[i], b[i]);	// Reference result
+
+			top->i_a = a[i];
+			top->i_b = b[i];
+			top->eval();			// Evaluate model
+			rh.v = top->o_p;		// RTL model result
+
+#if VM_TRACE
+			if(tfp) tfp->dump(main_time);	// Dump waveforms
+#endif
+
+			check_result(rm, rh);		// Check result
+
+			++main_time;			// Time passes...
+		}
+	} while(std::next_permutation(b.begin(), b.end()));
 }

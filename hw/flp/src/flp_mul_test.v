@@ -93,8 +93,8 @@ flp_unpack #(
 
 wire [2*(SWIDTH+1)-1:0] m_pr1;
 wire [EWIDTH+1:0] m_exp = { 2'b00, u_exa } + { 2'b00, u_exb } - { 2'b00, BIAS };
-wire m_zero = m_exp[EWIDTH+1];
-wire m_inf = m_exp[EWIDTH] & ~m_zero;
+wire m_uf = m_exp[EWIDTH+1];
+wire m_of = m_exp[EWIDTH] & ~m_uf;
 
 
 flp_imult #(
@@ -105,12 +105,12 @@ flp_imult #(
 	.o_prod(m_pr1)
 );
 
-wire [SWIDTH+2+RSWIDTH-1:0]	m_pr2;
+wire [SWIDTH+RSWIDTH+1:0]	m_pr2;
 
 /* Shift right */
 flp_shrjam #(
 	.INWIDTH(2*(SWIDTH+1)),
-	.OUTWIDTH(SWIDTH+2+RSWIDTH),
+	.OUTWIDTH(SWIDTH+RSWIDTH+2),
 	.SHAMT(SWIDTH-RSWIDTH)
 ) shrjam (
 	.in(m_pr1),
@@ -120,15 +120,15 @@ flp_shrjam #(
 
 /**** Normalization ****/
 
-wire [1 + SWIDTH + RSWIDTH-1:0] n_sg;
-wire [EWIDTH+2-1:0] n_exd;
+wire [SWIDTH+RSWIDTH:0] n_sg;
+wire [EWIDTH+1:0] n_exd;
 wire [EWIDTH+1:0] n_exp = m_exp + n_exd;
-wire n_zero = n_exp[EWIDTH+1];
-wire n_inf = n_exp[EWIDTH] & ~n_zero;
+wire n_uf = n_exp[EWIDTH+1];
+wire n_of = n_exp[EWIDTH] & ~n_uf;
 
 
 flp_norm #(
-	.INWIDTH(SWIDTH+2+RSWIDTH),
+	.INWIDTH(SWIDTH+RSWIDTH+2),
 	.EWIDTH(EWIDTH),
 	.SWIDTH(SWIDTH),
 	.RSWIDTH(RSWIDTH)
@@ -142,10 +142,10 @@ flp_norm #(
 /**** Rounding ****/
 
 wire [SWIDTH:0] r_sg;
-wire [EWIDTH+2-1:0] r_exd;
+wire [EWIDTH+1:0] r_exd;
 wire [EWIDTH+1:0] r_exp = m_exp + n_exd + r_exd;
-wire r_zero = r_exp[EWIDTH+1];
-wire r_inf = r_exp[EWIDTH] & ~r_zero;
+wire r_uf = r_exp[EWIDTH+1];
+wire r_of = r_exp[EWIDTH] & ~r_uf;
 
 
 flp_round #(
@@ -162,9 +162,9 @@ flp_round #(
 /**** Pack into floating point ****/
 
 wire p_sn = u_sna ^ u_snb;
-wire p_zero = u_zeroa | u_zerob | m_zero | n_zero | r_zero;
-wire p_inf = (u_infa ^ u_infb) | m_inf | n_inf | r_inf;
-wire p_nan = u_nana | u_nanb | (u_infa & u_infb);
+wire p_zero = u_zeroa | u_zerob | m_uf | n_uf | r_uf;
+wire p_inf = u_infa | u_infb | m_of | n_of | r_of;
+wire p_nan = u_nana | u_nanb | (u_infa & u_zerob) | (u_infb & u_zeroa);
 wire [EWIDTH-1:0] p_ex = r_exp[EWIDTH-1:0];
 
 
