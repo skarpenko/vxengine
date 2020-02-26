@@ -55,7 +55,7 @@ wire [EWIDTH:0]		exd;	/* Exponent delta */
 wire			exneg;	/* Exponent delta is negative */
 wire [EWIDTH-1:0]	shamt;	/* Significand shift amount */
 wire [SWIDTH:0]		shsg;	/* Significand which need to be shifted */
-wire [OUTWIDTH-1:0]	sg[1:SWIDTH];	/* Shifted significands */
+wire [OUTWIDTH-1:0]	sg[0:SWIDTH];	/* Shifted significands */
 
 assign exd = { 1'b0, i_ex1 } - { 1'b0, i_ex2 };
 assign exneg = exd[EWIDTH];
@@ -67,13 +67,28 @@ genvar g;
 
 /* Generate right shifts */
 generate
-for(g = SWIDTH; g > 0; g = g-1)
+for(g = SWIDTH; g >= RSWIDTH; g = g-1)
 begin: shr
 	flp_shrjam #(
 		.INWIDTH(OUTWIDTH),
 		.OUTWIDTH(OUTWIDTH),
-		.SHAMT(g)
+		.SHAMT(g-RSWIDTH)
 	) shift_r (
+		.in({ {RSWIDTH{1'b0}}, shsg }),
+		.out(sg[g])
+	);
+end
+endgenerate
+
+/* Generate left shifts */
+generate
+for(g = RSWIDTH-1; g >= 0; g = g-1)
+begin: shl
+	flp_shlpad #(
+		.INWIDTH(OUTWIDTH),
+		.OUTWIDTH(OUTWIDTH),
+		.SHAMT(RSWIDTH-g)
+	) shift_l (
 		.in({ {RSWIDTH{1'b0}}, shsg }),
 		.out(sg[g])
 	);
@@ -83,21 +98,29 @@ endgenerate
 
 assign o_ex = exneg ? i_ex2 : i_ex1;
 
+`define IDX_WIDTH(x)		\
+	(x <= 2) ? 1 :		\
+	(x <= 4) ? 2 :		\
+	(x <= 8) ? 3 :		\
+	(x <= 16) ? 4 :		\
+	(x <= 32) ? 5 :		\
+	(x <= 64) ? 6 :		\
+	(x <= 128) ? 7 :	\
+	(x <= 256) ? 8 :	\
+	-1
+localparam IW = `IDX_WIDTH(SWIDTH+1);
+`undef IDX_WIDTH
+
 /* Multiplexing logic depending on shift amount */
 always @(*)
 begin
 	o_sg1 = {OUTWIDTH{1'b0}};
 	o_sg2 = {OUTWIDTH{1'b0}};
 
-	if(shamt == {EWIDTH{1'b0}})
+	if(shamt <= SWIDTH)
 	begin
-		o_sg1 = { i_sg1, {RSWIDTH{1'b0}} };
-		o_sg2 = { i_sg2, {RSWIDTH{1'b0}} };
-	end
-	else if(shamt <= SWIDTH)
-	begin
-		o_sg1 = exneg ? sg[shamt] : { i_sg1, {RSWIDTH{1'b0}} };
-		o_sg2 = !exneg ? sg[shamt] : { i_sg2, {RSWIDTH{1'b0}} };
+		o_sg1 = exneg ? sg[shamt[IW-1:0]] : { i_sg1, {RSWIDTH{1'b0}} };
+		o_sg2 = !exneg ? sg[shamt[IW-1:0]] : { i_sg2, {RSWIDTH{1'b0}} };
 	end
 	else
 	begin

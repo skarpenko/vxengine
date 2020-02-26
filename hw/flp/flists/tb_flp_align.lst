@@ -3,5 +3,6 @@
 +define+TRACE_FILE="tb_flp_align.vcd"
 +timescale+1us/100ns
 src/flp_align.v
+src/flp_shlpad.v
 src/flp_shrjam.v
 tb/tb_flp_align.v
