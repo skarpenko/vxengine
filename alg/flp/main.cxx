@@ -29,14 +29,18 @@
 
 #include <iostream>
 #include <iomanip>
+#include <vector>
+#include <algorithm>
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
 #include "hwfmac.hxx"
 #include "common.hxx"
 
-#define SRAND_SEED	time(NULL)
-#define NITER		10000000000
+#define SRAND_SEED()	std::time(NULL)
+
+constexpr uint64_t NITER = 10000000000;
+constexpr bool ignore_nan_mismatch = true;
 
 
 struct fmt_float_s { float f; };
@@ -58,6 +62,15 @@ inline std::ostream& operator<<(std::ostream& os, fmt_float_s s)
 }
 
 
+bool nan_cond(uint32_t a, uint32_t b)
+{
+	aux::float_t aa = { .v = a };
+	aux::float_t bb = { .v = a };
+	bool nan = aa.s.exp == 0xff && bb.s.exp == 0xff && aa.s.man && bb.s.man;
+	return nan && ignore_nan_mismatch;
+}
+
+
 uint32_t mul_test(uint32_t a, uint32_t b)
 {
 	uint32_t r;
@@ -69,18 +82,21 @@ uint32_t mul_test(uint32_t a, uint32_t b)
 	bf.v = b;
 	rf.v = r;
 
-	float m = af.f * bf.f;
-	float d = rf.f - m;
-	if (d != 0.0) {
+	aux::float_t m;
+	m.f = af.f * bf.f;
+	float d = rf.f - m.f;
+	if (rf.v != m.v && !nan_cond(rf.v, m.v)) {
 		std::ios state(nullptr);
 		state.copyfmt(std::cout);
 		std::cout << "M: "
 			<< fmt_float(af.f) << " * " << fmt_float(bf.f)
 			<< " = " << fmt_float(rf.f)
-			<< " (" << fmt_float(m) << ") d = "
-			<< fmt_float(d) << ") (v = "
+			<< " (" << fmt_float(m.f) << ") d = "
+			<< fmt_float(d) << " v = "
 			<< std::setw(8) << std::setfill('0') << std::hex
-			<< rf.v << ")" << std::endl;
+			<< rf.v << " ("
+			<< std::setw(8) << std::setfill('0') << std::hex
+			<< m.v << ")" << std::endl;
 		std::cout.copyfmt(state);
 	}
 
@@ -99,18 +115,21 @@ uint32_t add_test(uint32_t a, uint32_t b)
 	bf.v = b;
 	rf.v = r;
 
-	float s = af.f + bf.f;
-	float d = rf.f - s;
-	if (d != 0.0) {
+	aux::float_t s;
+	s.f = af.f + bf.f;
+	float d = rf.f - s.f;
+	if (rf.v != s.v && !nan_cond(rf.v, s.v)) {
 		std::ios state(nullptr);
 		state.copyfmt(std::cout);
 		std::cout << "A: "
 			<< fmt_float(af.f) << " + " << fmt_float(bf.f)
 			<< " = " << fmt_float(rf.f)
-			<< " (" << fmt_float(s) << ") d = "
-			<< fmt_float(d) << ") (v = "
+			<< " (" << fmt_float(s.f) << ") d = "
+			<< fmt_float(d) << " v = "
 			<< std::setw(8) << std::setfill('0') << std::hex
-			<< rf.v << ")" << std::endl;
+			<< rf.v << " ("
+			<< std::setw(8) << std::setfill('0') << std::hex
+			<< s.v << ")" << std::endl;
 		std::cout.copyfmt(state);
 	}
 
@@ -118,17 +137,22 @@ uint32_t add_test(uint32_t a, uint32_t b)
 }
 
 
+void corner_case();	// Corner cases test
+
 int main()
 {
 	aux::float_t a;
 	aux::float_t b;
 
-	srand(SRAND_SEED);
+	srand(SRAND_SEED());
 
 	std::cout << "Floating point test" << std::endl;
+
+	corner_case();
+
 	std::cout << "NITER = " << NITER << std::endl;
 
-	for (long long i = 0; i < NITER; ++i) {
+	for(uint64_t i = 0; i < NITER; ++i) {
 		int r1 = rand();
 		int r2 = rand();
 		int r3 = rand();
@@ -145,4 +169,45 @@ int main()
 	}
 
 	return 0;
+}
+
+
+void corner_case()
+{
+	std::cout << "Corner cases..." << std::endl;
+
+	const aux::float_t pos_zero = { .v = 0x00000000 };
+	const aux::float_t neg_zero = { .v = 0x80000000 };
+	const aux::float_t pos_inf = { .v = 0x7f800000 };
+	const aux::float_t neg_inf = { .v = 0xff800000 };
+	const aux::float_t pos_nan = { .v = 0x7fffffff };
+	const aux::float_t neg_nan = { .v = 0xffffffff };
+	// These two cause significand overflow while rounding after add
+	const aux::float_t rof_val1 = { .v = 0x40efffff };
+	const aux::float_t rof_val2 = { .v = 0x3f000007 };
+	// Positive and negative value
+	const aux::float_t pos_val1 = { .v = 0x4087ae14 };
+	const aux::float_t neg_val2 = { .v = 0xc087ae14 };
+
+	std::vector<uint32_t> a, b;
+
+	a.push_back(pos_zero.v);
+	a.push_back(neg_zero.v);
+	a.push_back(pos_inf.v);
+	a.push_back(neg_inf.v);
+	a.push_back(pos_nan.v);
+	a.push_back(neg_nan.v);
+	a.push_back(rof_val1.v);
+	a.push_back(rof_val2.v);
+	a.push_back(pos_val1.v);
+	a.push_back(neg_val2.v);
+
+	b = a;
+
+	do {
+		for(size_t i = 0; i < a.size(); ++i) {
+			mul_test(a[i], b[i]);
+			add_test(a[i], b[i]);
+		}
+	} while(std::next_permutation(b.begin(), b.end()));
 }

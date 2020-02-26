@@ -85,18 +85,18 @@ void mul(const T& a, const T& b, T& r)
 
 	T v;
 	bool zero = zero1 || zero2 || uf || nuf;
-	bool nan = nan1 || nan2;
+	bool nan = nan1 || nan2 || (zero1 && inf2) || (zero2 && inf1);
 	bool inf = inf1 || inf2 || of || nof;
 
 	// Check for special values
-	if(zero) {
-		rex = rsg = 0;
-	} else if(nan) {
+	if(nan) {
 		rex = -1;
 		rsg = -1;
 	} else if(inf) {
 		rex = -1;
 		rsg = 0;
+	} else if(zero) {
+		rex = rsg = 0;
 	}
 
 	// Pack result
@@ -164,21 +164,21 @@ void add(const T& a, const T& b, T& r)
 
 	T v;
 	bool zero = (zero1 && zero2) || azero || nuf;
-	bool nan = nan1 || nan2;
+	bool nan = nan1 || nan2 || (inf1 && inf2);
 	bool inf = inf1 || inf2 || nof;
 
 	// Check for special values
-	if(zero) {
-		rex = rsg = 0;
-	} else if(nan) {
+	if(nan) {
 		rex = -1;
 		rsg = -1;
 	} else if(inf) {
 		rex = -1;
 		rsg = 0;
+	} else if(zero) {
+		rex = rsg = 0;
 	}
 
-	if (nan || inf) {
+	if(nan || inf) {
 		sn = (inf1 || nan1) ? sn1 : sn2;
 	}
 

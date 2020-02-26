@@ -376,7 +376,7 @@ void add(const bool& i_sn1, const X& i_sg1, const bool& i_sn2, const X& i_sg2,
 	X sg2 = i_sn2 ? -i_sg2 : i_sg2;
 
 	o_sg = sg1 + sg2;
-	o_sn = hw::signb(o_sg);
+	o_sn = hw::signb(o_sg) || (i_sn1 && i_sn2);
 	o_zero = (o_sg == 0);
 
 	o_sg = o_sn ? -o_sg : o_sg;
