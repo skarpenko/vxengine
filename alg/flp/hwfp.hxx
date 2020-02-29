@@ -82,7 +82,7 @@ void unpack(const T& i_v, bool& o_sn, T& o_ex, T& o_sg, bool& o_zero,
 	}
 
 	// Set hidden one
-	if(!o_zero && !o_nan && !o_inf)
+	if(!o_zero)
 		o_sg = hw::setb(o_sg, SWIDTH, true);
 }
 
