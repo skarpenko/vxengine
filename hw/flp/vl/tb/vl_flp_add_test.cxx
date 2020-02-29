@@ -93,7 +93,7 @@ uint32_t add_test(uint32_t a, uint32_t b)
 {
 	uint32_t r;
 
-	hwfmac::add<uint32_t, uint64_t, 8, 23, 2>(a, b, r);
+	hwfmac::add<uint32_t, uint64_t, 8, 23, 3>(a, b, r);
 
 	return r;
 }

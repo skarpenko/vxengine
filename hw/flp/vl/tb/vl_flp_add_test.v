@@ -43,7 +43,7 @@ output wire [31:0]	o_p;
 flp_add_test #(
 	.EWIDTH(8),
 	.SWIDTH(23),
-	.RSWIDTH(2)
+	.RSWIDTH(3)
 ) fp32_add_test (
 	.i_a(i_a),
 	.i_b(i_b),
