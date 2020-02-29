@@ -48,8 +48,12 @@ output wire [WIDTH:0]	o_sg;
 output wire		o_zero;
 
 
-wire [WIDTH+1:0]	sum = { {2{i_sn1}}, (i_sn1 ? -i_sg1 : i_sg1) } +
-				{ {2{i_sn2}}, (i_sn2 ? -i_sg2 : i_sg2) };
+wire [WIDTH+1:0]	op1 = |i_sg1 ? { {2{i_sn1}}, (i_sn1 ? -i_sg1 : i_sg1) }
+				: {WIDTH+2{1'b0}};
+wire [WIDTH+1:0]	op2 = |i_sg2 ? { {2{i_sn2}}, (i_sn2 ? -i_sg2 : i_sg2) }
+				: {WIDTH+2{1'b0}};
+wire [WIDTH+1:0]	sum = op1 + op2;
+
 
 assign o_sn = sum[WIDTH+1] | (i_sn1 & i_sn2);
 assign o_zero = ~|sum;
