@@ -164,7 +164,7 @@ void add(const T& a, const T& b, T& r)
 
 	T v;
 	bool zero = (zero1 && zero2) || azero || nuf;
-	bool nan = nan1 || nan2 || (inf1 && inf2);
+	bool nan = nan1 || nan2 || (inf1 && inf2 && (sn1 ^ sn2));
 	bool inf = inf1 || inf2 || nof;
 
 	// Check for special values
@@ -176,10 +176,6 @@ void add(const T& a, const T& b, T& r)
 		rsg = 0;
 	} else if(zero) {
 		rex = rsg = 0;
-	}
-
-	if(nan || inf) {
-		sn = (inf1 || nan1) ? sn1 : sn2;
 	}
 
 	// Pack result
