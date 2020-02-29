@@ -65,7 +65,7 @@ inline std::ostream& operator<<(std::ostream& os, fmt_float_s s)
 bool nan_cond(uint32_t a, uint32_t b)
 {
 	aux::float_t aa = { .v = a };
-	aux::float_t bb = { .v = a };
+	aux::float_t bb = { .v = b };
 	bool nan = aa.s.exp == 0xff && bb.s.exp == 0xff && aa.s.man && bb.s.man;
 	return nan && ignore_nan_mismatch;
 }
