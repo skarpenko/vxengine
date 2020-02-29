@@ -59,6 +59,24 @@ module tb_flp_add_test();
 
 		#(2*PCLK)
 
+		f_a = 32'hc231c815;
+		f_b = 32'hb65a01f1;
+		f_valid = 32'hc231c816;
+
+		#(2*PCLK)
+
+		f_a = 32'h4116d5d0;
+		f_b = 32'hb2f4a82f;
+		f_valid = 32'h4116d5d0;
+
+		#(2*PCLK)
+
+		f_a = 32'h0000_0000;
+		f_b = 32'h0000_0000;
+		f_valid = 32'h0000_0000;
+
+		#(2*PCLK)
+
 		f_a = 32'h4087ae14;
 		f_b = 32'hc087ae14;
 		f_valid = 32'h00000000;
@@ -89,6 +107,16 @@ module tb_flp_add_test();
 
 		#(2*PCLK)
 
+		f_a = 32'h420eae14;
+		f_b = 32'h80000000;
+		f_valid = 32'h420eae14;
+
+		#(2*PCLK)
+
+		f_a = 32'h7fffffff;
+		f_b = 32'hffffffff;
+		f_valid = 32'h7fffffff;
+
 		#500 $finish;
 	end
 
@@ -97,7 +125,7 @@ module tb_flp_add_test();
 	flp_add_test #(
 		.EWIDTH(8),
 		.SWIDTH(23),
-		.RSWIDTH(2)
+		.RSWIDTH(3)
 	) fp32_add_test (
 		.i_a(f_a),
 		.i_b(f_b),
