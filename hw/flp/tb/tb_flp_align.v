@@ -82,6 +82,13 @@ module tb_flp_align();
 		sg2 = 24'h00_1000;
 		ex2 = 8'h85;
 
+		#(2*PCLK)
+
+		sg1 = 24'h00_0001;
+		ex1 = 8'h82;
+		sg2 = 24'h00_0000;
+		ex2 = 8'h00;
+
 		#500 $finish;
 	end
 

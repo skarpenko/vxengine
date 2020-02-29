@@ -48,14 +48,14 @@ input wire [EWIDTH-1:0]		i_ex2;	/* Exponent 2 */
 /* Outputs */
 output reg [OUTWIDTH-1:0]	o_sg1;	/* Aligned significand 1 */
 output reg [OUTWIDTH-1:0]	o_sg2;	/* Aligned significand 2 */
-output wire [EWIDTH-1:0]	o_ex;		/* Common exponent */
+output wire [EWIDTH-1:0]	o_ex;	/* Common exponent */
 
 
 wire [EWIDTH:0]		exd;	/* Exponent delta */
 wire			exneg;	/* Exponent delta is negative */
 wire [EWIDTH-1:0]	shamt;	/* Significand shift amount */
 wire [SWIDTH:0]		shsg;	/* Significand which need to be shifted */
-wire [OUTWIDTH-1:0]	sg[0:SWIDTH];	/* Shifted significands */
+wire [OUTWIDTH-1:0]	sg[0:SWIDTH+RSWIDTH];	/* Shifted significands */
 
 assign exd = { 1'b0, i_ex1 } - { 1'b0, i_ex2 };
 assign exneg = exd[EWIDTH];
@@ -67,7 +67,7 @@ genvar g;
 
 /* Generate right shifts */
 generate
-for(g = SWIDTH; g >= RSWIDTH; g = g-1)
+for(g = SWIDTH+RSWIDTH; g >= RSWIDTH; g = g-1)
 begin: shr
 	flp_shrjam #(
 		.INWIDTH(OUTWIDTH),
@@ -98,6 +98,7 @@ endgenerate
 
 assign o_ex = exneg ? i_ex2 : i_ex1;
 
+
 `define IDX_WIDTH(x)		\
 	(x <= 2) ? 1 :		\
 	(x <= 4) ? 2 :		\
@@ -108,7 +109,7 @@ assign o_ex = exneg ? i_ex2 : i_ex1;
 	(x <= 128) ? 7 :	\
 	(x <= 256) ? 8 :	\
 	-1
-localparam IW = `IDX_WIDTH(SWIDTH+1);
+localparam IW = `IDX_WIDTH(SWIDTH+RSWIDTH+1);
 `undef IDX_WIDTH
 
 /* Multiplexing logic depending on shift amount */
@@ -117,15 +118,17 @@ begin
 	o_sg1 = {OUTWIDTH{1'b0}};
 	o_sg2 = {OUTWIDTH{1'b0}};
 
-	if(shamt <= SWIDTH)
+	if(shamt <= SWIDTH+RSWIDTH)
 	begin
 		o_sg1 = exneg ? sg[shamt[IW-1:0]] : { i_sg1, {RSWIDTH{1'b0}} };
 		o_sg2 = !exneg ? sg[shamt[IW-1:0]] : { i_sg2, {RSWIDTH{1'b0}} };
 	end
 	else
 	begin
-		o_sg1 = exneg ? {OUTWIDTH{1'b0}} : { i_sg1, {RSWIDTH{1'b0}} };
-		o_sg2 = !exneg ? {OUTWIDTH{1'b0}} : { i_sg2, {RSWIDTH{1'b0}} };
+		o_sg1 = exneg ? { {OUTWIDTH-1{1'b0}}, |i_sg1 } :
+			{ i_sg1, {RSWIDTH{1'b0}} };
+		o_sg2 = !exneg ? { {OUTWIDTH-1{1'b0}}, |i_sg2 } :
+			{ i_sg2, {RSWIDTH{1'b0}} };
 	end
 end
 
