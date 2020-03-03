@@ -26,7 +26,7 @@ project(flp)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_compile_options(-O3 -g)
+add_compile_options(-O3 -g -Wall)
 
 add_executable(flp
 	main.cxx
