@@ -144,8 +144,8 @@ void mul(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
 	static_assert(SWIDTH > EWIDTH, "SWIDTH must be greater than EWIDTH.");
 	static_assert(SWIDTH > 0, "SWIDTH cannot be zero.");
 	static_assert(EWIDTH > 0, "EWIDTH cannot be zero.");
-	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal 2.");
-	static_assert(RSWIDTH < SWIDTH, "RSWIDTH must be less than SWIDTH.");
+	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal to 2.");
+	static_assert(RSWIDTH <= SWIDTH, "RSWIDTH must be less or equal to SWIDTH.");
 
 	// Exponent bias value
 	constexpr T BIAS = (T(1) << (EWIDTH - 1)) - 1;
@@ -199,8 +199,8 @@ void norm(const T& i_ex, const X& i_sg, T& o_ex, X& o_sg, bool& o_uf, bool& o_of
 	static_assert(SWIDTH > EWIDTH, "SWIDTH must be greater than EWIDTH.");
 	static_assert(SWIDTH > 0, "SWIDTH cannot be zero.");
 	static_assert(EWIDTH > 0, "EWIDTH cannot be zero.");
-	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal 2.");
-	static_assert(RSWIDTH < SWIDTH, "RSWIDTH must be less than SWIDTH.");
+	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal to 2.");
+	static_assert(RSWIDTH <= SWIDTH, "RSWIDTH must be less or equal to SWIDTH.");
 
 	int d = SWIDTH + RSWIDTH - hw::msb(i_sg);
 
@@ -252,8 +252,8 @@ void round(const T& i_ex, const X& i_sg, T& o_ex, T& o_sg, bool& o_of)
 	static_assert(SWIDTH > EWIDTH, "SWIDTH must be greater than EWIDTH.");
 	static_assert(SWIDTH > 0, "SWIDTH cannot be zero.");
 	static_assert(EWIDTH > 0, "EWIDTH cannot be zero.");
-	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal 2.");
-	static_assert(RSWIDTH < SWIDTH, "RSWIDTH must be less than SWIDTH.");
+	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal to 2.");
+	static_assert(RSWIDTH <= SWIDTH, "RSWIDTH must be less or equal to SWIDTH.");
 
 	bool s = hw::orr(i_sg, RSWIDTH - 2, 0);		// Sticky bit
 	bool r = (i_sg & T(1) << (RSWIDTH - 1)) != 0;	// Round bit
@@ -308,8 +308,8 @@ void align(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
 	static_assert(SWIDTH > EWIDTH, "SWIDTH must be greater than EWIDTH.");
 	static_assert(SWIDTH > 0, "SWIDTH cannot be zero.");
 	static_assert(EWIDTH > 0, "EWIDTH cannot be zero.");
-	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal 2.");
-	static_assert(RSWIDTH < SWIDTH, "RSWIDTH must be less than SWIDTH.");
+	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal to 2.");
+	static_assert(RSWIDTH <= SWIDTH, "RSWIDTH must be less or equal to SWIDTH.");
 
 	o_sg1 = 0;
 	o_sg2 = 0;
@@ -369,8 +369,8 @@ void add(const bool& i_sn1, const X& i_sg1, const bool& i_sn2, const X& i_sg2,
 	static_assert(SWIDTH > EWIDTH, "SWIDTH must be greater than EWIDTH.");
 	static_assert(SWIDTH > 0, "SWIDTH cannot be zero.");
 	static_assert(EWIDTH > 0, "EWIDTH cannot be zero.");
-	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal 2.");
-	static_assert(RSWIDTH < SWIDTH, "RSWIDTH must be less than SWIDTH.");
+	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal to 2.");
+	static_assert(RSWIDTH <= SWIDTH, "RSWIDTH must be less or equal to SWIDTH.");
 
 	X sg1 = i_sn1 ? -i_sg1 : i_sg1;
 	X sg2 = i_sn2 ? -i_sg2 : i_sg2;
