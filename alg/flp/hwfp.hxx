@@ -71,7 +71,7 @@ void unpack(const T& i_v, bool& o_sn, T& o_ex, T& o_sg, bool& o_zero,
 
 	// Ignore subnormals
 	if(o_ex == 0) {
-		o_sg = 0;
+		o_sg = T(0);
 		o_zero = true;
 	}
 
@@ -311,8 +311,8 @@ void align(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
 	static_assert(RSWIDTH >= 2, "RSWIDTH must be greater or equal to 2.");
 	static_assert(RSWIDTH <= SWIDTH, "RSWIDTH must be less or equal to SWIDTH.");
 
-	o_sg1 = 0;
-	o_sg2 = 0;
+	o_sg1 = T(0);
+	o_sg2 = T(0);
 
 	T d;
 
@@ -374,8 +374,8 @@ void alignr(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
 	static_assert(SWIDTH > 0, "SWIDTH cannot be zero.");
 	static_assert(EWIDTH > 0, "EWIDTH cannot be zero.");
 
-	o_sg1 = 0;
-	o_sg2 = 0;
+	o_sg1 = T(0);
+	o_sg2 = T(0);
 
 	T d;
 

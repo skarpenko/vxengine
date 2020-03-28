@@ -90,13 +90,13 @@ void mul(const T& a, const T& b, T& r)
 
 	// Check for special values
 	if(nan) {
-		rex = -1;
-		rsg = -1;
+		rex = T(-1);
+		rsg = T(-1);
 	} else if(inf) {
-		rex = -1;
-		rsg = 0;
+		rex = T(-1);
+		rsg = T(0);
 	} else if(zero) {
-		rex = rsg = 0;
+		rex = rsg = T(0);
 	}
 
 	// Pack result
@@ -170,13 +170,13 @@ void add(const T& a, const T& b, T& r)
 
 	// Check for special values
 	if(nan) {
-		rex = -1;
-		rsg = -1;
+		rex = T(-1);
+		rsg = T(-1);
 	} else if(inf) {
-		rex = -1;
-		rsg = 0;
+		rex = T(-1);
+		rsg = T(0);
 	} else if(zero) {
-		rex = rsg = 0;
+		rex = rsg = T(0);
 	}
 
 	// Pack result
@@ -224,7 +224,7 @@ void mac(const T& a, const T& b, const T& c, T& r)
 		m_sn, m_ex, m_sg, m_uf, m_of);
 
 	// Extend accumulator
-	X p_sg1 = 0;
+	X p_sg1 = X(0);
 	p_sg1 = hw::insr(p_sg1, X(sg1), SWIDTH + RSWIDTH, RSWIDTH);
 
 	T aex;
@@ -269,13 +269,13 @@ void mac(const T& a, const T& b, const T& c, T& r)
 
 	// Check for special values
 	if(nan) {
-		rex = -1;
-		rsg = -1;
+		rex = T(-1);
+		rsg = T(-1);
 	} else if(inf) {
-		rex = -1;
-		rsg = 0;
+		rex = T(-1);
+		rsg = T(0);
 	} else if(zero) {
-		rex = rsg = 0;
+		rex = rsg = T(0);
 	}
 
 	// Pack result
