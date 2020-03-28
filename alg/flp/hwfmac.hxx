@@ -163,6 +163,7 @@ void add(const T& a, const T& b, T& r)
 	hwfp::round<T, X, EWIDTH, SWIDTH, RSWIDTH>(nex, nsg, rex, rsg, rof);
 
 	T v = T(0);
+	bool sign = (inf1 || inf2 ? (inf1 && sn1) || (inf2 && sn2) : sn);
 	bool zero = (zero1 && zero2) || azero || nuf;
 	bool nan = nan1 || nan2 || (inf1 && inf2 && (sn1 ^ sn2));
 	bool inf = inf1 || inf2 || nof;
@@ -179,7 +180,7 @@ void add(const T& a, const T& b, T& r)
 	}
 
 	// Pack result
-	hwfp::pack<T, EWIDTH, SWIDTH>(sn, rex, rsg, v);
+	hwfp::pack<T, EWIDTH, SWIDTH>(sign, rex, rsg, v);
 
 	r = v;
 }
