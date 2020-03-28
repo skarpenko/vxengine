@@ -185,9 +185,13 @@ void corner_case()
 	// These two cause significand overflow while rounding after add
 	const aux::float_t rof_val1 = { .v = 0x40efffff };
 	const aux::float_t rof_val2 = { .v = 0x3f000007 };
-	// Positive and negative value
+	// Positive and negative values
 	const aux::float_t pos_val1 = { .v = 0x4087ae14 };
-	const aux::float_t neg_val2 = { .v = 0xc087ae14 };
+	const aux::float_t pos_val2 = { .v = 0x3fd9999a };
+	const aux::float_t pos_val3 = { .v = 0x3d8f5c29 };
+	const aux::float_t neg_val1 = { .v = 0xc087ae14 };
+	const aux::float_t neg_val2 = { .v = 0xbfd9999a };
+	const aux::float_t neg_val3 = { .v = 0xbd8f5c29 };
 
 	std::vector<uint32_t> a, b;
 
@@ -200,7 +204,11 @@ void corner_case()
 	a.push_back(rof_val1.v);
 	a.push_back(rof_val2.v);
 	a.push_back(pos_val1.v);
+	a.push_back(pos_val2.v);
+	a.push_back(pos_val3.v);
+	a.push_back(neg_val1.v);
 	a.push_back(neg_val2.v);
+	a.push_back(neg_val3.v);
 
 	b = a;
 
