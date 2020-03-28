@@ -158,7 +158,7 @@ void mul(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
 
 	if(hw::signb(o_ex)) {
 		o_uf = true;	// Underflow o_ex < 0
-	} else if (hw::bit(o_ex, EWIDTH)) {
+	} else if(hw::bit(o_ex, EWIDTH)) {
 		o_of = true;	// Overflow test o_ex >= max. exponent
 	}
 
@@ -222,7 +222,7 @@ void norm(const T& i_ex, const X& i_sg, T& o_ex, X& o_sg, bool& o_uf, bool& o_of
 
 	if(hw::signb(o_ex)) {
 		o_uf = true;	// Underflow o_ex < 0
-	} else if (hw::bit(o_ex, EWIDTH)) {
+	} else if(hw::bit(o_ex, EWIDTH)) {
 		o_of = true;	// Overflow test o_ex >= max. exponent
 	}
 }
@@ -339,6 +339,68 @@ void align(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
 		o_sg2 >>= d;
 	} else if(d)
 		o_sg2 >>= d;
+}
+
+
+/**
+ * alignr - align exponents before addition (right shift only)
+ *
+ * @tparam T integral type
+ * @tparam X extended integral type
+ * @tparam EWIDTH exponent width
+ * @tparam SWIDTH significand width
+ * @param i_sn1 input first sign operand
+ * @param i_ex1 input first exponent operand
+ * @param i_sg1 input first significand operand
+ * @param i_sn2 input second sign operand
+ * @param i_ex2 input second exponent operand
+ * @param i_sg2 input second significand operand
+ * @param o_ex output exponent result
+ * @param o_sn1 output first sign result
+ * @param o_sg1 output first significand result
+ * @param o_sn2 output second sign result
+ * @param o_sg2 output second significand result
+ */
+template<typename T, typename X, unsigned EWIDTH, unsigned SWIDTH>
+void alignr(const bool& i_sn1, const T& i_ex1, const X& i_sg1,
+	const bool& i_sn2, const T& i_ex2, const X& i_sg2,
+	T& o_ex, bool& o_sn1, X& o_sg1, bool& o_sn2, X& o_sg2)
+{
+	static_assert(std::is_integral<T>::value, "T must be an integral type.");
+	static_assert(std::is_integral<X>::value, "X must be an integral type.");
+	static_assert(std::numeric_limits<X>::digits >= std::numeric_limits<T>::digits,
+		"X must be wider than T.");
+	static_assert(SWIDTH > EWIDTH, "SWIDTH must be greater than EWIDTH.");
+	static_assert(SWIDTH > 0, "SWIDTH cannot be zero.");
+	static_assert(EWIDTH > 0, "EWIDTH cannot be zero.");
+
+	o_sg1 = 0;
+	o_sg2 = 0;
+
+	T d;
+
+	if(i_ex1 < i_ex2) {
+		d = i_ex2 - i_ex1;
+		o_ex = i_ex2;
+		// Swap input 1 and input 2
+		o_sn1 = i_sn2;
+		o_sn2 = i_sn1;
+		o_sg1 = i_sg2;
+		o_sg2 = i_sg1;
+	} else {
+		d = i_ex1 - i_ex2;
+		o_ex = i_ex1;
+		o_sn1 = i_sn1;
+		o_sn2 = i_sn2;
+		o_sg1 = i_sg1;
+		o_sg2 = i_sg2;
+	}
+
+	if(d) {
+		bool s = hw::orr(o_sg2, d, 0);
+		o_sg2 = hw::setb(o_sg2, d, s);
+		o_sg2 >>= d;
+	}
 }
 
 
