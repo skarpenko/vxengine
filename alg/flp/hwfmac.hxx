@@ -185,4 +185,103 @@ void add(const T& a, const T& b, T& r)
 }
 
 
+/**
+ * mac - multiply-accumulate
+ *
+ * @tparam T integral type
+ * @tparam X extended integral type
+ * @tparam EWIDTH exponent width
+ * @tparam SWIDTH significand width
+ * @tparam RSWIDTH round/sticky width
+ * @param a input first operand (accumulator)
+ * @param b input second operand
+ * @param c input third operand
+ * @param r output result
+ */
+template<typename T, typename X, unsigned EWIDTH, unsigned SWIDTH, unsigned RSWIDTH>
+void mac(const T& a, const T& b, const T& c, T& r)
+{
+	bool sn1, sn2, sn3;
+	T ex1, ex2, ex3;
+	T sg1, sg2, sg3;
+	bool zero1, zero2, zero3;
+	bool nan1, nan2, nan3;
+	bool inf1, inf2, inf3;
+
+	// Unpack
+	hwfp::unpack<T, EWIDTH, SWIDTH>(a, sn1, ex1, sg1, zero1, nan1, inf1);
+	hwfp::unpack<T, EWIDTH, SWIDTH>(b, sn2, ex2, sg2, zero2, nan2, inf2);
+	hwfp::unpack<T, EWIDTH, SWIDTH>(c, sn3, ex3, sg3, zero3, nan3, inf3);
+
+	bool m_uf, m_of;
+	bool m_sn;
+	X m_sg;
+	T m_ex;
+
+	// Multiply
+	hwfp::mul<T, X, EWIDTH, SWIDTH, RSWIDTH>(sn2, ex2, sg2, sn3, ex3, sg3,
+		m_sn, m_ex, m_sg, m_uf, m_of);
+
+	// Extend accumulator
+	X p_sg1 = 0;
+	p_sg1 = hw::insr(p_sg1, X(sg1), SWIDTH + RSWIDTH, RSWIDTH);
+
+	T aex;
+	bool asn1, asn2;
+	X asg1, asg2;
+
+	// Align exponents
+	hwfp::alignr<T, X, EWIDTH, SWIDTH>(sn1, ex1, p_sg1, m_sn, m_ex, m_sg,
+		aex, asn1, asg1, asn2, asg2);
+
+	bool sn;
+	X sg;
+	bool azero;
+
+	// Add
+	hwfp::add<T, X, EWIDTH, SWIDTH, RSWIDTH>(asn1, asg1, asn2, asg2, sn, sg,
+		azero);
+
+	bool nuf, nof;
+	X nsg;
+	T nex;
+
+	// Normalize
+	hwfp::norm<T, X, EWIDTH, SWIDTH, RSWIDTH>(aex, sg, nex, nsg, nuf, nof);
+
+	bool rof;
+	T rsg;
+	T rex;
+
+	// Round
+	hwfp::round<T, X, EWIDTH, SWIDTH, RSWIDTH>(nex, nsg, rex, rsg, rof);
+
+	T v = T(0);
+	// Multiplication flags
+	bool m_zero = zero2 || zero3 || m_uf;
+	bool m_nan = nan2 || nan3 || (zero2 && inf3) || (zero3 && inf2);
+	bool m_inf = inf2 || inf3 || m_of;
+	// Resulting flags
+	bool zero = (zero1 && m_zero) || azero || nuf;
+	bool nan = nan1 || m_nan || (inf1 && m_inf && (sn1 ^ m_sn));
+	bool inf = inf1 || m_inf || nof;
+
+	// Check for special values
+	if(nan) {
+		rex = -1;
+		rsg = -1;
+	} else if(inf) {
+		rex = -1;
+		rsg = 0;
+	} else if(zero) {
+		rex = rsg = 0;
+	}
+
+	// Pack result
+	hwfp::pack<T, EWIDTH, SWIDTH>(sn, rex, rsg, v);
+
+	r = v;
+}
+
+
 } // namespace hwfmac

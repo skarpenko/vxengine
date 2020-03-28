@@ -34,6 +34,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <ctime>
+#include <cmath>
 #include "hwfmac.hxx"
 #include "common.hxx"
 
@@ -41,6 +42,7 @@
 
 constexpr uint64_t NITER = 10000000000;
 constexpr bool ignore_nan_mismatch = true;
+constexpr float mac_tolerance = 1E-12;
 
 
 struct fmt_float_s { float f; };
@@ -85,7 +87,7 @@ uint32_t mul_test(uint32_t a, uint32_t b)
 	aux::float_t m;
 	m.f = af.f * bf.f;
 	float d = rf.f - m.f;
-	if (rf.v != m.v && !nan_cond(rf.v, m.v)) {
+	if(rf.v != m.v && !nan_cond(rf.v, m.v)) {
 		std::ios state(nullptr);
 		state.copyfmt(std::cout);
 		std::cout << "M: "
@@ -118,12 +120,46 @@ uint32_t add_test(uint32_t a, uint32_t b)
 	aux::float_t s;
 	s.f = af.f + bf.f;
 	float d = rf.f - s.f;
-	if (rf.v != s.v && !nan_cond(rf.v, s.v)) {
+	if(rf.v != s.v && !nan_cond(rf.v, s.v)) {
 		std::ios state(nullptr);
 		state.copyfmt(std::cout);
 		std::cout << "A: "
 			<< fmt_float(af.f) << " + " << fmt_float(bf.f)
 			<< " = " << fmt_float(rf.f)
+			<< " (" << fmt_float(s.f) << ") d = "
+			<< fmt_float(d) << " v = "
+			<< std::setw(8) << std::setfill('0') << std::hex
+			<< rf.v << " ("
+			<< std::setw(8) << std::setfill('0') << std::hex
+			<< s.v << ")" << std::endl;
+		std::cout.copyfmt(state);
+	}
+
+	return r;
+}
+
+
+uint32_t mac_test(uint32_t a, uint32_t b, uint32_t c)
+{
+	uint32_t r;
+
+	hwfmac::mac<uint32_t, uint64_t, 8, 23, 23>(a, b, c, r);
+
+	aux::float_t af, bf, cf, rf;
+	af.v = a;
+	bf.v = b;
+	cf.v = c;
+	rf.v = r;
+
+	aux::float_t s;
+	s.f = std::fmaf(bf.f, cf.f, af.f);
+	float d = rf.f - s.f;
+	if(rf.v != s.v && !nan_cond(rf.v, s.v) && std::fabs(d) > mac_tolerance) {
+		std::ios state(nullptr);
+		state.copyfmt(std::cout);
+		std::cout << "MA: "
+			<< fmt_float(af.f) << " + " << fmt_float(bf.f) << " * "
+			<< fmt_float(cf.f) << " = " << fmt_float(rf.f)
 			<< " (" << fmt_float(s.f) << ") d = "
 			<< fmt_float(d) << " v = "
 			<< std::setw(8) << std::setfill('0') << std::hex
@@ -143,6 +179,7 @@ int main()
 {
 	aux::float_t a;
 	aux::float_t b;
+	aux::float_t c;
 
 	srand(SRAND_SEED());
 
@@ -157,15 +194,21 @@ int main()
 		int r2 = rand();
 		int r3 = rand();
 		int r4 = rand();
+		int r5 = rand();
+		int r6 = rand();
 		int s1 = rand() & 1;
 		int s2 = rand() & 1;
-		a.f = (float) r1 / (float) r2;
-		b.f = (float) r3 / (float) r4;
+		int s3 = rand() & 1;
+		a.f = static_cast<float>(r1) / static_cast<float>(r2);
+		b.f = static_cast<float>(r3) / static_cast<float>(r4);
+		c.f = static_cast<float>(r5) / static_cast<float>(r6);
 		a.s.sign = s1;
 		b.s.sign = s2;
+		c.s.sign = s3;
 
 		mul_test(a.v, b.v);
 		add_test(a.v, b.v);
+		mac_test(a.v, b.v, c.v);
 	}
 
 	return 0;
