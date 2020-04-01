@@ -236,7 +236,7 @@ void corner_case()
 	const aux::float_t neg_val2 = { .v = 0xbfd9999a };
 	const aux::float_t neg_val3 = { .v = 0xbd8f5c29 };
 
-	std::vector<uint32_t> a, b;
+	std::vector<uint32_t> a, b, c;
 
 	a.push_back(pos_zero.v);
 	a.push_back(neg_zero.v);
@@ -246,19 +246,28 @@ void corner_case()
 	a.push_back(neg_nan.v);
 	a.push_back(rof_val1.v);
 	a.push_back(rof_val2.v);
-	a.push_back(pos_val1.v);
-	a.push_back(pos_val2.v);
-	a.push_back(pos_val3.v);
-	a.push_back(neg_val1.v);
-	a.push_back(neg_val2.v);
-	a.push_back(neg_val3.v);
 
-	b = a;
+	c.push_back(pos_val1.v);
+	c.push_back(pos_val2.v);
+	c.push_back(pos_val3.v);
+	c.push_back(neg_val1.v);
+	c.push_back(neg_val2.v);
+	c.push_back(neg_val3.v);
 
-	do {
-		for(size_t i = 0; i < a.size(); ++i) {
-			mul_test(a[i], b[i]);
-			add_test(a[i], b[i]);
-		}
-	} while(std::next_permutation(b.begin(), b.end()));
+	while(!c.empty()) {
+		// Push values from 'c' one by one to reduce permutations number
+		a.push_back(c.back());
+		c.pop_back();
+
+		b = a;
+
+		do {
+			for (size_t i = 0; i < a.size(); ++i) {
+				mul_test(a[i], b[i]);
+				add_test(a[i], b[i]);
+			}
+		} while (std::next_permutation(b.begin(), b.end()));
+
+		a.pop_back();
+	}
 }
