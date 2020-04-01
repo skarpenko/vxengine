@@ -195,7 +195,7 @@ void corner_case(model_top<Vvl_flp_mul_test>& top)
 	const aux::float_t neg_val2 = { .v = 0xbfd9999a };
 	const aux::float_t neg_val3 = { .v = 0xbd8f5c29 };
 
-	std::vector<uint32_t> a, b;
+	std::vector<uint32_t> a, b, c;
 
 	a.push_back(pos_zero.v);
 	a.push_back(neg_zero.v);
@@ -205,33 +205,42 @@ void corner_case(model_top<Vvl_flp_mul_test>& top)
 	a.push_back(neg_nan.v);
 	a.push_back(rof_val1.v);
 	a.push_back(rof_val2.v);
-	a.push_back(pos_val1.v);
-	a.push_back(pos_val2.v);
-	a.push_back(pos_val3.v);
-	a.push_back(neg_val1.v);
-	a.push_back(neg_val2.v);
-	a.push_back(neg_val3.v);
 
-	b = a;
+	c.push_back(pos_val1.v);
+	c.push_back(pos_val2.v);
+	c.push_back(pos_val3.v);
+	c.push_back(neg_val1.v);
+	c.push_back(neg_val2.v);
+	c.push_back(neg_val3.v);
 
-	aux::float_t rm, rh;
+	while(!c.empty()) {
+		// Push values from 'c' one by one to reduce permutations number
+		a.push_back(c.back());
+		c.pop_back();
 
-	do {
-		for(size_t i = 0; i < a.size(); ++i) {
-			rm.v = mul_test(a[i], b[i]);	// Reference result
+		b = a;
 
-			top->i_a = a[i];
-			top->i_b = b[i];
-			top->eval();			// Evaluate model
-			rh.v = top->o_p;		// RTL model result
+		aux::float_t rm, rh;
+
+		do {
+			for(size_t i = 0; i < a.size(); ++i) {
+				rm.v = mul_test(a[i], b[i]);	// Reference result
+
+				top->i_a = a[i];
+				top->i_b = b[i];
+				top->eval();			// Evaluate model
+				rh.v = top->o_p;		// RTL model result
 
 #if VM_TRACE
-			if(tfp) tfp->dump(main_time);	// Dump waveforms
+				if(tfp) tfp->dump(main_time);	// Dump waveforms
 #endif
 
-			check_result(rm, rh);		// Check result
+				check_result(rm, rh);		// Check result
 
-			++main_time;			// Time passes...
-		}
-	} while(std::next_permutation(b.begin(), b.end()));
+				++main_time;			// Time passes...
+			}
+		} while(std::next_permutation(b.begin(), b.end()));
+
+		a.pop_back();
+	}
 }
