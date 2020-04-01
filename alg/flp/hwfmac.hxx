@@ -214,14 +214,21 @@ void mac(const T& a, const T& b, const T& c, T& r)
 	hwfp::unpack<T, EWIDTH, SWIDTH>(b, sn2, ex2, sg2, zero2, nan2, inf2);
 	hwfp::unpack<T, EWIDTH, SWIDTH>(c, sn3, ex3, sg3, zero3, nan3, inf3);
 
-	bool m_uf, m_of;
-	bool m_sn;
-	X m_sg;
-	T m_ex;
+	bool muf, mof;
+	bool msn;
+	X msg;
+	T mex;
 
 	// Multiply
 	hwfp::mul<T, X, EWIDTH, SWIDTH, RSWIDTH>(sn2, ex2, sg2, sn3, ex3, sg3,
-		m_sn, m_ex, m_sg, m_uf, m_of);
+		msn, mex, msg, muf, mof);
+
+	// Multiplication flags
+	bool mzero = zero2 || zero3 || muf;
+	bool mnan = nan2 || nan3 || (zero2 && inf3) || (zero3 && inf2);
+	bool minf = inf2 || inf3 || mof;
+	msg = !mzero ? msg : X(0);
+	mex = !mzero ? mex : T(0);
 
 	// Extend accumulator
 	X p_sg1 = X(0);
@@ -232,7 +239,7 @@ void mac(const T& a, const T& b, const T& c, T& r)
 	X asg1, asg2;
 
 	// Align exponents
-	hwfp::alignr<T, X, EWIDTH, SWIDTH>(sn1, ex1, p_sg1, m_sn, m_ex, m_sg,
+	hwfp::alignr<T, X, EWIDTH, SWIDTH>(sn1, ex1, p_sg1, msn, mex, msg,
 		aex, asn1, asg1, asn2, asg2);
 
 	bool sn;
@@ -258,14 +265,11 @@ void mac(const T& a, const T& b, const T& c, T& r)
 	hwfp::round<T, X, EWIDTH, SWIDTH, RSWIDTH>(nex, nsg, rex, rsg, rof);
 
 	T v = T(0);
-	// Multiplication flags
-	bool m_zero = zero2 || zero3 || m_uf;
-	bool m_nan = nan2 || nan3 || (zero2 && inf3) || (zero3 && inf2);
-	bool m_inf = inf2 || inf3 || m_of;
 	// Resulting flags
-	bool zero = (zero1 && m_zero) || azero || nuf;
-	bool nan = nan1 || m_nan || (inf1 && m_inf && (sn1 ^ m_sn));
-	bool inf = inf1 || m_inf || nof;
+	bool sign = (inf1 || minf ? (inf1 && sn1) || (minf && msn) : sn);
+	bool zero = (zero1 && mzero) || azero || nuf;
+	bool nan = nan1 || mnan || (inf1 && minf && (sn1 ^ msn));
+	bool inf = inf1 || minf || nof;
 
 	// Check for special values
 	if(nan) {
@@ -279,7 +283,7 @@ void mac(const T& a, const T& b, const T& c, T& r)
 	}
 
 	// Pack result
-	hwfp::pack<T, EWIDTH, SWIDTH>(sn, rex, rsg, v);
+	hwfp::pack<T, EWIDTH, SWIDTH>(sign, rex, rsg, v);
 
 	r = v;
 }
