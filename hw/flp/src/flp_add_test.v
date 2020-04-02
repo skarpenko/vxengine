@@ -174,7 +174,7 @@ flp_round #(
 
 /**** Pack into floating point ****/
 
-wire p_sn = a_sn | (u_sna & u_snb);
+wire p_sn = (u_infa | u_infb ? (u_infa & u_sna) | (u_infb & u_snb) : a_sn);
 wire p_zero = (u_zeroa & u_zerob) | a_zero | n_uf | r_uf;
 wire p_inf = u_infa | u_infb | n_of | r_of;
 wire p_nan = u_nana | u_nanb | (u_infa & u_infb & (u_sna ^ u_snb));
