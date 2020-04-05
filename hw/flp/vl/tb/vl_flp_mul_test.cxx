@@ -137,8 +137,8 @@ int main(int argc, char **argv)
 		int s1 = rand() & 1;
 		int s2 = rand() & 1;
 		// Randomized inputs
-		a.f = (float) r1 / (float) r2;
-		b.f = (float) r3 / (float) r4;
+		a.f = static_cast<float>(r1) / static_cast<float>(r2);
+		b.f = static_cast<float>(r3) / static_cast<float>(r4);
 		a.s.sign = s1;
 		b.s.sign = s2;
 
