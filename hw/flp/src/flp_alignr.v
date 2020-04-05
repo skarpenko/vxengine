@@ -44,8 +44,8 @@ input wire [EWIDTH-1:0]		i_ex1;	/* Exponent 1 */
 input wire [XWIDTH-1:0]		i_sg2;	/* Significand 2 */
 input wire [EWIDTH-1:0]		i_ex2;	/* Exponent 2 */
 /* Outputs */
-output reg [XWIDTH-1:0]	o_sg1;	/* Aligned significand 1 */
-output reg [XWIDTH-1:0]	o_sg2;	/* Aligned significand 2 */
+output reg [XWIDTH-1:0]		o_sg1;	/* Aligned significand 1 */
+output reg [XWIDTH-1:0]		o_sg2;	/* Aligned significand 2 */
 output wire [EWIDTH-1:0]	o_ex;	/* Common exponent */
 
 
