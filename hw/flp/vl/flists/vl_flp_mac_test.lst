@@ -1,0 +1,19 @@
+// Testbench for floating point multiply-accumulate logic
+
+-CFLAGS --std=c++11
+-CFLAGS -I${VXENGINE_HOME}/alg/flp
+-CFLAGS -I${VXENGINE_HOME}/hw/flp/vl/include
+--top-module vl_flp_mac_test
+-cc
+${VXENGINE_HOME}/hw/flp/src/flp_mac_test.v
+${VXENGINE_HOME}/hw/flp/src/flp_iadd.v
+${VXENGINE_HOME}/hw/flp/src/flp_imult.v
+${VXENGINE_HOME}/hw/flp/src/flp_pack.v
+${VXENGINE_HOME}/hw/flp/src/flp_unpack.v
+${VXENGINE_HOME}/hw/flp/src/flp_round.v
+${VXENGINE_HOME}/hw/flp/src/flp_norm.v
+${VXENGINE_HOME}/hw/flp/src/flp_alignr.v
+${VXENGINE_HOME}/hw/flp/src/flp_shrjam.v
+${VXENGINE_HOME}/hw/flp/src/flp_shlpad.v
+${VXENGINE_HOME}/hw/flp/vl/tb/vl_flp_mac_test.v
+${VXENGINE_HOME}/hw/flp/vl/tb/vl_flp_mac_test.cxx
