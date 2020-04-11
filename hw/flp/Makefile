@@ -16,7 +16,8 @@ TESTBENCHES := \
 	tb_flp_alignr \
 	tb_flp_iadd \
 	tb_flp_add_test \
-	tb_flp_mac_test
+	tb_flp_mac_test \
+	tb_flp32_mac_5stg
 
 
 TB ?=

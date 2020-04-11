@@ -4,9 +4,10 @@
 
 # Available testbenches
 TESTBENCHES := \
-	vl_flp_mul_test	\
-	vl_flp_add_test	\
-	vl_flp_mac_test
+	vl_flp_mul_test \
+	vl_flp_add_test \
+	vl_flp_mac_test \
+	vl_flp32_mac_5stg
 
 
 TB ?=

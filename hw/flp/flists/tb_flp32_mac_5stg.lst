@@ -1,0 +1,15 @@
+# Testbench for single precision 5-stage floating point multiply-accumulate
+
++define+TRACE_FILE="tb_flp32_mac_5stg.vcd"
++timescale+1us/100ns
+src/flp32_mac_5stg.v
+src/flp_iadd.v
+src/flp_imult_stage.v
+src/flp_pack.v
+src/flp_unpack.v
+src/flp_round.v
+src/flp_norm.v
+src/flp_alignr.v
+src/flp_shrjam.v
+src/flp_shlpad.v
+tb/tb_flp32_mac_5stg.v
