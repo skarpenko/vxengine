@@ -1,0 +1,18 @@
+# APB FMAC unit testbench
+
++define+TRACE_FILE="tb_apb_fmac.vcd"
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/apb/src/apb_biu.v
+${VXENGINE_HOME}/hw/flp/src/flp_iadd.v
+${VXENGINE_HOME}/hw/flp/src/flp_imult_stage.v
+${VXENGINE_HOME}/hw/flp/src/flp_pack.v
+${VXENGINE_HOME}/hw/flp/src/flp_unpack.v
+${VXENGINE_HOME}/hw/flp/src/flp_round.v
+${VXENGINE_HOME}/hw/flp/src/flp_norm.v
+${VXENGINE_HOME}/hw/flp/src/flp_alignr.v
+${VXENGINE_HOME}/hw/flp/src/flp_shrjam.v
+${VXENGINE_HOME}/hw/flp/src/flp_shlpad.v
+${VXENGINE_HOME}/hw/flp/src/flp32_mac_5stg.v
+${VXENGINE_HOME}/hw/apb/tb/tb_apb_biu.v
+src/apb_fmac.v
+tb/tb_apb_fmac.v
