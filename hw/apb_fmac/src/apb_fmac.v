@@ -129,8 +129,6 @@ apb_biu #(
 	.ADDR_WIDTH(5),
 	.DATA_WIDTH(32)
 ) apb_biu0 (
-	.clk(clk),
-	.nrst(nrst),
 	/* APB interface */
 	.apb_paddr(apb_paddr),
 	.apb_psel(apb_psel),

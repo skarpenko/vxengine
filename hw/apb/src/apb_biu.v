@@ -33,8 +33,6 @@ module apb_biu
 	parameter DATA_WIDTH = 32
 )
 (
-	clk,
-	nrst,
 	/* APB interface */
 	apb_paddr,
 	apb_psel,
@@ -51,11 +49,6 @@ module apb_biu
 	biu_rdata,
 	biu_accept
 );
-localparam APB_SETUP		= 1'b0;	/* APB FSM Setup phase */
-localparam APB_ENABLE		= 1'b1;	/* APB FSM Enable phase */
-/****/
-input wire			clk;
-input wire			nrst;
 /* APB interface */
 input wire [ADDR_WIDTH-1:0]	apb_paddr;
 input wire			apb_psel;
@@ -73,41 +66,27 @@ input wire [DATA_WIDTH-1:0]	biu_rdata;
 input wire			biu_accept;
 
 
-/* APB FSM state */
-reg apb_state;
-
-
-/* APB FSM */
-always @(posedge clk or negedge nrst)
-begin : apb_fsm
-	if(!nrst)
+/* APB logic */
+always @(*)
+begin
+	if(apb_psel && apb_penable)
 	begin
-		apb_pready <= 1'b0;
-		biu_enable <= 1'b0;
-		apb_state <= APB_SETUP;
-	end
-	else if(apb_state == APB_SETUP)
-	begin
-		apb_pready <= 1'b0;
-		biu_enable <= 1'b0;
-
-		if(apb_psel && apb_penable)
-		begin
-			apb_state <= APB_ENABLE;
-			biu_addr <= apb_paddr;
-			biu_enable <= 1'b1;
-			biu_rnw <= ~apb_pwrite;
-			biu_wdata <= apb_pwdata;
-		end
-	end
-	else if(apb_psel && apb_penable && apb_state == APB_ENABLE)
-	begin
-			apb_pready <= biu_accept;
-			apb_state <= biu_accept ? APB_SETUP : apb_state;
-			apb_prdata <= biu_rdata;
+		biu_addr = apb_paddr;
+		biu_enable = 1'b1;
+		biu_rnw = ~apb_pwrite;
+		biu_wdata = apb_pwdata;
+		apb_pready = biu_accept;
+		apb_prdata = biu_rdata;
 	end
 	else
-		apb_state <= APB_SETUP;
+	begin
+		biu_addr = apb_paddr;
+		biu_enable = 1'b0;
+		biu_rnw = ~apb_pwrite;
+		biu_wdata = apb_pwdata;
+		apb_pready = biu_accept;
+		apb_prdata = biu_rdata;
+	end
 end
 
 

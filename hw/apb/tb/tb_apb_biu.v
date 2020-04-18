@@ -79,8 +79,6 @@ module tb_apb_biu();
 			apb_penable <= 1'b1;
 		end
 
-		@(posedge clk);
-
 		@(posedge clk)
 		begin
 			apb_psel <= 1'b0;
@@ -108,8 +106,6 @@ module tb_apb_biu();
 		begin
 			apb_penable <= 1'b1;
 		end
-
-		@(posedge clk);
 
 		@(posedge clk)
 		begin
@@ -167,8 +163,6 @@ module tb_apb_biu();
 		.ADDR_WIDTH(ADDR_WIDTH),
 		.DATA_WIDTH(DATA_WIDTH)
 	) biu (
-		.clk(clk),
-		.nrst(nrst),
 		/* APB interface */
 		.apb_paddr(apb_paddr),
 		.apb_psel(apb_psel),

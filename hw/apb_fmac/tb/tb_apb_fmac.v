@@ -70,8 +70,6 @@ module tb_apb_fmac();
 			apb_penable <= 1'b1;
 		end
 
-		@(posedge clk);
-
 		@(posedge clk)
 		begin
 			apb_psel <= 1'b0;
@@ -99,8 +97,6 @@ module tb_apb_fmac();
 		begin
 			apb_penable <= 1'b1;
 		end
-
-		@(posedge clk);
 
 		@(posedge clk)
 		begin
