@@ -1,0 +1,6 @@
+# APB bus interface unit testbench
+
++define+TRACE_FILE="tb_apb_biu.vcd"
++timescale+1us/100ns
+src/apb_biu.v
+tb/tb_apb_biu.v
