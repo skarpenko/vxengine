@@ -31,8 +31,6 @@
 #include <ctime>
 #include <iostream>
 #include <iomanip>
-#include <vector>
-#include <algorithm>
 #include <verilated.h>		// Defines common routines
 #if VM_TRACE
 # include <verilated_vcd_c.h>	// Trace file format header
