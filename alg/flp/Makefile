@@ -34,7 +34,7 @@ hxx-files :=		\
 
 
 flp: $(cxx-files) $(hxx-files)
-	g++ --std=c++17 -O3 -g -Wall -o flp $(cxx-files)
+	g++ --std=c++14 -O3 -g -Wall -o flp $(cxx-files)
 
 
 .PHONY: clean

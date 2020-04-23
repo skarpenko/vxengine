@@ -24,9 +24,9 @@
 cmake_minimum_required(VERSION 3.15)
 project(flp)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
-add_compile_options(--std=c++17 -O3 -g -Wall)
+add_compile_options(--std=c++14 -O3 -g -Wall)
 
 add_executable(flp
 	main.cxx
