@@ -24,50 +24,23 @@
  */
 
 /*
- * Memory model
+ * TLM payloads management
  */
 
-#include "memory_port.hxx"
+#include <tlm.h>
 #pragma once
 
 
-// Memory model template
-template<unsigned MEM_WIDTH>
-SC_MODULE(memory) {
-	sc_in<bool> clk;
-	sc_in<bool> nrst;
+namespace tlm_pl {
 
-	tlm::tlm_target_socket<MEM_WIDTH> cpu_target;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target0;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target1;
+	/**
+	 * Allocate generic payload
+	 *
+	 * To release memory call release() method of the payload object.
+	 *
+	 * @param data_size size of payload data
+	 * @return pointer to a payload
+	 */
+	tlm::tlm_generic_payload* alloc_gp(size_t data_size = 0);
 
-	SC_CTOR(memory)
-		: clk("clk"), nrst("nrst")
-		, cpu_port("cpu_port", mem)
-		, vxe_port0("vxe_port0", mem)
-		, vxe_port1("vxe_port1", mem)
-	{
-		// Connect clock and reset signals
-		cpu_port.clk(clk);
-		cpu_port.nrst(nrst);
-		vxe_port0.clk(clk);
-		vxe_port0.nrst(nrst);
-		vxe_port1.clk(clk);
-		vxe_port1.nrst(nrst);
-
-		// Init ports
-		cpu_target(cpu_port);
-		vxe_target0(vxe_port0);
-		vxe_target1(vxe_port1);
-
-		mem.resize(0x1000); // default size
-	}
-
-public:
-	// Storage
-	std::vector<uint8_t> mem;
-	// Ports
-	memory_port<MEM_WIDTH> cpu_port;
-	memory_port<MEM_WIDTH> vxe_port0;
-	memory_port<MEM_WIDTH> vxe_port1;
-};
+} // namespace tlm_pl

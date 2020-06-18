@@ -8,15 +8,20 @@ TARGETS :=
 # System model build options
 SYSMODEL_TARGET := vxmodel.elf
 SYSMODEL_CXX_FILES :=	\
-	src/main.cxx	\
-	src/simple_cpu.cxx
+	src/main.cxx		\
+	src/simple_cpu.cxx	\
+	src/tlm_payload.cxx
 SYSMODEL_HXX_FILES :=	\
-	include/sys_top.hxx	\
-	include/trace.hxx	\
-	include/simple_cpu_if.h	\
-	include/util.hxx	\
-	include/memory.hxx	\
-	include/vxe_top.hxx
+	include/sys_top.hxx		\
+	include/trace.hxx		\
+	include/simple_cpu_if.h		\
+	include/util.hxx		\
+	include/memory.hxx		\
+	include/vxe_top.hxx		\
+	include/register_set.hxx	\
+	include/memory_port.hxx		\
+	include/vxe_common.hxx		\
+	include/tlm_payload.hxx
 SYSMODEL_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude -I$(SYSTEMC_HOME)/include
 SYSMODEL_LDFLAGS := -Wl,-rpath=$(SYSTEMC_HOME)/lib-linux64	\
 	-L$(SYSTEMC_HOME)/lib-linux64 -lsystemc -lpthread -ldl

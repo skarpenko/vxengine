@@ -30,10 +30,32 @@
 #include <iostream>
 #include "simple_cpu_if.h"
 
+struct simple_cpu_if *g_cpu_if;
+#define SIMPLE_CPU_IF	g_cpu_if
+
 
 extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 {
+	g_cpu_if = cpu_if;
+
 	std::cout << "Started on CPU: " << cpu_if->cpuid << std::endl;
+
+	simple_cpu_dmi dmi;
+	cpu_if->get_dmi(cpu_if->cpuid, &dmi);
+
+	uint32_t v = mmio_rreg32(0);
+	printf("0x%08x\n", v);
+
+	mmio_wreg32(0, 13123);
+	v = mmio_rreg32(0);
+	printf("0x%08x\n", v);
+
+	v = mmio_rreg32(4);
+	printf("0x%08x\n", v);
+
+	mmio_wreg32(4, 13123);
+	v = mmio_rreg32(4);
+	printf("0x%08x\n", v);
 
 	return 0;
 }

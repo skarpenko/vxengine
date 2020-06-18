@@ -24,50 +24,49 @@
  */
 
 /*
- * Memory model
+ * Register set
  */
 
-#include "memory_port.hxx"
 #pragma once
 
 
-// Memory model template
-template<unsigned MEM_WIDTH>
-SC_MODULE(memory) {
-	sc_in<bool> clk;
-	sc_in<bool> nrst;
+/**
+ * Register set interface
+ * @tparam T register type
+ */
+template<typename T>
+class register_set_if {
+public:
+	typedef T reg_type;
 
-	tlm::tlm_target_socket<MEM_WIDTH> cpu_target;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target0;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target1;
+	virtual ~register_set_if() = default;
+	virtual T get_reg(unsigned n) const = 0;
+	virtual void set_reg(unsigned n, T v) = 0;
+	virtual unsigned size() const = 0;
+};
 
-	SC_CTOR(memory)
-		: clk("clk"), nrst("nrst")
-		, cpu_port("cpu_port", mem)
-		, vxe_port0("vxe_port0", mem)
-		, vxe_port1("vxe_port1", mem)
+
+/**
+ * Register set
+ * @tparam T register type
+ * @tparam N register set size
+ */
+template<typename T, unsigned N>
+class register_set: public register_set_if<T> {
+	T m_regs[N];
+public:
+	T get_reg(unsigned n) const override
 	{
-		// Connect clock and reset signals
-		cpu_port.clk(clk);
-		cpu_port.nrst(nrst);
-		vxe_port0.clk(clk);
-		vxe_port0.nrst(nrst);
-		vxe_port1.clk(clk);
-		vxe_port1.nrst(nrst);
-
-		// Init ports
-		cpu_target(cpu_port);
-		vxe_target0(vxe_port0);
-		vxe_target1(vxe_port1);
-
-		mem.resize(0x1000); // default size
+		return m_regs[n];
 	}
 
-public:
-	// Storage
-	std::vector<uint8_t> mem;
-	// Ports
-	memory_port<MEM_WIDTH> cpu_port;
-	memory_port<MEM_WIDTH> vxe_port0;
-	memory_port<MEM_WIDTH> vxe_port1;
+	void set_reg(unsigned n, T v) override
+	{
+		m_regs[n] = v;
+	}
+
+	unsigned size() const override
+	{
+		return N;
+	}
 };

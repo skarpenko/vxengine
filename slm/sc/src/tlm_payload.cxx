@@ -24,50 +24,52 @@
  */
 
 /*
- * Memory model
+ * TLM payloads management
  */
 
-#include "memory_port.hxx"
-#pragma once
+#include "tlm_payload.hxx"
 
 
-// Memory model template
-template<unsigned MEM_WIDTH>
-SC_MODULE(memory) {
-	sc_in<bool> clk;
-	sc_in<bool> nrst;
+// Private namespace
+namespace {
 
-	tlm::tlm_target_socket<MEM_WIDTH> cpu_target;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target0;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target1;
+	/**
+	 * TLM generic payload memory manager
+	 */
+	class tlm_gp_mm: public tlm::tlm_mm_interface {
+	public:
+		void free(tlm::tlm_generic_payload *pl) override
+		{
+			unsigned char *data_ptr = pl->get_data_ptr();
+			pl->reset();
+			if(data_ptr)
+				delete [] data_ptr;
+			delete pl;
+		}
+	};
+	// Private MM instance
+	tlm_gp_mm mm;
 
-	SC_CTOR(memory)
-		: clk("clk"), nrst("nrst")
-		, cpu_port("cpu_port", mem)
-		, vxe_port0("vxe_port0", mem)
-		, vxe_port1("vxe_port1", mem)
-	{
-		// Connect clock and reset signals
-		cpu_port.clk(clk);
-		cpu_port.nrst(nrst);
-		vxe_port0.clk(clk);
-		vxe_port0.nrst(nrst);
-		vxe_port1.clk(clk);
-		vxe_port1.nrst(nrst);
+} // Private namespace
 
-		// Init ports
-		cpu_target(cpu_port);
-		vxe_target0(vxe_port0);
-		vxe_target1(vxe_port1);
 
-		mem.resize(0x1000); // default size
+tlm::tlm_generic_payload* tlm_pl::alloc_gp(size_t data_size)
+{
+	tlm::tlm_generic_payload *pl = new tlm::tlm_generic_payload(&mm);
+	unsigned char *data_ptr = nullptr;
+
+	pl->acquire();	// ++ref_count
+
+	try {
+		if(data_size)
+			data_ptr = new unsigned char[data_size];
+	}
+	catch(...) {
+		pl->release();
+		throw;
 	}
 
-public:
-	// Storage
-	std::vector<uint8_t> mem;
-	// Ports
-	memory_port<MEM_WIDTH> cpu_port;
-	memory_port<MEM_WIDTH> vxe_port0;
-	memory_port<MEM_WIDTH> vxe_port1;
-};
+	pl->set_data_ptr(data_ptr);
+
+	return pl;
+}

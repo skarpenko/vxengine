@@ -24,50 +24,55 @@
  */
 
 /*
- * Memory model
+ * Memory port model
  */
 
-#include "memory_port.hxx"
+#include <cstdint>
+#include <vector>
+#include <systemc.h>
+#include <tlm.h>
 #pragma once
 
 
-// Memory model template
+// Memory port model template
 template<unsigned MEM_WIDTH>
-SC_MODULE(memory) {
+SC_MODULE(memory_port), public virtual tlm::tlm_fw_transport_if<> {
 	sc_in<bool> clk;
 	sc_in<bool> nrst;
 
-	tlm::tlm_target_socket<MEM_WIDTH> cpu_target;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target0;
-	tlm::tlm_target_socket<MEM_WIDTH> vxe_target1;
+	SC_HAS_PROCESS(memory_port);
 
-	SC_CTOR(memory)
-		: clk("clk"), nrst("nrst")
-		, cpu_port("cpu_port", mem)
-		, vxe_port0("vxe_port0", mem)
-		, vxe_port1("vxe_port1", mem)
+	memory_port(::sc_core::sc_module_name name, std::vector<uint8_t>& m)
+		: ::sc_core::sc_module(name), clk("clk"), nrst("nrst"), mem(m)
 	{
-		// Connect clock and reset signals
-		cpu_port.clk(clk);
-		cpu_port.nrst(nrst);
-		vxe_port0.clk(clk);
-		vxe_port0.nrst(nrst);
-		vxe_port1.clk(clk);
-		vxe_port1.nrst(nrst);
+	}
 
-		// Init ports
-		cpu_target(cpu_port);
-		vxe_target0(vxe_port0);
-		vxe_target1(vxe_port1);
+	tlm::tlm_sync_enum nb_transport_fw(tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) override
+	{
+		//TODO:
+		return tlm::TLM_ACCEPTED;
+	}
 
-		mem.resize(0x1000); // default size
+	void b_transport(tlm::tlm_generic_payload& trans,sc_time& t) override
+	{
+		//TODO:
+	}
+
+	bool get_direct_mem_ptr(tlm::tlm_generic_payload& trans, tlm::tlm_dmi& dmi_data) override
+	{
+		// Fill direct memory interface data
+		dmi_data.set_dmi_ptr(mem.data());
+		dmi_data.set_start_address(0);
+		dmi_data.set_end_address(mem.size()-1);
+		dmi_data.allow_read_write();
+		return true;
+	}
+
+	unsigned int transport_dbg(tlm::tlm_generic_payload& trans) override
+	{
+		return 0;
 	}
 
 public:
-	// Storage
-	std::vector<uint8_t> mem;
-	// Ports
-	memory_port<MEM_WIDTH> cpu_port;
-	memory_port<MEM_WIDTH> vxe_port0;
-	memory_port<MEM_WIDTH> vxe_port1;
+	std::vector<uint8_t>& mem;
 };

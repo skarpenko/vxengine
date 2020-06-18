@@ -34,12 +34,17 @@ include_directories($ENV{SYSTEMC_HOME}/include)
 add_executable(vxmodel.elf
 	src/main.cxx
 	src/simple_cpu.cxx
+	src/tlm_payload.cxx
 	include/sys_top.hxx
 	include/trace.hxx
 	include/simple_cpu_if.h
 	include/util.hxx
 	include/memory.hxx
-	include/vxe_top.hxx)
+	include/vxe_top.hxx
+	include/register_set.hxx
+	include/memory_port.hxx
+	include/vxe_common.hxx
+	include/tlm_payload.hxx)
 
 target_compile_options(vxmodel.elf PUBLIC --std=c++17 -O3 -g -Wall)
 target_link_options(vxmodel.elf PUBLIC -Wl,-rpath=$ENV{SYSTEMC_HOME}/lib-linux64
