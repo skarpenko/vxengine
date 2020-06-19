@@ -133,7 +133,7 @@ public:
 				if(trans.is_read())
 					v = m_regs.get_reg(vxe::regi::REG_CTRL);
 				else
-					m_regs.set_reg(vxe::regi::REG_CTRL, v);
+					m_regs.set_reg(vxe::regi::REG_CTRL, v & vxe::regm::REG_CTRL);
 				break;
 			case vxe::regi::REG_STATUS:
 				if(trans.is_read())
@@ -143,13 +143,13 @@ public:
 				if(trans.is_read())
 					v = m_regs.get_reg(vxe::regi::REG_INTR_ACT);
 				else
-					m_regs.set_reg(vxe::regi::REG_INTR_ACT, v);
+					m_regs.set_reg(vxe::regi::REG_INTR_ACT, v & vxe::regm::REG_INTR_ACT);
 				break;
 			case vxe::regi::REG_INTR_MSK:
 				if(trans.is_read())
 					v = m_regs.get_reg(vxe::regi::REG_INTR_MSK);
 				else
-					m_regs.set_reg(vxe::regi::REG_INTR_MSK, v);
+					m_regs.set_reg(vxe::regi::REG_INTR_MSK, v & vxe::regm::REG_INTR_MSK);
 				break;
 			case vxe::regi::REG_INTR_RAW:
 				if(trans.is_read())
@@ -159,13 +159,13 @@ public:
 				if(trans.is_read())
 					v = m_regs.get_reg(vxe::regi::REG_PGM_ADDR_LO);
 				else
-					m_regs.set_reg(vxe::regi::REG_PGM_ADDR_LO, v);
+					m_regs.set_reg(vxe::regi::REG_PGM_ADDR_LO, v & vxe::regm::REG_PGM_ADDR_LO);
 				break;
 			case vxe::regi::REG_PGM_ADDR_HI:
 				if(trans.is_read())
 					v = m_regs.get_reg(vxe::regi::REG_PGM_ADDR_HI);
 				else
-					m_regs.set_reg(vxe::regi::REG_PGM_ADDR_HI, v);
+					m_regs.set_reg(vxe::regi::REG_PGM_ADDR_HI, v & vxe::regm::REG_PGM_ADDR_HI);
 				break;
 			case vxe::regi::REG_FAULT_INSTR_ADDR_LO:
 				if(trans.is_read())
