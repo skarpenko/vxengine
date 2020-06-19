@@ -41,9 +41,10 @@ namespace {
 		void free(tlm::tlm_generic_payload *pl) override
 		{
 			unsigned char *data_ptr = pl->get_data_ptr();
+			unsigned char *be_ptr = pl->get_byte_enable_ptr();
 			pl->reset();
-			if(data_ptr)
-				delete [] data_ptr;
+			delete[] data_ptr;
+			delete[] be_ptr;
 			delete pl;
 		}
 	};
@@ -53,23 +54,26 @@ namespace {
 } // Private namespace
 
 
-tlm::tlm_generic_payload* tlm_pl::alloc_gp(size_t data_size)
+tlm::tlm_generic_payload* tlm_pl::alloc_gp(size_t data_size, size_t be_length)
 {
 	tlm::tlm_generic_payload *pl = new tlm::tlm_generic_payload(&mm);
 	unsigned char *data_ptr = nullptr;
+	unsigned char *be_ptr = nullptr;
 
 	pl->acquire();	// ++ref_count
 
 	try {
-		if(data_size)
-			data_ptr = new unsigned char[data_size];
+		if(data_size) data_ptr = new unsigned char[data_size];
+		if(be_length) be_ptr = new unsigned char[be_length]();
 	}
 	catch(...) {
+		delete[] data_ptr;
 		pl->release();
 		throw;
 	}
 
 	pl->set_data_ptr(data_ptr);
+	pl->set_byte_enable_ptr(be_ptr);
 
 	return pl;
 }

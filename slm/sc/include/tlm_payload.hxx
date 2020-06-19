@@ -36,11 +36,14 @@ namespace tlm_pl {
 	/**
 	 * Allocate generic payload
 	 *
-	 * To release memory call release() method of the payload object.
+	 * Notes:
+	 * - To release memory call release() method of the payload object.
+	 * - Data and byte enable lengths are not set by default.
 	 *
 	 * @param data_size size of payload data
+	 * @param be_length byte enable array length (byte enables are initialized with zeros by default)
 	 * @return pointer to a payload
 	 */
-	tlm::tlm_generic_payload* alloc_gp(size_t data_size = 0);
+	tlm::tlm_generic_payload* alloc_gp(size_t data_size = 0, size_t be_length = 0);
 
 } // namespace tlm_pl
