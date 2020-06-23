@@ -87,4 +87,65 @@ namespace vxe {
 		static constexpr unsigned REGS_NUMBER			= regi::REGS_NUMBER;
 	} // namespace regm
 
+	// Register bit fields
+	namespace bits {
+
+		// Control register
+		namespace REG_CTRL {
+			static constexpr unsigned START_MASK	= 0x00000001;
+			static constexpr unsigned START_SHIFT	= 0x00000000;
+		} // namespace REG_CTRL
+
+		// Active interrupts register
+		namespace REG_INTR_ACT {
+			static constexpr unsigned INTR0_MASK	= 0x00000001;
+			static constexpr unsigned INTR0_SHIFT	= 0x00000000;
+		} // namespace REG_INTR_ACT
+
+		// Interrupt masks register
+		namespace REG_INTR_MSK {
+			static constexpr unsigned IMSK0_MASK	= 0x00000001;
+			static constexpr unsigned IMSK0_SHIFT	= 0x00000000;
+		} // namespace REG_INTR_MSK
+
+		// Raw interrupts register
+		namespace REG_INTR_RAW {
+			static constexpr unsigned INTR0_MASK	= 0x00000001;
+			static constexpr unsigned INTR0_SHIFT	= 0x00000000;
+		} // namespace REG_INTR_RAW
+
+	} // namespace bits
+
+
+	/**
+	 * Get bit field
+	 * @tparam T register value type
+	 * @param v value
+	 * @param mask bit mask
+	 * @param shift shift amount
+	 * @return field value
+	 */
+	template<typename T>
+	T getbits(T v, T mask, T shift)
+	{
+		return (v & mask) >> shift;
+	}
+
+	/**
+	 * Set bit field
+	 * @tparam T register value type
+	 * @param v current register value
+	 * @param n new field value
+	 * @param mask bit mask
+	 * @param shift shift amount
+	 * @return updated register value
+	 */
+	template<typename T>
+	T setbits(T v, T n, T mask, T shift)
+	{
+		v &= ~(mask << shift);
+		v |= (n << shift) & mask;
+		return v;
+	}
+
 } // namespace vxe
