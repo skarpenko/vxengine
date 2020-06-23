@@ -32,11 +32,13 @@
 #include <tlm.h>
 #include "register_set.hxx"
 #include "vxe_common.hxx"
+#include "vxe_slave_port.hxx"
+#include "vxe_master_port.hxx"
 #pragma once
 
 
 // VxEngine top module
-SC_MODULE(vxe_top), public virtual tlm::tlm_bw_transport_if<>, public virtual tlm::tlm_fw_transport_if<> {
+SC_MODULE(vxe_top) {
 	// Data sizes
 	static constexpr unsigned IO_WIDTH	= 32;
 	static constexpr unsigned MEM_WIDTH	= 64;
@@ -50,10 +52,13 @@ SC_MODULE(vxe_top), public virtual tlm::tlm_bw_transport_if<>, public virtual tl
 
 	SC_CTOR(vxe_top)
 		: clk("clk"), nrst("nrst")
+		, m_io_slave("m_io_slave"), m_mem_master0("m_mem_master0"), m_mem_master1("m_mem_master1")
 	{
-		io_target(*this);
-		mem_initiator0(*this);
-		mem_initiator1(*this);
+		// Init TLM sockets
+		io_target(m_io_slave);
+		mem_initiator0(m_mem_master0);
+		mem_initiator1(m_mem_master1);
+
 		// Set registers
 		m_regs.set_reg(vxe::regi::REG_ID, vxe::VXENGINE_ID);
 		m_regs.set_reg(vxe::regi::REG_CTRL, 0);
@@ -67,37 +72,29 @@ SC_MODULE(vxe_top), public virtual tlm::tlm_bw_transport_if<>, public virtual tl
 		m_regs.set_reg(vxe::regi::REG_FAULT_INSTR_ADDR_HI, 0);
 		m_regs.set_reg(vxe::regi::REG_FAULT_INSTR_LO, 0);
 		m_regs.set_reg(vxe::regi::REG_FAULT_INSTR_HI, 0);
-	}
 
-	tlm::tlm_sync_enum nb_transport_bw(tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) override
-	{
-		// Not-used
-		return tlm::TLM_COMPLETED;
-	}
+		// Set slave port handler
+		m_io_slave.set_handler(
+			[&](tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) -> tlm::tlm_sync_enum
+			{
+				handle_mmio(trans, t);
+				return tlm::TLM_COMPLETED;
+			}
+		);
 
-	void invalidate_direct_mem_ptr(sc_dt::uint64 start_range, sc_dt::uint64 end_range) override
-	{
-	}
-
-	tlm::tlm_sync_enum nb_transport_fw(tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) override
-	{
-		handle_mmio(trans, t);
-		return tlm::TLM_ACCEPTED;
-	}
-
-	void b_transport(tlm::tlm_generic_payload& trans, sc_time& t) override
-	{
-		handle_mmio(trans, t);
-	}
-
-	bool get_direct_mem_ptr(tlm::tlm_generic_payload& trans, tlm::tlm_dmi& dmi_data) override
-	{
-		return false;
-	}
-
-	unsigned int transport_dbg(tlm::tlm_generic_payload& trans) override
-	{
-		return 0;
+		// Set master ports handlers
+		m_mem_master0.set_handler(
+			[&](tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) -> tlm::tlm_sync_enum
+			{
+				return tlm::TLM_COMPLETED;
+			}
+		);
+		m_mem_master1.set_handler(
+			[&](tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) -> tlm::tlm_sync_enum
+			{
+				return tlm::TLM_COMPLETED;
+			}
+		);
 	}
 
 public:
@@ -196,4 +193,8 @@ public:
 private:
 	// Register set
 	register_set<uint32_t, vxe::regi::REGS_NUMBER> m_regs;
+	// Port transaction handlers
+	vxe_slave_port<IO_WIDTH> m_io_slave;
+	vxe_master_port<MEM_WIDTH> m_mem_master0;
+	vxe_master_port<MEM_WIDTH> m_mem_master1;
 };
