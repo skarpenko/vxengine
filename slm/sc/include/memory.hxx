@@ -43,9 +43,9 @@ SC_MODULE(memory) {
 
 	SC_CTOR(memory)
 		: clk("clk"), nrst("nrst")
-		, cpu_port("cpu_port", mem)
-		, vxe_port0("vxe_port0", mem)
-		, vxe_port1("vxe_port1", mem)
+		, cpu_port("cpu_port", mem, cpu_target)
+		, vxe_port0("vxe_port0", mem, vxe_target0)
+		, vxe_port1("vxe_port1", mem, vxe_target1)
 	{
 		// Connect clock and reset signals
 		cpu_port.clk(clk);
@@ -66,6 +66,8 @@ SC_MODULE(memory) {
 public:
 	// Storage
 	std::vector<uint8_t> mem;
+
+private:
 	// Ports
 	memory_port<MEM_WIDTH> cpu_port;
 	memory_port<MEM_WIDTH> vxe_port0;
