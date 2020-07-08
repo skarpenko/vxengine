@@ -44,6 +44,7 @@ add_executable(vxmodel.elf
 	include/register_set.hxx
 	include/memory_port.hxx
 	include/vxe_common.hxx
+	include/vxe_internal.hxx
 	include/tlm_payload.hxx
 	include/vxe_port_util.hxx
 	include/vxe_slave_port.hxx
