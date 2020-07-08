@@ -48,7 +48,8 @@ add_executable(vxmodel.elf
 	include/tlm_payload.hxx
 	include/vxe_port_util.hxx
 	include/vxe_slave_port.hxx
-	include/vxe_master_port.hxx)
+	include/vxe_master_port.hxx
+	include/vxe_tlm_ext.hxx)
 
 target_compile_options(vxmodel.elf PUBLIC --std=c++17 -O3 -g -Wall)
 target_link_options(vxmodel.elf PUBLIC -Wl,-rpath=$ENV{SYSTEMC_HOME}/lib-linux64

@@ -25,7 +25,8 @@ SYSMODEL_HXX_FILES :=	\
 	include/tlm_payload.hxx		\
 	include/vxe_port_util.hxx	\
 	include/vxe_slave_port.hxx	\
-	include/vxe_master_port.hxx
+	include/vxe_master_port.hxx	\
+	include/vxe_tlm_ext.hxx
 SYSMODEL_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude -I$(SYSTEMC_HOME)/include
 SYSMODEL_LDFLAGS := -Wl,-rpath=$(SYSTEMC_HOME)/lib-linux64	\
 	-L$(SYSTEMC_HOME)/lib-linux64 -lsystemc -lpthread -ldl
