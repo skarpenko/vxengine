@@ -28,6 +28,8 @@
  */
 
 #include <cstdint>
+#include <iosfwd>
+#include <iomanip>
 #pragma once
 
 
@@ -104,5 +106,37 @@ namespace vxe {
 			return tid & 0xFF;
 		}
 	};
+
+	// Stream insertion operator for vxe_mem_rq
+	inline std::ostream& operator<<(std::ostream& os, const vxe_mem_rq& rq)
+	{
+		std::ios state(nullptr);
+		state.copyfmt(os);	// Save current stream state
+
+		// Prepare byte enables mask
+		unsigned ben = 0;
+		for(int i = 0; i < 8; ++i)
+			ben |= (rq.ben[i] << i);
+
+		// Send transaction data to stream
+		os << (rq.rnw ? "READ" : "WRITE")
+			<< " tid="
+			<< std::setw(4) << std::setfill('0') << std::hex
+			<< rq.tid
+			<< " addr="
+			<< std::setw(16) << std::setfill('0') << std::hex
+			<< rq.addr
+			<< " data="
+			<< std::setw(16) << std::setfill('0') << std::hex
+			<< rq.data_u64[0]
+			<< " ben="
+			<< std::setw(2) << std::setfill('0') << std::hex
+			<< ben;
+
+		// Restore previous stream state
+		os.copyfmt(state);
+
+		return os;
+	}
 
 } // namespace vxe
