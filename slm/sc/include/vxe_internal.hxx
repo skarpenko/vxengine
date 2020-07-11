@@ -33,9 +33,17 @@
 
 namespace vxe {
 
+	// Memory hub clients
+	namespace mhc {
+		static constexpr unsigned CU	= 0;	// Control Unit
+		static constexpr unsigned VPU0	= 1;	// Vector Processing Unit 0
+		static constexpr unsigned VPU1	= 2;	// Vector Processing Unit 1
+	} // namespace mhc
+
+
 	// Memory request
 	struct vxe_mem_rq {
-		unsigned id;			// Client Id
+		unsigned tid;			// Transaction Id
 		uint64_t addr;			// Memory address
 		bool rnw;			// Read / !Write
 		union {
@@ -46,6 +54,55 @@ namespace vxe {
 			uint64_t data_u64[1];
 		};
 		bool ben[8];			// Byte enables
+
+		// Constructor
+		vxe_mem_rq() {
+			tid = 0;
+			addr = 0;
+			rnw = false;
+			data_u64[0] = 0;
+			for(bool& b : ben) b = false;
+		}
+
+		/**
+		 * Set transaction client id
+		 * @param cid client id
+		 */
+		void set_client_id(unsigned cid)
+		{
+			cid &= 0xFF;
+			tid &= 0xFF;
+			tid |= cid << 8;
+		}
+
+		/**
+		 * Get transaction client id
+		 * @return client id
+		 */
+		unsigned get_client_id() const
+		{
+			return (tid >> 8) & 0xFF;
+		}
+
+		/**
+		 * Set VPU thread id
+		 * @param vid thread id
+		 */
+		void set_thread_id(unsigned vid)
+		{
+			vid &= 0xFF;
+			tid &= 0xFF00;
+			tid |= vid;
+		}
+
+		/**
+		 * Get VPU thread id
+		 * @return thread id
+		 */
+		unsigned get_thread_id() const
+		{
+			return tid & 0xFF;
+		}
 	};
 
 } // namespace vxe
