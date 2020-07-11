@@ -37,9 +37,9 @@ namespace vxe {
 	 * VxEngine TLM protocol extension
 	 */
 	class vxe_tlm_gp_ext : public tlm::tlm_extension<vxe_tlm_gp_ext> {
-		unsigned m_client_id;	// Client ID
+		unsigned m_tid;	// Transaction ID
 	public:
-		vxe_tlm_gp_ext() : m_client_id(0) {}
+		vxe_tlm_gp_ext() : m_tid(0) {}
 
 		vxe_tlm_gp_ext(const vxe_tlm_gp_ext &) = delete;
 
@@ -63,20 +63,20 @@ namespace vxe {
 		 */
 		void copy_from(const tlm_extension_base &ext) override {
 			auto &src = dynamic_cast<const vxe_tlm_gp_ext &>(ext);
-			m_client_id = src.m_client_id;
+			m_tid = src.m_tid;
 		}
 
 		/**
-		 * Set client ID
-		 * @param id client ID
+		 * Set transaction ID
+		 * @param id transaction ID
 		 */
-		void set_client_id(unsigned id) { m_client_id = id; }
+		void set_tid(unsigned id) { m_tid = id; }
 
 		/**
-		 * Get client ID
-		 * @return client ID
+		 * Get transaction ID
+		 * @return transaction ID
 		 */
-		unsigned get_client_id() const { return m_client_id; }
+		unsigned get_tid() const { return m_tid; }
 	};
 
 } // namespace vxe
