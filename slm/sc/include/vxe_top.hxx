@@ -38,6 +38,7 @@
 #include "vxe_slave_port.hxx"
 #include "vxe_master_port.hxx"
 #include "vxe_mem_hub.hxx"
+#include "vxe_ctrl_unit.hxx"
 #pragma once
 
 
@@ -56,10 +57,12 @@ SC_MODULE(vxe_top) {
 
 	// Instances of internal blocks
 	vxe_mem_hub mem_hub;	// Memory Hub
+	vxe_ctrl_unit cu;	// Control Unit
 
 	SC_CTOR(vxe_top)
 		: clk("clk"), nrst("nrst")
 		, mem_hub("mem_hub")
+		, cu("cu")
 		, m_io_slave("m_io_slave"), m_mem_master0("m_mem_master0"), m_mem_master1("m_mem_master1")
 	{
 		SC_THREAD(mem_master0_thread);
@@ -133,6 +136,11 @@ SC_MODULE(vxe_top) {
 		mem_hub.master0_fifo_out(master0_fifo_us);
 		mem_hub.master1_fifo_in(master1_fifo_ds);
 		mem_hub.master1_fifo_out(master1_fifo_us);
+		// Setup control unit connections
+		cu.clk(clk);
+		cu.nrst(nrst);
+		cu.mem_fifo_in(cu_fifo_ds);
+		cu.mem_fifo_out(cu_fifo_us);
 	}
 
 private:
