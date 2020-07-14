@@ -39,6 +39,7 @@
 #include "vxe_master_port.hxx"
 #include "vxe_mem_hub.hxx"
 #include "vxe_ctrl_unit.hxx"
+#include "vxe_vector_unit.hxx"
 #pragma once
 
 
@@ -58,11 +59,14 @@ SC_MODULE(vxe_top) {
 	// Instances of internal blocks
 	vxe_mem_hub mem_hub;	// Memory Hub
 	vxe_ctrl_unit cu;	// Control Unit
+	vxe_vector_unit vpu0;	// Vector Processing Unit 0
+	vxe_vector_unit vpu1;	// Vector Processing Unit 1
 
 	SC_CTOR(vxe_top)
 		: clk("clk"), nrst("nrst")
 		, mem_hub("mem_hub")
 		, cu("cu")
+		, vpu0("vpu0"), vpu1("vpu1")
 		, m_io_slave("m_io_slave"), m_mem_master0("m_mem_master0"), m_mem_master1("m_mem_master1")
 	{
 		SC_THREAD(mem_master0_thread);
@@ -141,6 +145,15 @@ SC_MODULE(vxe_top) {
 		cu.nrst(nrst);
 		cu.mem_fifo_in(cu_fifo_ds);
 		cu.mem_fifo_out(cu_fifo_us);
+		// Setup vector processing units connections
+		vpu0.clk(clk);
+		vpu0.nrst(nrst);
+		vpu0.mem_fifo_in(vpu0_fifo_ds);
+		vpu0.mem_fifo_out(vpu0_fifo_us);
+		vpu1.clk(clk);
+		vpu1.nrst(nrst);
+		vpu1.mem_fifo_in(vpu1_fifo_ds);
+		vpu1.mem_fifo_out(vpu1_fifo_us);
 	}
 
 private:

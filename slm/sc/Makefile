@@ -28,7 +28,8 @@ SYSMODEL_HXX_FILES :=	\
 	include/vxe_master_port.hxx	\
 	include/vxe_tlm_ext.hxx		\
 	include/vxe_mem_hub.hxx		\
-	include/vxe_ctrl_unit.hxx
+	include/vxe_ctrl_unit.hxx	\
+	include/vxe_vector_unit.hxx
 SYSMODEL_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude -I$(SYSTEMC_HOME)/include
 SYSMODEL_LDFLAGS := -Wl,-rpath=$(SYSTEMC_HOME)/lib-linux64	\
 	-L$(SYSTEMC_HOME)/lib-linux64 -lsystemc -lpthread -ldl
