@@ -32,8 +32,12 @@
 #include <tlm.h>
 #include "register_set.hxx"
 #include "vxe_common.hxx"
+#include "vxe_internal.hxx"
+#include "vxe_tlm_ext.hxx"
+#include "tlm_payload.hxx"
 #include "vxe_slave_port.hxx"
 #include "vxe_master_port.hxx"
+#include "vxe_mem_hub.hxx"
 #pragma once
 
 
@@ -50,10 +54,20 @@ SC_MODULE(vxe_top) {
 	tlm::tlm_initiator_socket<MEM_WIDTH> mem_initiator0;
 	tlm::tlm_initiator_socket<MEM_WIDTH> mem_initiator1;
 
+	// Instances of internal blocks
+	vxe_mem_hub mem_hub;	// Memory Hub
+
 	SC_CTOR(vxe_top)
 		: clk("clk"), nrst("nrst")
+		, mem_hub("mem_hub")
 		, m_io_slave("m_io_slave"), m_mem_master0("m_mem_master0"), m_mem_master1("m_mem_master1")
 	{
+		SC_THREAD(mem_master0_thread);
+			sensitive << clk.pos();
+
+		SC_THREAD(mem_master1_thread);
+			sensitive << clk.pos();
+
 		// Init TLM sockets
 		io_target(m_io_slave);
 		mem_initiator0(m_mem_master0);
@@ -86,18 +100,42 @@ SC_MODULE(vxe_top) {
 		m_mem_master0.set_handler(
 			[&](tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) -> tlm::tlm_sync_enum
 			{
+				if(phase != tlm::tlm_phase_enum::BEGIN_RESP)
+					std::cerr << name() << ": wrong response phase on master 0!" << std::endl;
+
+				handle_downstream(&trans, master0_fifo_ds);
+
 				return tlm::TLM_COMPLETED;
 			}
 		);
 		m_mem_master1.set_handler(
 			[&](tlm::tlm_generic_payload& trans, tlm::tlm_phase& phase, sc_time& t) -> tlm::tlm_sync_enum
 			{
+				if(phase != tlm::tlm_phase_enum::BEGIN_RESP)
+					std::cerr << name() << ": wrong response phase on master 1!" << std::endl;
+
+				handle_downstream(&trans, master1_fifo_ds);
+
 				return tlm::TLM_COMPLETED;
 			}
 		);
+
+		// Setup memory hub connections
+		mem_hub.clk(clk);
+		mem_hub.nrst(nrst);
+		mem_hub.cu_fifo_in(cu_fifo_us);
+		mem_hub.cu_fifo_out(cu_fifo_ds);
+		mem_hub.vpu0_fifo_in(vpu0_fifo_us);
+		mem_hub.vpu0_fifo_out(vpu0_fifo_ds);
+		mem_hub.vpu1_fifo_in(vpu1_fifo_us);
+		mem_hub.vpu1_fifo_out(vpu1_fifo_ds);
+		mem_hub.master0_fifo_in(master0_fifo_ds);
+		mem_hub.master0_fifo_out(master0_fifo_us);
+		mem_hub.master1_fifo_in(master1_fifo_ds);
+		mem_hub.master1_fifo_out(master1_fifo_us);
 	}
 
-public:
+private:
 	void handle_mmio(tlm::tlm_generic_payload& trans, sc_time& t)
 	{
 		uint32_t v = 0;
@@ -190,6 +228,90 @@ public:
 		trans.set_response_status(tlm::TLM_OK_RESPONSE);
 	}
 
+	// Handler of downstream memory traffic
+	void handle_downstream(tlm::tlm_generic_payload *gp, sc_fifo<vxe::vxe_mem_rq>& fifo_ds)
+	{
+		// Create payload for downstream
+		vxe::vxe_mem_rq rq;
+
+		// Setup payload fields
+		rq.tid = gp->get_extension<vxe::vxe_tlm_gp_ext>()->get_tid();
+		rq.addr = gp->get_address();
+		memcpy(rq.data_u8, gp->get_data_ptr(), sizeof(rq.data_u8));
+		for(size_t i=0; i < sizeof(rq.ben); ++i) {
+			unsigned char *be = gp->get_byte_enable_ptr();
+			rq.ben[i] = (be[i] == TLM_BYTE_ENABLED);
+		}
+
+		// Check response status
+		tlm::tlm_response_status status = gp->get_response_status();
+		if(status != tlm::tlm_response_status::TLM_OK_RESPONSE) {
+			rq.type = (status == tlm::tlm_response_status::TLM_ADDRESS_ERROR_RESPONSE ?
+				vxe::vxe_mem_rq::rtype::RES_AE : vxe::vxe_mem_rq::rtype::RES_DE);
+			std::cerr << name() << ": Error response => " << rq << std::endl;
+			/* fifo_ds.write(rq); */
+		} else {
+			rq.type = vxe::vxe_mem_rq::rtype::RES_OK;
+			fifo_ds.write(rq);
+		}
+
+		// Release TLM payload
+		gp->release();
+	}
+
+	// Handler of upstream memory traffic
+	void handle_upstream(tlm::tlm_initiator_socket<MEM_WIDTH>& port, sc_fifo<vxe::vxe_mem_rq>& fifo_us,
+		sc_fifo<vxe::vxe_mem_rq>& fifo_ds)
+	{
+		// Fetch new request
+		vxe::vxe_mem_rq rq;
+		rq = fifo_us.read();
+
+		// Create payload
+		tlm::tlm_generic_payload *gp = tlm_pl::alloc_gp(sizeof(rq.data_u8), sizeof(rq.ben));
+		vxe::vxe_tlm_gp_ext *ext = new vxe::vxe_tlm_gp_ext();
+		gp->set_extension(ext);
+
+		// Setup payload fields
+		ext->set_tid(rq.tid);
+		gp->set_command(rq.type == vxe::vxe_mem_rq::rtype::CMD_RD ?
+			tlm::tlm_command::TLM_READ_COMMAND : tlm::tlm_command::TLM_WRITE_COMMAND);
+		gp->set_address(rq.addr);
+		gp->set_data_length(sizeof(rq.data_u8));
+		memcpy(gp->get_data_ptr(), rq.data_u8, sizeof(rq.data_u8));
+		gp->set_byte_enable_length(sizeof(rq.ben));
+		for(size_t i=0; i < sizeof(rq.ben); ++i) {
+			unsigned char *be = gp->get_byte_enable_ptr();
+			be[i] = (rq.ben[i] ? TLM_BYTE_ENABLED : TLM_BYTE_DISABLED);
+		}
+
+		// Initiate transaction
+		tlm::tlm_phase phase(tlm::tlm_phase_enum::BEGIN_REQ);
+		sc_time t;
+		tlm::tlm_sync_enum ret = port->nb_transport_fw(*gp, phase, t);
+
+		wait(t);
+
+		// Check return status
+		if(ret == tlm::tlm_sync_enum::TLM_COMPLETED)
+			handle_downstream(gp, fifo_ds);
+	}
+
+	[[noreturn]] void mem_master0_thread()
+	{
+		while(1) {
+			handle_upstream(mem_initiator0, master0_fifo_us, master0_fifo_ds);
+		}
+
+	}
+
+	[[noreturn]] void mem_master1_thread()
+	{
+		while(1) {
+			handle_upstream(mem_initiator1, master1_fifo_us, master1_fifo_ds);
+		}
+	}
+
 private:
 	// Register set
 	register_set<uint32_t, vxe::regi::REGS_NUMBER> m_regs;
@@ -197,4 +319,16 @@ private:
 	vxe_slave_port<IO_WIDTH> m_io_slave;
 	vxe_master_port<MEM_WIDTH> m_mem_master0;
 	vxe_master_port<MEM_WIDTH> m_mem_master1;
+	// Memory hub interface - upstream FIFOs
+	sc_fifo<vxe::vxe_mem_rq> cu_fifo_us;
+	sc_fifo<vxe::vxe_mem_rq> vpu0_fifo_us;
+	sc_fifo<vxe::vxe_mem_rq> vpu1_fifo_us;
+	sc_fifo<vxe::vxe_mem_rq> master0_fifo_us;
+	sc_fifo<vxe::vxe_mem_rq> master1_fifo_us;
+	// Memory hub interface - downstream FIFOs
+	sc_fifo<vxe::vxe_mem_rq> cu_fifo_ds;
+	sc_fifo<vxe::vxe_mem_rq> vpu0_fifo_ds;
+	sc_fifo<vxe::vxe_mem_rq> vpu1_fifo_ds;
+	sc_fifo<vxe::vxe_mem_rq> master0_fifo_ds;
+	sc_fifo<vxe::vxe_mem_rq> master1_fifo_ds;
 };
