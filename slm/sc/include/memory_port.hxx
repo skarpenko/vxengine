@@ -139,7 +139,7 @@ private:
 	}
 
 private:
-	void mem_req_pipe_thread()
+	[[noreturn]] void mem_req_pipe_thread()
 	{
 		tlm::tlm_generic_payload *trans;
 
