@@ -48,6 +48,7 @@ namespace vxe {
 		unsigned tid;			// Transaction Id
 		uint64_t addr;			// Memory address
 		bool rnw;			// Read / !Write
+		bool resp;			// =true if response to request
 		union {
 			// Read or write data
 			uint8_t data_u8[8];
@@ -62,6 +63,7 @@ namespace vxe {
 			tid = 0;
 			addr = 0;
 			rnw = false;
+			resp = false;
 			data_u64[0] = 0;
 			for(bool& b : ben) b = false;
 		}
@@ -120,6 +122,8 @@ namespace vxe {
 
 		// Send transaction data to stream
 		os << (rq.rnw ? "READ" : "WRITE")
+			<< " "
+			<< (rq.resp ? "RESP" : "REQ")
 			<< " tid="
 			<< std::setw(4) << std::setfill('0') << std::hex
 			<< rq.tid
