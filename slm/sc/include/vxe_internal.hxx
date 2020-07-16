@@ -127,7 +127,10 @@ namespace vxe {
 
 		// Send transaction data to stream
 		os << (rq.type == vxe_mem_rq::rtype::CMD_RD ? "READ" :
-			rq.type == vxe_mem_rq::rtype::CMD_WR ? "WRITE" : "RESP")
+				rq.type == vxe_mem_rq::rtype::CMD_WR ? "WRITE" : "RESP")
+			<< (rq.type == vxe_mem_rq::rtype::RES_OK ? " OKAY" :
+				rq.type == vxe_mem_rq::rtype::RES_AE ? " AERR" :
+				rq.type == vxe_mem_rq::rtype::RES_DE ? " DERR" : "")
 			<< " tid="
 			<< std::setw(4) << std::setfill('0') << std::hex
 			<< rq.tid
