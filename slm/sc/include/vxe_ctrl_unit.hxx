@@ -41,9 +41,15 @@ SC_MODULE(vxe_ctrl_unit) {
 	sc_fifo_in<vxe::vxe_mem_rq> mem_fifo_in;
 	sc_fifo_out<vxe::vxe_mem_rq> mem_fifo_out;
 
-	SC_CTOR(vxe_ctrl_unit)
-		: clk("clk"), nrst("nrst")
+	SC_HAS_PROCESS(vxe_ctrl_unit);
+
+	vxe_ctrl_unit(::sc_core::sc_module_name name, unsigned client_id)
+		: ::sc_core::sc_module(name), clk("clk"), nrst("nrst")
 		, mem_fifo_in("mem_fifo_in"), mem_fifo_out("mem_fifo_out")
+		, m_client_id(client_id)
 	{
 	}
+
+private:
+	unsigned m_client_id;
 };

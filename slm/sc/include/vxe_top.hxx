@@ -65,8 +65,8 @@ SC_MODULE(vxe_top) {
 	SC_CTOR(vxe_top)
 		: clk("clk"), nrst("nrst")
 		, mem_hub("mem_hub")
-		, cu("cu")
-		, vpu0("vpu0"), vpu1("vpu1")
+		, cu("cu", vxe::mhc::CU)
+		, vpu0("vpu0", vxe::mhc::VPU0), vpu1("vpu1", vxe::mhc::VPU1)
 		, m_io_slave("m_io_slave"), m_mem_master0("m_mem_master0"), m_mem_master1("m_mem_master1")
 	{
 		SC_THREAD(mem_master0_thread);
