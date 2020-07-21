@@ -24,7 +24,7 @@
  */
 
 /*
- * VxEngine common constants
+ * VxEngine common constants and data structures
  */
 
 #include <cstdint>
@@ -116,6 +116,152 @@ namespace vxe {
 
 	} // namespace bits
 
+	// Instructions
+	namespace instr {
+
+		// Generic instruction (it's not a real instruction)
+		union generic {
+			struct {
+				uint64_t raw	: 59;	// Other bits
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+		};
+
+		// NOP - No Operation - used for padding
+		union nop {
+			static constexpr unsigned OP = 0x00;	// Opcode value
+			struct {
+				uint64_t _z0	: 59;	// Must be zero
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			nop() : _z0(0), op(OP) {}
+		};
+
+		// SETACC - Set Accumulator - Set an accumulator register per thread
+		union setacc {
+			static constexpr unsigned OP = 0x08;	// Opcode value
+			struct {
+				uint64_t acc	: 32;	// Accumulator value in FP32 format
+				uint64_t _z0	: 19;	// Must be zero
+				uint64_t tid	: 8;	// Thread Id
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			setacc() : _z0(0), op(OP) {}
+		};
+
+		// SETVL - Set Vector Length - Set vector length per thread
+		union setvl {
+			static constexpr unsigned OP = 0x09;	// Opcode value
+			struct {
+				uint64_t len	: 20;	// Vector length
+				uint64_t _z0	: 31;	// Must be zero
+				uint64_t tid	: 8;	// Thread Id
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			setvl() : _z0(0), op(OP) {}
+		};
+
+		// SETRS - Set First Operand - Set first operand vector per thread
+		union setrs {
+			static constexpr unsigned OP = 0x0C;	// Opcode value
+			struct {
+				uint64_t addr	: 38;	// Upper 38-bits of 32-bit aligned address
+				uint64_t _z0	: 13;	// Must be zero
+				uint64_t tid	: 8;	// Thread Id
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			setrs() : _z0(0), op(OP) {}
+		};
+
+		// SETRT - Set Second Operand - Set second operand vector per thread
+		union setrt {
+			static constexpr unsigned OP = 0x0D;	// Opcode value
+			struct {
+				uint64_t addr	: 38;	// Upper 38-bits of 32-bit aligned address
+				uint64_t _z0	: 13;	// Must be zero
+				uint64_t tid	: 8;	// Thread Id
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			setrt() : _z0(0), op(OP) {}
+		};
+
+		// SETRD - Set Destination - Set destination storage for result
+		union setrd {
+			static constexpr unsigned OP = 0x0E;	// Opcode value
+			struct {
+				uint64_t addr	: 38;	// Upper 38-bits of 32-bit aligned address
+				uint64_t _z0	: 13;	// Must be zero
+				uint64_t tid	: 8;	// Thread Id
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			setrd() : _z0(0), op(OP) {}
+		};
+
+		// SETEN - Set Thread Enable - Enable or disable selected thread
+		union seten {
+			static constexpr unsigned OP = 0x0A;	// Opcode value
+			struct {
+				uint64_t en	: 1;	// Enable/disable bit
+				uint64_t _z0	: 50;	// Must be zero
+				uint64_t tid	: 8;	// Thread Id
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			seten() : _z0(0), op(OP) {}
+		};
+
+		// PROD - Vector Product - Run enabled threads to compute vector product
+		union prod {
+			static constexpr unsigned OP = 0x01;	// Opcode value
+			struct {
+				uint64_t _z0	: 59;	// Must be zero
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			prod() : _z0(0), op(OP) {}
+		};
+
+		// STORE - Store Result - Store result of enabled threads
+		union store {
+			static constexpr unsigned OP = 0x10;	// Opcode value
+			struct {
+				uint64_t _z0	: 59;	// Must be zero
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			store() : _z0(0), op(OP) {}
+		};
+
+		// SYNC - Synchronize - Wait for completion of all previous operations
+		union sync {
+			static constexpr unsigned OP = 0x18;	// Opcode value
+			struct {
+				uint64_t intr	: 1;	// Send interrupt
+				uint64_t _z0	: 58;	// Must be zero
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			sync() : _z0(0), op(OP) {}
+		};
+
+	} // namespace instr
 
 	/**
 	 * Get bit field
