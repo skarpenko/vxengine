@@ -126,6 +126,8 @@ namespace vxe {
 				uint64_t op	: 5;	// Opcode
 			};
 			uint64_t u64;
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// NOP - No Operation - used for padding
@@ -138,6 +140,8 @@ namespace vxe {
 			uint64_t u64;
 
 			nop() : _z0(0), op(OP) {}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// SETACC - Set Accumulator - Set an accumulator register per thread
@@ -152,6 +156,26 @@ namespace vxe {
 			uint64_t u64;
 
 			setacc() : _z0(0), op(OP) {}
+			setacc(unsigned _tid, uint32_t _acc)
+				: _z0(0), op(OP)
+			{
+				tid = _tid;
+				acc = _acc;
+			}
+			setacc(unsigned _tid, float _acc)
+				: _z0(0), op(OP)
+			{
+				// to avoid strict-aliasing rule violation
+				union cvt {
+					float a;
+					uint32_t b;
+				};
+				cvt c = { .a = _acc };
+				tid = _tid;
+				acc = c.b;
+			}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// SETVL - Set Vector Length - Set vector length per thread
@@ -166,6 +190,14 @@ namespace vxe {
 			uint64_t u64;
 
 			setvl() : _z0(0), op(OP) {}
+			setvl(unsigned _tid, unsigned _len)
+				: _z0(0), op(OP)
+			{
+				tid = _tid;
+				len = _len;
+			}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// SETRS - Set First Operand - Set first operand vector per thread
@@ -180,6 +212,14 @@ namespace vxe {
 			uint64_t u64;
 
 			setrs() : _z0(0), op(OP) {}
+			setrs(unsigned _tid, uint64_t _addr)
+				: _z0(0), op(OP)
+			{
+				tid = _tid;
+				addr = _addr >> 2u;
+			}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// SETRT - Set Second Operand - Set second operand vector per thread
@@ -194,6 +234,14 @@ namespace vxe {
 			uint64_t u64;
 
 			setrt() : _z0(0), op(OP) {}
+			setrt(unsigned _tid, uint64_t _addr)
+				: _z0(0), op(OP)
+			{
+				tid = _tid;
+				addr = _addr >> 2u;
+			}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// SETRD - Set Destination - Set destination storage for result
@@ -208,6 +256,14 @@ namespace vxe {
 			uint64_t u64;
 
 			setrd() : _z0(0), op(OP) {}
+			setrd(unsigned _tid, uint64_t _addr)
+				: _z0(0), op(OP)
+			{
+				tid = _tid;
+				addr = _addr >> 2u;
+			}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// SETEN - Set Thread Enable - Enable or disable selected thread
@@ -222,6 +278,14 @@ namespace vxe {
 			uint64_t u64;
 
 			seten() : _z0(0), op(OP) {}
+			seten(unsigned _tid, bool _en)
+				: _z0(0), op(OP)
+			{
+				tid = _tid;
+				en = _en;
+			}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// PROD - Vector Product - Run enabled threads to compute vector product
@@ -234,6 +298,8 @@ namespace vxe {
 			uint64_t u64;
 
 			prod() : _z0(0), op(OP) {}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// STORE - Store Result - Store result of enabled threads
@@ -246,6 +312,8 @@ namespace vxe {
 			uint64_t u64;
 
 			store() : _z0(0), op(OP) {}
+
+			operator uint64_t() const { return u64; }
 		};
 
 		// SYNC - Synchronize - Wait for completion of all previous operations
@@ -260,6 +328,14 @@ namespace vxe {
 			uint64_t u64;
 
 			sync() : _z0(0), op(OP) {}
+			sync(bool _stop, bool _intr)
+				: _z0(0), op(OP)
+			{
+				stop = _stop;
+				intr = _intr;
+			}
+
+			operator uint64_t() const { return u64; }
 		};
 
 	} // namespace instr
