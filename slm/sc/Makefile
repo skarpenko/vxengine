@@ -37,8 +37,11 @@ SYSMODEL_LDFLAGS := -Wl,-rpath=$(SYSTEMC_HOME)/lib-linux64	\
 
 # Simple test build options
 SIMPLE_TEST_TARGET := libsimple_test.so
-SIMPLE_TEST_CXX_FILES := src/so/simple_test/simple_test.cxx
-SIMPLE_TEST_HXX_FILES := include/simple_cpu_if.h
+SIMPLE_TEST_CXX_FILES :=	\
+	src/so/simple_test/simple_test.cxx
+SIMPLE_TEST_HXX_FILES :=	\
+	include/simple_cpu_if.h	\
+	include/vxe_common.hxx
 SIMPLE_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude
 SIMPLE_TEST_LDFLAGS := --shared -fPIC
 

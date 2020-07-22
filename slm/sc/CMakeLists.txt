@@ -62,6 +62,7 @@ target_link_libraries(vxmodel.elf -lsystemc -lpthread -ldl)
 
 add_library(simple_test SHARED
 	src/so/simple_test/simple_test.cxx
-	include/simple_cpu_if.h)
+	include/simple_cpu_if.h
+	include/vxe_common.hxx)
 
 target_compile_options(simple_test PUBLIC --std=c++17 -O3 -g -Wall)
