@@ -252,8 +252,9 @@ namespace vxe {
 		union sync {
 			static constexpr unsigned OP = 0x18;	// Opcode value
 			struct {
+				uint64_t stop	: 1;	// Stop program execution
 				uint64_t intr	: 1;	// Send interrupt
-				uint64_t _z0	: 58;	// Must be zero
+				uint64_t _z0	: 57;	// Must be zero
 				uint64_t op	: 5;	// Opcode
 			};
 			uint64_t u64;
