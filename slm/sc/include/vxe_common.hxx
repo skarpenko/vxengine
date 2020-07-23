@@ -130,6 +130,8 @@ namespace vxe {
 			};
 			uint64_t u64;
 
+			explicit generic(uint64_t _u = 0) : u64(_u) {}
+
 			operator uint64_t() const { return u64; }
 		};
 
