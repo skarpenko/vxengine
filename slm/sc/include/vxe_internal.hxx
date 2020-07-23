@@ -112,6 +112,32 @@ namespace vxe {
 		{
 			return tid & 0xFF;
 		}
+
+		/**
+		 * Set byte enables
+		 * @param mask bit mask
+		 */
+		void set_ben_mask(unsigned mask)
+		{
+			for(bool& b : ben) {
+				b = ((mask & 1u) == 1);
+				mask >>= 1u;
+			}
+		}
+
+		/**
+		 * Get byte enables
+		 * @return bit mask
+		 */
+		unsigned get_ben_mask() const
+		{
+			unsigned mask = 0;
+			for(const bool& b : ben) {
+				mask |= (b ? 1u : 0u);
+				mask <<= 1u;
+			}
+			return mask;
+		}
 	};
 
 	// Stream insertion operator for vxe_mem_rq
