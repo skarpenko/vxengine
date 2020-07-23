@@ -46,11 +46,12 @@ namespace vxe {
 		static constexpr unsigned REG_INTR_RAW			= 5;	// Raw interrupts (r/o)
 		static constexpr unsigned REG_PGM_ADDR_LO		= 6;	// Program address /low/ (r/w)
 		static constexpr unsigned REG_PGM_ADDR_HI		= 7;	// Program address /high/ (r/w)
-		static constexpr unsigned REG_FAULT_INSTR_ADDR_LO	= 8;	// Faulted instr. address /low/ (r/o)
-		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= 9;	// Faulted instr. address /high/ (r/o)
-		static constexpr unsigned REG_FAULT_INSTR_LO		= 10;	// Faulted instruction /low/ (r/o)
-		static constexpr unsigned REG_FAULT_INSTR_HI		= 11;	// Faulted instruction /high/ (r/o)
-		static constexpr unsigned REGS_NUMBER			= 12;	// Registers number
+		static constexpr unsigned REG_START			= 8;	// Start program execution (w/o)
+		static constexpr unsigned REG_FAULT_INSTR_ADDR_LO	= 9;	// Faulted instr. address /low/ (r/o)
+		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= 10;	// Faulted instr. address /high/ (r/o)
+		static constexpr unsigned REG_FAULT_INSTR_LO		= 11;	// Faulted instruction /low/ (r/o)
+		static constexpr unsigned REG_FAULT_INSTR_HI		= 12;	// Faulted instruction /high/ (r/o)
+		static constexpr unsigned REGS_NUMBER			= 13;	// Registers number
 	} // namespace regi
 
 	// Register offsets
@@ -63,6 +64,7 @@ namespace vxe {
 		static constexpr unsigned REG_INTR_RAW			= regi::REG_INTR_RAW << 2u;
 		static constexpr unsigned REG_PGM_ADDR_LO		= regi::REG_PGM_ADDR_LO << 2u;
 		static constexpr unsigned REG_PGM_ADDR_HI		= regi::REG_PGM_ADDR_HI << 2u;
+		static constexpr unsigned REG_START			= regi::REG_START << 2u;
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_LO	= regi::REG_FAULT_INSTR_ADDR_LO << 2u;
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= regi::REG_FAULT_INSTR_ADDR_HI << 2u;
 		static constexpr unsigned REG_FAULT_INSTR_LO		= regi::REG_FAULT_INSTR_LO << 2u;
@@ -80,6 +82,7 @@ namespace vxe {
 		static constexpr unsigned REG_INTR_RAW			= 0x00000001;
 		static constexpr unsigned REG_PGM_ADDR_LO		= 0xFFFFFFFF;
 		static constexpr unsigned REG_PGM_ADDR_HI		= 0x000000FF;
+		static constexpr unsigned REG_START			= 0x00000000;
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_LO	= 0xFFFFFFFF;
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= 0x000000FF;
 		static constexpr unsigned REG_FAULT_INSTR_LO		= 0xFFFFFFFF;
@@ -89,12 +92,6 @@ namespace vxe {
 
 	// Register bit fields
 	namespace bits {
-
-		// Control register
-		namespace REG_CTRL {
-			static constexpr unsigned START_MASK	= 0x00000001;
-			static constexpr unsigned START_SHIFT	= 0x00000000;
-		} // namespace REG_CTRL
 
 		// Status register
 		namespace REG_STATUS {
