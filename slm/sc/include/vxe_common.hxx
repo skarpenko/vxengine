@@ -96,6 +96,12 @@ namespace vxe {
 			static constexpr unsigned START_SHIFT	= 0x00000000;
 		} // namespace REG_CTRL
 
+		// Status register
+		namespace REG_STATUS {
+			static constexpr unsigned BUSY_MASK	= 0x00000001;
+			static constexpr unsigned BUSY_SHIFT	= 0x00000000;
+		} // namespace REG_STATUS
+
 		// Active interrupts register
 		namespace REG_INTR_ACT {
 			static constexpr unsigned INTR0_MASK	= 0x00000001;
