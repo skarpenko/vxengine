@@ -27,12 +27,17 @@
  * Simple test application for simple CPU model
  */
 
+#include <cstdint>
 #include <iostream>
+#include "vxe_common.hxx"
 #include "simple_cpu_if.h"
 
 struct simple_cpu_if *g_cpu_if;
 #define SIMPLE_CPU_IF	g_cpu_if
 
+
+simple_cpu_dmi dmi;
+uint8_t *mem;
 
 extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 {
@@ -40,8 +45,8 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 
 	std::cout << "Started on CPU: " << cpu_if->cpuid << std::endl;
 
-	simple_cpu_dmi dmi;
 	cpu_if->get_dmi(cpu_if->cpuid, &dmi);
+	mem = reinterpret_cast<uint8_t*>(dmi.ptr);
 
 	uint32_t v = mmio_rreg32(0);
 	printf("0x%08x\n", v);
@@ -56,6 +61,27 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 	mmio_wreg32(4, 13123);
 	v = mmio_rreg32(4);
 	printf("0x%08x\n", v);
+
+	{
+		uint64_t *instr = reinterpret_cast<uint64_t*>(mem + 1024);
+		uint64_t addr = dmi.start + 1024;
+
+		printf("addr = %0lx\n", addr);
+
+		mmio_wreg32(vxe::rego::REG_PGM_ADDR_LO, addr & 0xFFFFFFFF);
+		mmio_wreg32(vxe::rego::REG_PGM_ADDR_HI, addr >> 32u);
+
+		printf("addr_lo = %08x\n", mmio_rreg32(vxe::rego::REG_PGM_ADDR_LO));
+		printf("addr_hi = %08x\n", mmio_rreg32(vxe::rego::REG_PGM_ADDR_HI));
+
+		instr[0] = 0xDEADBEEFBEEFDEAD;
+		instr[1] = 0xCAFEBABECAFEBABE;
+		instr[2] = vxe::instr::setacc(1, 0xAABBCCDD);
+		instr[3] = 0xDEADBEEF;
+		instr[4] = vxe::instr::sync(true, false);
+
+		mmio_wreg32(vxe::rego::REG_START, 0);
+	}
 
 	return 0;
 }
