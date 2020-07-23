@@ -51,5 +51,5 @@ SC_MODULE(vxe_vector_unit) {
 	}
 
 private:
-	unsigned m_client_id;
+	const unsigned m_client_id;
 };
