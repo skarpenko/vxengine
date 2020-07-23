@@ -65,7 +65,7 @@ SC_MODULE(vxe_top) {
 	SC_CTOR(vxe_top)
 		: clk("clk"), nrst("nrst")
 		, mem_hub("mem_hub")
-		, cu("cu", vxe::mhc::CU)
+		, cu("cu", vxe::mhc::CU, m_regs)
 		, vpu0("vpu0", vxe::mhc::VPU0), vpu1("vpu1", vxe::mhc::VPU1)
 		, m_io_slave("m_io_slave"), m_mem_master0("m_mem_master0"), m_mem_master1("m_mem_master1")
 	{
@@ -73,6 +73,9 @@ SC_MODULE(vxe_top) {
 			sensitive << clk.pos();
 
 		SC_THREAD(mem_master1_thread);
+			sensitive << clk.pos();
+
+		SC_THREAD(vxe_start_ctrl_thread);
 			sensitive << clk.pos();
 
 		// Init TLM sockets
@@ -145,6 +148,8 @@ SC_MODULE(vxe_top) {
 		cu.nrst(nrst);
 		cu.mem_fifo_in(cu_fifo_ds);
 		cu.mem_fifo_out(cu_fifo_us);
+		cu.i_start(cu_start_out);
+		cu.o_busy(cu_busy_in);
 		// Setup vector processing units connections
 		vpu0.clk(clk);
 		vpu0.nrst(nrst);
@@ -223,6 +228,12 @@ private:
 				else
 					m_regs.set_reg(vxe::regi::REG_PGM_ADDR_HI, v & vxe::regm::REG_PGM_ADDR_HI);
 				break;
+			case vxe::regi::REG_START:
+				if(trans.is_read())
+					v = 0x0;
+				else
+					vxe_start_fifo.write(true);
+				break;
 			case vxe::regi::REG_FAULT_INSTR_ADDR_LO:
 				if(trans.is_read())
 					v = m_regs.get_reg(vxe::regi::REG_FAULT_INSTR_ADDR_LO);
@@ -270,7 +281,7 @@ private:
 			rq.type = (status == tlm::tlm_response_status::TLM_ADDRESS_ERROR_RESPONSE ?
 				vxe::vxe_mem_rq::rtype::RES_AE : vxe::vxe_mem_rq::rtype::RES_DE);
 			std::cerr << name() << ": Error response => " << rq << std::endl;
-			/* fifo_ds.write(rq); */
+			fifo_ds.write(rq);
 		} else {
 			rq.type = vxe::vxe_mem_rq::rtype::RES_OK;
 			fifo_ds.write(rq);
@@ -333,6 +344,22 @@ private:
 		}
 	}
 
+	[[noreturn]] void vxe_start_ctrl_thread()
+	{
+		cu_start_out.write(false);
+
+		while(1) {
+			bool s = vxe_start_fifo.read();
+			// Ignore all start requests if CU is already busy
+			if(s && !cu_busy_in.read()) {
+				cu_start_out.write(true);
+				wait();
+				cu_start_out.write(false);
+				wait();
+			}
+		}
+	}
+
 private:
 	// Register set
 	register_set<uint32_t, vxe::regi::REGS_NUMBER> m_regs;
@@ -352,4 +379,8 @@ private:
 	sc_fifo<vxe::vxe_mem_rq> vpu1_fifo_ds;
 	sc_fifo<vxe::vxe_mem_rq> master0_fifo_ds;
 	sc_fifo<vxe::vxe_mem_rq> master1_fifo_ds;
+	// Internal control
+	sc_fifo<bool> vxe_start_fifo;
+	sc_signal<bool> cu_start_out;
+	sc_signal<bool> cu_busy_in;
 };
