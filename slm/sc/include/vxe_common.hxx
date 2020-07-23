@@ -79,11 +79,11 @@ namespace vxe {
 		static constexpr unsigned REG_INTR_MSK			= 0x00000001;
 		static constexpr unsigned REG_INTR_RAW			= 0x00000001;
 		static constexpr unsigned REG_PGM_ADDR_LO		= 0xFFFFFFFF;
-		static constexpr unsigned REG_PGM_ADDR_HI		= 0xFFFFFFFF;
+		static constexpr unsigned REG_PGM_ADDR_HI		= 0x000000FF;
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_LO	= 0xFFFFFFFF;
-		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= 0xFFFFFFFF;
+		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= 0x000000FF;
 		static constexpr unsigned REG_FAULT_INSTR_LO		= 0xFFFFFFFF;
-		static constexpr unsigned REG_FAULT_INSTR_HI		= 0xFFFFFFFF;
+		static constexpr unsigned REG_FAULT_INSTR_HI		= 0x000000FF;
 		static constexpr unsigned REGS_NUMBER			= regi::REGS_NUMBER;
 	} // namespace regm
 
