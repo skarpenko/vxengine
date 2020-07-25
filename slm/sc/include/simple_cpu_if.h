@@ -95,17 +95,26 @@ struct simple_cpu_if {
 };
 
 
+#ifdef SIMPLE_CPU_IF_SHORTCUTS
 /**
  * Shortcut macros
  * Require global define:
  * #define SIMPLE_CPU_IF <global_cpu_if_var>
  */
 
+#define wait()	\
+	SIMPLE_CPU_IF->wait(SIMPLE_CPU_IF->cpuid)
+
+#define wait_cycles(cycles)	\
+	SIMPLE_CPU_IF->wait_cycles(SIMPLE_CPU_IF->cpuid, (cycles))
+
 #define mmio_rreg32(addr)	\
 	SIMPLE_CPU_IF->mmio_rreg32(SIMPLE_CPU_IF->cpuid, (addr))
 
 #define mmio_wreg32(addr, value)	\
 	SIMPLE_CPU_IF->mmio_wreg32(SIMPLE_CPU_IF->cpuid, (addr), (value))
+
+#endif /* SIMPLE_CPU_IF_SHORTCUTS */
 
 
 #ifdef __cplusplus
