@@ -45,7 +45,9 @@ SC_MODULE(simple_cpu), public virtual tlm::tlm_bw_transport_if<> {
 	tlm::tlm_initiator_socket<IO_WIDTH> io_initiator;
 	tlm::tlm_initiator_socket<MEM_WIDTH> mem_initiator;
 
-	SC_CTOR(simple_cpu);
+	SC_HAS_PROCESS(simple_cpu);
+
+	simple_cpu(::sc_core::sc_module_name name, bool allow_stop=true);
 
 	void cpu_thread();
 
@@ -53,6 +55,7 @@ SC_MODULE(simple_cpu), public virtual tlm::tlm_bw_transport_if<> {
 	void invalidate_direct_mem_ptr(sc_dt::uint64 start_range, sc_dt::uint64 end_range) override;
 
 public:
+	bool m_allow_stop;		// If =true simulation will end when program returns
 	std::string so_file;		// App. shared object
 	struct simple_cpu_dmi dmi;	// Direct memory interface info
 	struct simple_cpu_if cpu_if;	// CPU/App interface

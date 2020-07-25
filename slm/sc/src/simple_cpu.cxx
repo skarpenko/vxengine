@@ -132,10 +132,11 @@ namespace {
 } // Private namespace
 
 
-simple_cpu::simple_cpu(::sc_core::sc_module_name name)
+simple_cpu::simple_cpu(::sc_core::sc_module_name name, bool allow_stop)
 	: ::sc_core::sc_module(name)
 	, clk("clk")
 	, nrst("nrst")
+	, m_allow_stop(allow_stop)
 {
 	SC_THREAD(cpu_thread);
 		sensitive << clk.pos();
@@ -186,6 +187,11 @@ void simple_cpu::cpu_thread()
 	if(entry) {
 		int r = entry(&cpu_if);
 		std::cout << name() << ": app terminated, exit code " << r << "." << std::endl;
+	}
+
+	if(m_allow_stop) {
+		// Stop simulation
+		sc_stop();
 	}
 }
 
