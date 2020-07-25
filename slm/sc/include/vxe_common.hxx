@@ -77,9 +77,9 @@ namespace vxe {
 		static constexpr unsigned REG_ID			= 0xFFFFFFFF;
 		static constexpr unsigned REG_CTRL			= 0x0000000F;
 		static constexpr unsigned REG_STATUS			= 0x0000000F;
-		static constexpr unsigned REG_INTR_ACT			= 0x00000001;
-		static constexpr unsigned REG_INTR_MSK			= 0x00000001;
-		static constexpr unsigned REG_INTR_RAW			= 0x00000001;
+		static constexpr unsigned REG_INTR_ACT			= 0x0000000F;
+		static constexpr unsigned REG_INTR_MSK			= 0x0000000F;
+		static constexpr unsigned REG_INTR_RAW			= 0x0000000F;
 		static constexpr unsigned REG_PGM_ADDR_LO		= 0xFFFFFFF8;
 		static constexpr unsigned REG_PGM_ADDR_HI		= 0x000000FF;
 		static constexpr unsigned REG_START			= 0x00000000;
@@ -101,20 +101,38 @@ namespace vxe {
 
 		// Active interrupts register
 		namespace REG_INTR_ACT {
-			static constexpr unsigned INTR0_MASK	= 0x00000001;
-			static constexpr unsigned INTR0_SHIFT	= 0x00000000;
+			static constexpr unsigned COMPLETED_MASK	= 0x00000001;
+			static constexpr unsigned COMPLETED_SHIFT	= 0x00000000;
+			static constexpr unsigned ERR_FETCH_MASK	= 0x00000002;
+			static constexpr unsigned ERR_FETCH_SHIFT	= 0x00000001;
+			static constexpr unsigned ERR_INSTR_MASK	= 0x00000004;
+			static constexpr unsigned ERR_INSTR_SHIFT	= 0x00000002;
+			static constexpr unsigned ERR_DATA_MASK		= 0x00000008;
+			static constexpr unsigned ERR_DATA_SHIFT	= 0x00000003;
 		} // namespace REG_INTR_ACT
 
 		// Interrupt masks register
 		namespace REG_INTR_MSK {
-			static constexpr unsigned IMSK0_MASK	= 0x00000001;
-			static constexpr unsigned IMSK0_SHIFT	= 0x00000000;
+			static constexpr unsigned COMPLETED_MASK	= 0x00000001;
+			static constexpr unsigned COMPLETED_SHIFT	= 0x00000000;
+			static constexpr unsigned ERR_FETCH_MASK	= 0x00000002;
+			static constexpr unsigned ERR_FETCH_SHIFT	= 0x00000001;
+			static constexpr unsigned ERR_INSTR_MASK	= 0x00000004;
+			static constexpr unsigned ERR_INSTR_SHIFT	= 0x00000002;
+			static constexpr unsigned ERR_DATA_MASK		= 0x00000008;
+			static constexpr unsigned ERR_DATA_SHIFT	= 0x00000003;
 		} // namespace REG_INTR_MSK
 
 		// Raw interrupts register
 		namespace REG_INTR_RAW {
-			static constexpr unsigned INTR0_MASK	= 0x00000001;
-			static constexpr unsigned INTR0_SHIFT	= 0x00000000;
+			static constexpr unsigned COMPLETED_MASK	= 0x00000001;
+			static constexpr unsigned COMPLETED_SHIFT	= 0x00000000;
+			static constexpr unsigned ERR_FETCH_MASK	= 0x00000002;
+			static constexpr unsigned ERR_FETCH_SHIFT	= 0x00000001;
+			static constexpr unsigned ERR_INSTR_MASK	= 0x00000004;
+			static constexpr unsigned ERR_INSTR_SHIFT	= 0x00000002;
+			static constexpr unsigned ERR_DATA_MASK		= 0x00000008;
+			static constexpr unsigned ERR_DATA_SHIFT	= 0x00000003;
 		} // namespace REG_INTR_RAW
 
 	} // namespace bits
