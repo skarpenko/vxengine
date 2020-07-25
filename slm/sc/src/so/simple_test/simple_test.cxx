@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <iostream>
 #include "vxe_common.hxx"
+#define SIMPLE_CPU_IF_SHORTCUTS
 #include "simple_cpu_if.h"
 
 struct simple_cpu_if *g_cpu_if;
@@ -78,10 +79,14 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 		instr[1] = 0xCAFEBABECAFEBABE;
 		instr[2] = vxe::instr::setacc(1, 0xAABBCCDD);
 		instr[3] = 0xDEADBEEF;
-		instr[4] = vxe::instr::sync(true, false);
+		instr[4] = vxe::instr::sync(true, true);
 
 		mmio_wreg32(vxe::rego::REG_START, 0);
 	}
+
+	wait_intr();
+
+	wait_cycles(50);
 
 	return 0;
 }
