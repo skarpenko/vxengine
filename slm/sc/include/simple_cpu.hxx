@@ -41,6 +41,7 @@ SC_MODULE(simple_cpu), public virtual tlm::tlm_bw_transport_if<> {
 
 	sc_in<bool> clk;
 	sc_in<bool> nrst;
+	sc_in<bool> i_intr;
 
 	tlm::tlm_initiator_socket<IO_WIDTH> io_initiator;
 	tlm::tlm_initiator_socket<MEM_WIDTH> mem_initiator;

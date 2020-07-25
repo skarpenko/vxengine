@@ -52,6 +52,8 @@ SC_MODULE(vxe_top) {
 	sc_in<bool> clk;
 	sc_in<bool> nrst;
 
+	sc_out<bool> o_intr;
+
 	tlm::tlm_target_socket<IO_WIDTH> io_target;
 	tlm::tlm_initiator_socket<MEM_WIDTH> mem_initiator0;
 	tlm::tlm_initiator_socket<MEM_WIDTH> mem_initiator1;
@@ -64,6 +66,7 @@ SC_MODULE(vxe_top) {
 
 	SC_CTOR(vxe_top)
 		: clk("clk"), nrst("nrst")
+		, o_intr("o_intr")
 		, mem_hub("mem_hub")
 		, cu("cu", vxe::mhc::CU, m_regs)
 		, vpu0("vpu0", vxe::mhc::VPU0), vpu1("vpu1", vxe::mhc::VPU1)
@@ -146,6 +149,7 @@ SC_MODULE(vxe_top) {
 		// Setup control unit connections
 		cu.clk(clk);
 		cu.nrst(nrst);
+		cu.o_intr(o_intr);
 		cu.mem_fifo_in(cu_fifo_ds);
 		cu.mem_fifo_out(cu_fifo_us);
 		cu.i_start(cu_start_out);

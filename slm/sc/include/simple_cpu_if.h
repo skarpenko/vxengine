@@ -70,6 +70,12 @@ struct simple_cpu_if {
 	void (*wait_cycles)(void *cpuid, unsigned cycles);
 
 	/**
+	 * Wait for interrupt
+	 * @param cpuid CPU interface to use
+	 */
+	void (*wait_intr)(void *cpuid);
+
+	/**
 	 * MMIO 32-bit register read
 	 * @param cpuid CPU interface to use
 	 * @param addr I/O address
@@ -107,6 +113,9 @@ struct simple_cpu_if {
 
 #define wait_cycles(cycles)	\
 	SIMPLE_CPU_IF->wait_cycles(SIMPLE_CPU_IF->cpuid, (cycles))
+
+#define wait_intr()	\
+	SIMPLE_CPU_IF->wait_intr(SIMPLE_CPU_IF->cpuid)
 
 #define mmio_rreg32(addr)	\
 	SIMPLE_CPU_IF->mmio_rreg32(SIMPLE_CPU_IF->cpuid, (addr))

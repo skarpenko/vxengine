@@ -47,12 +47,16 @@ SC_MODULE(vxe_ctrl_unit) {
 	sc_in<bool> i_start;
 	sc_out<bool> o_busy;
 
+	// Interrupt request signal
+	sc_out<bool> o_intr;
+
 	SC_HAS_PROCESS(vxe_ctrl_unit);
 
 	vxe_ctrl_unit(::sc_core::sc_module_name name, unsigned client_id, register_set_if<uint32_t>& regs)
 		: ::sc_core::sc_module(name), clk("clk"), nrst("nrst")
 		, mem_fifo_in("mem_fifo_in"), mem_fifo_out("mem_fifo_out")
 		, i_start("i_start"), o_busy("o_busy")
+		, o_intr("o_intr")
 		, m_client_id(client_id), m_regs(regs)
 	{
 		SC_THREAD(instr_fetch_thread);
@@ -123,7 +127,7 @@ private:
 				ifetch_stop.write(true);
 				while (1) {
 					wait();
-					sc_stop();
+					o_intr.write(true);
 				}
 			}
 		}

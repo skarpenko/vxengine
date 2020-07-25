@@ -52,6 +52,13 @@ namespace {
 		}
 	}
 
+	void cpu_wait_intr(void *cpuid)
+	{
+		simple_cpu *cpu = reinterpret_cast<simple_cpu*>(cpuid);
+		while(!cpu->i_intr.read())
+			wait(cpu->clk.posedge_event());
+	}
+
 	uint32_t cpu_mmio_rreg32(void *cpuid, uint64_t addr)
 	{
 		simple_cpu *cpu = reinterpret_cast<simple_cpu*>(cpuid);
@@ -136,6 +143,7 @@ simple_cpu::simple_cpu(::sc_core::sc_module_name name, bool allow_stop)
 	: ::sc_core::sc_module(name)
 	, clk("clk")
 	, nrst("nrst")
+	, i_intr("i_intr")
 	, m_allow_stop(allow_stop)
 {
 	SC_THREAD(cpu_thread);
@@ -148,6 +156,7 @@ simple_cpu::simple_cpu(::sc_core::sc_module_name name, bool allow_stop)
 	cpu_if.cpuid = this;
 	cpu_if.wait = cpu_wait;
 	cpu_if.wait_cycles = cpu_wait_cycles;
+	cpu_if.wait_intr = cpu_wait_intr;
 	cpu_if.mmio_rreg32 = cpu_mmio_rreg32;
 	cpu_if.mmio_wreg32 = cpu_mmio_wreg32;
 	cpu_if.get_dmi = cpu_get_dmi;
@@ -158,6 +167,8 @@ void simple_cpu::cpu_thread()
 	void *lh = nullptr;
 	simple_cpu_entry_t entry = nullptr;
 	const ut::scope_guard guard([&lh]{ if(lh) dlclose(lh); });
+
+	wait();
 
 	// Request DMI
 	tlm::tlm_generic_payload *pl = tlm_pl::alloc_gp();

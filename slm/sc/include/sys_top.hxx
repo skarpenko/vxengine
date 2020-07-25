@@ -65,5 +65,12 @@ SC_MODULE(sys_top) {
 		vxe.io_target(cpu.io_initiator);
 		ram.vxe_target0(vxe.mem_initiator0);
 		ram.vxe_target1(vxe.mem_initiator1);
+
+		// Connect interrupt signal
+		cpu.i_intr(sig_intr);
+		vxe.o_intr(sig_intr);
 	}
+
+private:
+	sc_signal<bool> sig_intr;
 };
