@@ -80,7 +80,7 @@ namespace vxe {
 		static constexpr unsigned REG_INTR_ACT			= 0x00000001;
 		static constexpr unsigned REG_INTR_MSK			= 0x00000001;
 		static constexpr unsigned REG_INTR_RAW			= 0x00000001;
-		static constexpr unsigned REG_PGM_ADDR_LO		= 0xFFFFFFFF;
+		static constexpr unsigned REG_PGM_ADDR_LO		= 0xFFFFFFF8;
 		static constexpr unsigned REG_PGM_ADDR_HI		= 0x000000FF;
 		static constexpr unsigned REG_START			= 0x00000000;
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_LO	= 0xFFFFFFFF;
