@@ -163,6 +163,7 @@ namespace vxe {
 			uint64_t u64;
 
 			nop() : _z0(0), op(OP) {}
+			nop(const union generic& g) : u64(g) {}
 
 			operator uint64_t() const { return u64; }
 		};
@@ -179,6 +180,7 @@ namespace vxe {
 			uint64_t u64;
 
 			setacc() : _z0(0), op(OP) {}
+			setacc(const union generic& g) : u64(g) {}
 			setacc(unsigned _tid, uint32_t _acc)
 				: _z0(0), op(OP)
 			{
@@ -213,6 +215,7 @@ namespace vxe {
 			uint64_t u64;
 
 			setvl() : _z0(0), op(OP) {}
+			setvl(const union generic& g) : u64(g) {}
 			setvl(unsigned _tid, unsigned _len)
 				: _z0(0), op(OP)
 			{
@@ -235,6 +238,7 @@ namespace vxe {
 			uint64_t u64;
 
 			setrs() : _z0(0), op(OP) {}
+			setrs(const union generic& g) : u64(g) {}
 			setrs(unsigned _tid, uint64_t _addr)
 				: _z0(0), op(OP)
 			{
@@ -257,6 +261,7 @@ namespace vxe {
 			uint64_t u64;
 
 			setrt() : _z0(0), op(OP) {}
+			setrt(const union generic& g) : u64(g) {}
 			setrt(unsigned _tid, uint64_t _addr)
 				: _z0(0), op(OP)
 			{
@@ -279,6 +284,7 @@ namespace vxe {
 			uint64_t u64;
 
 			setrd() : _z0(0), op(OP) {}
+			setrd(const union generic& g) : u64(g) {}
 			setrd(unsigned _tid, uint64_t _addr)
 				: _z0(0), op(OP)
 			{
@@ -301,6 +307,7 @@ namespace vxe {
 			uint64_t u64;
 
 			seten() : _z0(0), op(OP) {}
+			seten(const union generic& g) : u64(g) {}
 			seten(unsigned _tid, bool _en)
 				: _z0(0), op(OP)
 			{
@@ -321,6 +328,7 @@ namespace vxe {
 			uint64_t u64;
 
 			prod() : _z0(0), op(OP) {}
+			prod(const union generic& g) : u64(g) {}
 
 			operator uint64_t() const { return u64; }
 		};
@@ -335,6 +343,7 @@ namespace vxe {
 			uint64_t u64;
 
 			store() : _z0(0), op(OP) {}
+			store(const union generic& g) : u64(g) {}
 
 			operator uint64_t() const { return u64; }
 		};
@@ -351,6 +360,7 @@ namespace vxe {
 			uint64_t u64;
 
 			sync() : _z0(0), op(OP) {}
+			sync(const union generic& g) : u64(g) {}
 			sync(bool _stop, bool _intr)
 				: _z0(0), op(OP)
 			{
