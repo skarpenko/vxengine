@@ -82,9 +82,17 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 		instr[4] = vxe::instr::sync(true, true);
 
 		mmio_wreg32(vxe::rego::REG_START, 0);
+
+		printf("status = %08x\n", mmio_rreg32(vxe::rego::REG_STATUS));
 	}
 
 	wait_intr();
+
+	printf("act_int = %08x\n", mmio_rreg32(vxe::rego::REG_INTR_ACT));
+	printf("status = %08x\n", mmio_rreg32(vxe::rego::REG_STATUS));
+
+	mmio_wreg32(vxe::rego::REG_INTR_ACT, mmio_rreg32(vxe::rego::REG_INTR_ACT));
+	printf("(ack) act_int = %08x\n", mmio_rreg32(vxe::rego::REG_INTR_ACT));
 
 	wait_cycles(50);
 
