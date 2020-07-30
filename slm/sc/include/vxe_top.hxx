@@ -205,10 +205,13 @@ private:
 					v = m_regs.get_reg(vxe::regi::REG_STATUS);
 				break;
 			case vxe::regi::REG_INTR_ACT:
-				if(trans.is_read())
-					v = m_regs.get_reg(vxe::regi::REG_INTR_ACT);
-				else
+				if(trans.is_write()) {
+					// Acknowledge specified interrupts
+					uint32_t r = m_regs.get_reg(vxe::regi::REG_INTR_ACT);
+					v = ~v & r;	// Apply ack mask
 					m_regs.set_reg(vxe::regi::REG_INTR_ACT, v & vxe::regm::REG_INTR_ACT);
+				} else
+					v = m_regs.get_reg(vxe::regi::REG_INTR_ACT);
 				break;
 			case vxe::regi::REG_INTR_MSK:
 				if(trans.is_read())
@@ -262,6 +265,8 @@ private:
 			*reinterpret_cast<uint32_t*>(trans.get_data_ptr()) = v;
 
 		trans.set_response_status(tlm::TLM_OK_RESPONSE);
+
+		wait();	// Wait for next cycle
 	}
 
 	// Handler of downstream memory traffic
