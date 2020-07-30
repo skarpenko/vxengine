@@ -65,17 +65,24 @@ SC_MODULE(vxe_ctrl_unit) {
 		SC_THREAD(instr_exec_thread);
 			sensitive << clk.pos();
 
+		SC_THREAD(intr_thread);
+			sensitive << clk.pos();
+
 		SC_METHOD(busy_logic_method);
 			sensitive << ifetch_busy;
 	}
 
 private:
 
+	/**
+	 * Instruction fetch thread
+	 * Sends instruction fetch requests to a memory hub
+	 */
 	[[noreturn]] void instr_fetch_thread()
 	{
-		ifetch_busy.write(false);
-
 		while(1) {
+			ifetch_busy.write(false);
+
 			// Wait for start trigger
 			wait();
 
@@ -104,41 +111,276 @@ private:
 				rq.set_ben_mask(0xFF);
 				// Send request
 				mem_fifo_out.write(rq);
+				// Push to outstanding requests FIFO
+				out_rqs_fifo.write(true);
 				// Increment program counter
 				m_pgm_counter += sizeof(vxe::instr::generic);
 			}
+
+			// Wait while exec thread drains input FIFO
+			while(iexec_busy.read())
+				wait();
 		}
 	}
 
+	/**
+	 * Drain incoming instructions FIFO
+	 */
+	void drain_instr_fifo()
+	{
+		bool fetched, outstanding;
+		vxe::vxe_mem_rq rq;
+		bool ignored;
+
+		// Keep fetching until no requests on the fly remain
+		do {
+			outstanding = out_rqs_fifo.nb_read(ignored);
+			fetched = false;
+			// Wait for and drop response data
+			while(outstanding && !fetched) {
+				fetched = mem_fifo_in.nb_read(rq);
+				wait();
+			}
+		} while(outstanding);
+	}
+
+	/**** INSTRUCTIONS IMPLEMENTATION ****/
+
+	/**
+	 * NOP - No Operation
+	 */
+	void instr_nop(const vxe::instr::nop& nop)
+	{
+		wait();
+	}
+
+	/**
+	 * SETACC - Set Accumulator
+	 */
+	void instr_setacc(const vxe::instr::setacc& setacc)
+	{
+		//TODO:
+	}
+
+	/**
+	 * SETVL - Set Vector Length
+	 */
+	void instr_setvl(const vxe::instr::setvl& setvl)
+	{
+		//TODO:
+	}
+
+	/**
+	 * SETRS - Set First Operand
+	 */
+	void instr_setrs(const vxe::instr::setrs& setrs)
+	{
+		//TODO:
+	}
+
+	/**
+	 * SETRT - Set Second Operand
+	 */
+	void instr_setrt(const vxe::instr::setrt& setrt)
+	{
+		//TODO:
+	}
+
+	/**
+	 * SETRD - Set Destination
+	 */
+	void instr_setrd(const vxe::instr::setrd& setrd)
+	{
+		//TODO:
+	}
+
+	/**
+	 * SETEN - Set Thread Enable
+	 */
+	void instr_seten(const vxe::instr::seten& seten)
+	{
+		//TODO:
+	}
+
+	/**
+	 * PROD - Vector Product
+	 */
+	void instr_prod(const vxe::instr::prod& prod)
+	{
+		//TODO:
+	}
+
+	/**
+	 * STORE - Store Result
+	 */
+	void instr_store(const vxe::instr::store& store)
+	{
+		//TODO:
+	}
+
+	/**
+	 * SYNC - Synchronize
+	 */
+	void instr_sync(const vxe::instr::sync& sync)
+	{
+		/* If stop of execution requested */
+		if(sync.stop) {
+			ifetch_stop.write(true);
+			drain_instr_fifo();
+		}
+
+		/* If interrupt requested */
+		if(sync.intr)
+			sync_intr.write(true);
+	}
+
+	/**
+	 * Instructions execution thread
+	 * Receives instruction stream from a memory hub
+	 */
 	[[noreturn]] void instr_exec_thread()
 	{
-		ifetch_stop.write(false);
-
-		//TODO: implementation needed
 		while(1) {
-			vxe::vxe_mem_rq rq;
-			rq = mem_fifo_in.read();
+			// Set to initial state
+			iexec_busy.write(false);
+			ifetch_stop.write(false);
+			err_fetch_intr.write(false);
+			err_instr_intr.write(false);
 
-			std::cout << rq << std::endl;
+			wait();	// Wait for positive edge
 
-			vxe::instr::generic g(rq.data_u64[0]);
+			// Loop until instruction fetch stop is requested
+			while(!ifetch_stop.read()) {
+				vxe::vxe_mem_rq rq;
+				// Read incoming instructions FIFO
+				rq = mem_fifo_in.read();
+				// Drop outstanding request
+				out_rqs_fifo.read();
 
-			if(g.op == vxe::instr::sync::OP) {
-				ifetch_stop.write(true);
-				while (1) {
+				// Switch execution unit to busy state
+				iexec_busy.write(true);
+
+				// Check for error response
+				if(rq.type != vxe::vxe_mem_rq::rtype::RES_OK)
+				{
+					ifetch_stop.write(true);
+					drain_instr_fifo();
+					err_fetch_intr.write(true);
 					wait();
-					o_intr.write(true);
+					continue;
 				}
+
+				// Generic instruction
+				vxe::instr::generic g(rq.data_u64[0]);
+
+				// Decode and execute
+				switch (g.op) {
+					case vxe::instr::nop::OP:
+						instr_nop(g);
+						break;
+					case vxe::instr::setacc::OP:
+						instr_setacc(g);
+						break;
+					case vxe::instr::setvl::OP:
+						instr_setvl(g);
+						break;
+					case vxe::instr::setrs::OP:
+						instr_setrs(g);
+						break;
+					case vxe::instr::setrt::OP:
+						instr_setrt(g);
+						break;
+					case vxe::instr::setrd::OP:
+						instr_setrd(g);
+						break;
+					case vxe::instr::seten::OP:
+						instr_seten(g);
+						break;
+					case vxe::instr::prod::OP:
+						instr_prod(g);
+						break;
+					case vxe::instr::store::OP:
+						instr_store(g);
+						break;
+					case vxe::instr::sync::OP:
+						instr_sync(g);
+						break;
+					default:
+						// Invalid instruction
+						ifetch_stop.write(true);
+						drain_instr_fifo();
+						err_instr_intr.write(true);
+						break;
+				}
+
+				wait();	// Wait for positive edge before returning to idle state
 			}
 		}
 	}
 
+	/**
+	 * Interrupt generation logic thread
+	 */
+	[[noreturn]] void intr_thread()
+	{
+		o_intr.write(false);	// Initialize to low
+
+		while(1) {
+			wait();	// wait for clock positive edge
+
+			o_intr.write(false);
+
+			uint32_t new_ints = 0;		// Newly triggered raw interrupts
+			uint32_t new_ints_masked;	// New active interrupts
+			// Read interrupt condition signals
+			bool sync = sync_intr.read();
+			bool err_fetch = err_fetch_intr.read();
+			bool err_instr = err_instr_intr.read();
+
+			// Form raw interrupts register value
+			new_ints = vxe::setbits(new_ints, (sync ? 1u : 0u),
+				vxe::bits::REG_INTR_ACT::COMPLETED_MASK, vxe::bits::REG_INTR_ACT::COMPLETED_SHIFT);
+			new_ints = vxe::setbits(new_ints, (err_fetch ? 1u : 0u),
+				vxe::bits::REG_INTR_ACT::ERR_FETCH_MASK, vxe::bits::REG_INTR_ACT::ERR_FETCH_SHIFT);
+			new_ints = vxe::setbits(new_ints, (err_instr ? 1u : 0u),
+				vxe::bits::REG_INTR_ACT::ERR_INSTR_MASK, vxe::bits::REG_INTR_ACT::ERR_INSTR_SHIFT);
+
+			// Apply interrupt mask
+			new_ints_masked = new_ints & ~m_regs.get_reg(vxe::regi::REG_INTR_MSK);
+
+			// Merge with current active interrupts
+			new_ints |= m_regs.get_reg(vxe::regi::REG_INTR_ACT);
+			new_ints_masked |= m_regs.get_reg(vxe::regi::REG_INTR_ACT);
+
+			// Update registers
+			m_regs.set_reg(vxe::regi::REG_INTR_ACT, new_ints_masked);
+			m_regs.set_reg(vxe::regi::REG_INTR_RAW, new_ints);
+
+			// Update interrupt signal
+			o_intr.write(new_ints_masked != 0);
+		}
+	}
+
+	/**
+	 * Busy state logic for VxEngine
+	 */
 	void busy_logic_method()
 	{
-		if(ifetch_busy)
-			o_busy.write(true);
+		bool busy;
+
+		if(ifetch_busy.read())
+			busy = true;
 		else
-			o_busy.write(false);
+			busy = false;
+
+		// Update busy signal
+		o_busy.write(busy);
+
+		// Update status register
+		uint32_t status = m_regs.get_reg(vxe::regi::REG_STATUS);
+		status = vxe::setbits(status, (busy ? 1u : 0u), vxe::bits::REG_STATUS::BUSY_MASK,
+			vxe::bits::REG_STATUS::BUSY_SHIFT);
+		m_regs.set_reg(vxe::regi::REG_STATUS, status);
 	}
 
 private:
@@ -148,6 +390,12 @@ private:
 	// Internal control signals
 	sc_signal<bool> ifetch_busy;
 	sc_signal<bool> ifetch_stop;
+	sc_signal<bool> iexec_busy;
+	sc_signal<bool> sync_intr;
+	sc_signal<bool> err_fetch_intr;
+	sc_signal<bool> err_instr_intr;
+	// Internal control FIFOs
+	sc_fifo<bool> out_rqs_fifo;
 	// Internal registers
 	uint64_t m_pgm_counter;
 };
