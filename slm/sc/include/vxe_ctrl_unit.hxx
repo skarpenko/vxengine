@@ -80,7 +80,7 @@ private:
 	 */
 	[[noreturn]] void instr_fetch_thread()
 	{
-		while(1) {
+		while(true) {
 			ifetch_busy.write(false);
 
 			// Wait for start trigger
@@ -240,7 +240,7 @@ private:
 	 */
 	[[noreturn]] void instr_exec_thread()
 	{
-		while(1) {
+		while(true) {
 			// Set to initial state
 			iexec_busy.write(false);
 			ifetch_stop.write(false);
@@ -325,7 +325,7 @@ private:
 	{
 		o_intr.write(false);	// Initialize to low
 
-		while(1) {
+		while(true) {
 			wait();	// wait for clock positive edge
 
 			o_intr.write(false);

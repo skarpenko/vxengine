@@ -340,7 +340,7 @@ private:
 
 	[[noreturn]] void mem_master0_thread()
 	{
-		while(1) {
+		while(true) {
 			handle_upstream(mem_initiator0, master0_fifo_us, master0_fifo_ds);
 		}
 
@@ -348,7 +348,7 @@ private:
 
 	[[noreturn]] void mem_master1_thread()
 	{
-		while(1) {
+		while(true) {
 			handle_upstream(mem_initiator1, master1_fifo_us, master1_fifo_ds);
 		}
 	}
@@ -357,7 +357,7 @@ private:
 	{
 		cu_start_out.write(false);
 
-		while(1) {
+		while(true) {
 			bool s = vxe_start_fifo.read();
 			// Ignore all start requests if CU is already busy
 			if(s && !cu_busy_in.read()) {
