@@ -154,15 +154,41 @@ SC_MODULE(vxe_top) {
 		cu.mem_fifo_out(cu_fifo_us);
 		cu.i_start(cu_start_out);
 		cu.o_busy(cu_busy_in);
+		cu.i_vpu0_busy(s_vpu0_busy);
+		cu.i_vpu1_busy(s_vpu1_busy);
 		// Setup vector processing units connections
 		vpu0.clk(clk);
 		vpu0.nrst(nrst);
 		vpu0.mem_fifo_in(vpu0_fifo_ds);
 		vpu0.mem_fifo_out(vpu0_fifo_us);
+		vpu0.o_busy(s_vpu0_busy);
 		vpu1.clk(clk);
 		vpu1.nrst(nrst);
 		vpu1.mem_fifo_in(vpu1_fifo_ds);
 		vpu1.mem_fifo_out(vpu1_fifo_us);
+		vpu1.o_busy(s_vpu1_busy);
+		// Setup command bus connections
+		cu.o_cmd_select_vpu0(s_cmd_select_vpu0);
+		cu.o_cmd_select_vpu1(s_cmd_select_vpu1);
+		cu.i_cmd_ack_vpu0(s_cmd_ack_vpu0);
+		cu.i_cmd_ack_vpu1(s_cmd_ack_vpu1);
+		cu.i_cmd_err_vpu0(s_cmd_err_vpu0);
+		cu.i_cmd_err_vpu1(s_cmd_err_vpu1);
+		cu.o_cmd_op(s_cmd_op);
+		cu.o_cmd_thread(s_cmd_thread);
+		cu.o_cmd_wdata(s_cmd_wdata);
+		vpu0.i_cmd_select(s_cmd_select_vpu0);
+		vpu0.o_cmd_ack(s_cmd_ack_vpu0);
+		vpu0.o_cmd_err(s_cmd_err_vpu0);
+		vpu0.i_cmd_op(s_cmd_op);
+		vpu0.i_cmd_thread(s_cmd_thread);
+		vpu0.i_cmd_wdata(s_cmd_wdata);
+		vpu1.i_cmd_select(s_cmd_select_vpu1);
+		vpu1.o_cmd_ack(s_cmd_ack_vpu1);
+		vpu1.o_cmd_err(s_cmd_err_vpu1);
+		vpu1.i_cmd_op(s_cmd_op);
+		vpu1.i_cmd_thread(s_cmd_thread);
+		vpu1.i_cmd_wdata(s_cmd_wdata);
 	}
 
 private:
@@ -392,4 +418,16 @@ private:
 	sc_fifo<bool> vxe_start_fifo;
 	sc_signal<bool> cu_start_out;
 	sc_signal<bool> cu_busy_in;
+	sc_signal<bool> s_vpu0_busy;
+	sc_signal<bool> s_vpu1_busy;
+	// Command bus
+	sc_signal<bool> s_cmd_select_vpu0;
+	sc_signal<bool> s_cmd_select_vpu1;
+	sc_signal<bool> s_cmd_ack_vpu0;
+	sc_signal<bool> s_cmd_ack_vpu1;
+	sc_signal<bool> s_cmd_err_vpu0;
+	sc_signal<bool> s_cmd_err_vpu1;
+	sc_signal<uint8_t> s_cmd_op;
+	sc_signal<uint8_t> s_cmd_thread;
+	sc_signal<uint64_t> s_cmd_wdata;
 };

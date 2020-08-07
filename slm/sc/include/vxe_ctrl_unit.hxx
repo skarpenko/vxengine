@@ -50,6 +50,19 @@ SC_MODULE(vxe_ctrl_unit) {
 	// Interrupt request signal
 	sc_out<bool> o_intr;
 
+	// VPUs controls and command bus
+	sc_in<bool> i_vpu0_busy;
+	sc_in<bool> i_vpu1_busy;
+	sc_out<bool> o_cmd_select_vpu0;
+	sc_out<bool> o_cmd_select_vpu1;
+	sc_in<bool> i_cmd_ack_vpu0;
+	sc_in<bool> i_cmd_ack_vpu1;
+	sc_in<bool> i_cmd_err_vpu0;
+	sc_in<bool> i_cmd_err_vpu1;
+	sc_out<uint8_t> o_cmd_op;
+	sc_out<uint8_t> o_cmd_thread;
+	sc_out<uint64_t> o_cmd_wdata;
+
 	SC_HAS_PROCESS(vxe_ctrl_unit);
 
 	vxe_ctrl_unit(::sc_core::sc_module_name name, unsigned client_id, register_set_if<uint32_t>& regs)
@@ -57,6 +70,11 @@ SC_MODULE(vxe_ctrl_unit) {
 		, mem_fifo_in("mem_fifo_in"), mem_fifo_out("mem_fifo_out")
 		, i_start("i_start"), o_busy("o_busy")
 		, o_intr("o_intr")
+		, i_vpu0_busy("i_vpu0_busy"), i_vpu1_busy("i_vpu1_busy")
+		, o_cmd_select_vpu0("o_cmd_select_vpu0"), o_cmd_select_vpu1("o_cmd_select_vpu1")
+		, i_cmd_ack_vpu0("i_cmd_ack_vpu0"), i_cmd_ack_vpu1("i_cmd_ack_vpu1")
+		, i_cmd_err_vpu0("i_cmd_err_vpu0"), i_cmd_err_vpu1("i_cmd_err_vpu1")
+		, o_cmd_op("o_cmd_op"), o_cmd_thread("o_cmd_thread"), o_cmd_wdata("o_cmd_wdata")
 		, m_client_id(client_id), m_regs(regs)
 	{
 		SC_THREAD(instr_fetch_thread);
@@ -144,6 +162,39 @@ private:
 		} while(outstanding);
 	}
 
+	/**
+	 * Issue command on command bus
+	 */
+	bool cmd_bus_command(bool vpu0, bool vpu1, uint8_t cmd, uint8_t thread, uint64_t wdata)
+	{
+		// Send command
+		o_cmd_select_vpu0.write(vpu0);
+		o_cmd_select_vpu1.write(vpu1);
+		o_cmd_op.write(cmd);
+		o_cmd_thread.write(thread);
+		o_cmd_wdata.write(wdata);
+		wait();	// Wait for next positive edge
+
+		// De-assert select signals
+		o_cmd_select_vpu0.write(false);
+		o_cmd_select_vpu1.write(false);
+
+		// Wait for acknowledgement
+		while(!(i_cmd_ack_vpu0.read() || !vpu0) || !(i_cmd_ack_vpu1.read() || !vpu1))
+			wait();
+
+		return i_cmd_err_vpu0.read() || i_cmd_err_vpu1.read();
+	}
+
+	/**
+	 * Wait while VPUs are busy
+	 */
+	void wait_for_vpus()
+	{
+		while(i_vpu0_busy.read() && i_vpu1_busy.read())
+			wait();
+	}
+
 	/**** INSTRUCTIONS IMPLEMENTATION ****/
 
 	/**
@@ -160,6 +211,13 @@ private:
 	void instr_setacc(const vxe::instr::setacc& setacc)
 	{
 		//TODO:
+		wait_for_vpus();
+
+		bool vpu0 = (setacc.tid & 0x8) == 0;
+		bool vpu1 = (setacc.tid & 0x8) != 0;
+		bool err = cmd_bus_command(vpu0, vpu1, 1, setacc.tid & 0x7, setacc.acc);
+		std::cout << name() << ": err = " << err << std::endl;
+		//TODO: add utility functions vpu_from_tid(), tid_mask();
 	}
 
 	/**
@@ -223,6 +281,8 @@ private:
 	 */
 	void instr_sync(const vxe::instr::sync& sync)
 	{
+		wait_for_vpus();
+
 		/* If stop of execution requested */
 		if(sync.stop) {
 			ifetch_stop.write(true);
