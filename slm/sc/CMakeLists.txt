@@ -28,9 +28,13 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 include_directories(include)
+include_directories($ENV{VXENGINE_HOME}/slm/sc/vl)
 include_directories($ENV{SYSTEMC_HOME}/include)
+include_directories($ENV{VERILATOR_HOME}/share/verilator/include)
+include_directories($ENV{VERILATOR_HOME}/share/verilator/include/vltstd)
 
 
+# System model
 add_executable(vxmodel.elf
 	src/main.cxx
 	src/simple_cpu.cxx
@@ -52,14 +56,30 @@ add_executable(vxmodel.elf
 	include/vxe_tlm_ext.hxx
 	include/vxe_mem_hub.hxx
 	include/vxe_ctrl_unit.hxx
-	include/vxe_vector_unit.hxx)
+	include/vxe_vector_unit.hxx
+	# Verilator dependencies
+	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg.h
+	$ENV{VERILATOR_HOME}/share/verilator/include/verilated.cpp)
 
 target_compile_options(vxmodel.elf PUBLIC --std=c++17 -O3 -g -Wall)
 target_link_options(vxmodel.elf PUBLIC -Wl,-rpath=$ENV{SYSTEMC_HOME}/lib-linux64
 	-L$ENV{SYSTEMC_HOME}/lib-linux64)
-target_link_libraries(vxmodel.elf -lsystemc -lpthread -ldl)
+target_link_libraries(vxmodel.elf -lsystemc -lpthread -ldl
+	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg__ALL.a)
 
 
+# Verilated FMAC32 model
+add_custom_command(
+	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg__ALL.a
+	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg.h
+	WORKING_DIRECTORY $ENV{VXENGINE_HOME}/slm/sc/vl
+	COMMAND verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3
+		-f vl_flp32_mac_5stg.lst
+	COMMAND make -j1 -C obj_dir -f Vflp32_mac_5stg.mk
+)
+
+
+# Simple test
 add_library(simple_test SHARED
 	src/so/simple_test/simple_test.cxx
 	include/simple_cpu_if.h

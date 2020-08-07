@@ -1,0 +1,14 @@
+// Verilator file list for 5-stage floating point multiply-accumulate
+
+--top-module flp32_mac_5stg
+-sc
+${VXENGINE_HOME}/hw/flp/src/flp32_mac_5stg.v
+${VXENGINE_HOME}/hw/flp/src/flp_iadd.v
+${VXENGINE_HOME}/hw/flp/src/flp_imult_stage.v
+${VXENGINE_HOME}/hw/flp/src/flp_pack.v
+${VXENGINE_HOME}/hw/flp/src/flp_unpack.v
+${VXENGINE_HOME}/hw/flp/src/flp_round.v
+${VXENGINE_HOME}/hw/flp/src/flp_norm.v
+${VXENGINE_HOME}/hw/flp/src/flp_alignr.v
+${VXENGINE_HOME}/hw/flp/src/flp_shrjam.v
+${VXENGINE_HOME}/hw/flp/src/flp_shlpad.v
