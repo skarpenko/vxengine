@@ -73,16 +73,16 @@ SC_MODULE(vxe_vector_unit) {
 		// Connect FMAC32 signals
 		fmac32.clk(clk);
 		fmac32.nrst(nrst);
-		fmac32.i_valid(sig_fmac32_i_valid);
-		fmac32.o_sign(sig_fmac32_o_sign);
-		fmac32.o_zero(sig_fmac32_o_zero);
-		fmac32.o_nan(sig_fmac32_o_nan);
-		fmac32.o_inf(sig_fmac32_o_inf);
-		fmac32.o_valid(sig_fmac32_o_valid);
-		fmac32.i_a(sig_fmac32_i_a);
-		fmac32.i_b(sig_fmac32_i_b);
-		fmac32.i_c(sig_fmac32_i_c);
-		fmac32.o_p(sig_fmac32_o_p);
+		fmac32.i_valid(s_fmac32_i_valid);
+		fmac32.o_sign(s_fmac32_o_sign);
+		fmac32.o_zero(s_fmac32_o_zero);
+		fmac32.o_nan(s_fmac32_o_nan);
+		fmac32.o_inf(s_fmac32_o_inf);
+		fmac32.o_valid(s_fmac32_o_valid);
+		fmac32.i_a(s_fmac32_i_a);
+		fmac32.i_b(s_fmac32_i_b);
+		fmac32.i_c(s_fmac32_i_c);
+		fmac32.o_p(s_fmac32_o_p);
 	}
 
 private:
@@ -98,13 +98,13 @@ private:
 
 		// TODO: test
 /*
-		sig_fmac32_i_a.write(0x401a3237);
-		sig_fmac32_i_b.write(0x3eae76d1);
-		sig_fmac32_i_c.write(0x3ee9c749);
-		sig_fmac32_i_valid.write(true);
+		s_fmac32_i_a.write(0x401a3237);
+		s_fmac32_i_b.write(0x3eae76d1);
+		s_fmac32_i_c.write(0x3ee9c749);
+		s_fmac32_i_valid.write(true);
 		for(int i = 0; i < 100; ++i) {
 			wait();
-			std::cout << sig_fmac32_o_valid.read() << "    " << std::hex << sig_fmac32_o_p.read() << std::endl;
+			std::cout << s_fmac32_o_valid.read() << "    " << std::hex << s_fmac32_o_p.read() << std::endl;
 		}
 */
 
@@ -139,14 +139,14 @@ private:
 private:
 	const unsigned m_client_id;
 	// FMAC32 signals
-	sc_signal<bool> sig_fmac32_i_valid;
-	sc_signal<bool> sig_fmac32_o_sign;
-	sc_signal<bool> sig_fmac32_o_zero;
-	sc_signal<bool> sig_fmac32_o_nan;
-	sc_signal<bool> sig_fmac32_o_inf;
-	sc_signal<bool> sig_fmac32_o_valid;
-	sc_signal<uint32_t> sig_fmac32_i_a;
-	sc_signal<uint32_t> sig_fmac32_i_b;
-	sc_signal<uint32_t> sig_fmac32_i_c;
-	sc_signal<uint32_t> sig_fmac32_o_p;
+	sc_signal<bool> s_fmac32_i_valid;
+	sc_signal<bool> s_fmac32_o_sign;
+	sc_signal<bool> s_fmac32_o_zero;
+	sc_signal<bool> s_fmac32_o_nan;
+	sc_signal<bool> s_fmac32_o_inf;
+	sc_signal<bool> s_fmac32_o_valid;
+	sc_signal<uint32_t> s_fmac32_i_a;
+	sc_signal<uint32_t> s_fmac32_i_b;
+	sc_signal<uint32_t> s_fmac32_i_c;
+	sc_signal<uint32_t> s_fmac32_o_p;
 };

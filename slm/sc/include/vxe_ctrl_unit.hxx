@@ -87,7 +87,7 @@ SC_MODULE(vxe_ctrl_unit) {
 			sensitive << clk.pos();
 
 		SC_METHOD(busy_logic_method);
-			sensitive << ifetch_busy;
+			sensitive << s_ifetch_busy;
 	}
 
 private:
@@ -99,7 +99,7 @@ private:
 	[[noreturn]] void instr_fetch_thread()
 	{
 		while(true) {
-			ifetch_busy.write(false);
+			s_ifetch_busy.write(false);
 
 			// Wait for start trigger
 			wait();
@@ -113,14 +113,14 @@ private:
 					<< std::endl;
 
 			// Start instruction requests
-			ifetch_busy.write(true);
+			s_ifetch_busy.write(true);
 
 			// Form a program counter
 			uint64_t pgm_lo = m_regs.get_reg(vxe::regi::REG_PGM_ADDR_LO);
 			uint64_t pgm_hi = m_regs.get_reg(vxe::regi::REG_PGM_ADDR_HI);
 			m_pgm_counter = (pgm_hi << 32u) | pgm_lo;
 
-			while(!ifetch_stop.read()) {
+			while(!s_ifetch_stop.read()) {
 				// Prepare request
 				vxe::vxe_mem_rq rq;
 				rq.set_client_id(m_client_id);
@@ -136,7 +136,7 @@ private:
 			}
 
 			// Wait while exec thread drains input FIFO
-			while(iexec_busy.read())
+			while(s_iexec_busy.read())
 				wait();
 		}
 	}
@@ -285,13 +285,13 @@ private:
 
 		/* If stop of execution requested */
 		if(sync.stop) {
-			ifetch_stop.write(true);
+			s_ifetch_stop.write(true);
 			drain_instr_fifo();
 		}
 
 		/* If interrupt requested */
 		if(sync.intr)
-			sync_intr.write(true);
+			s_sync_intr.write(true);
 	}
 
 	/**
@@ -302,16 +302,16 @@ private:
 	{
 		while(true) {
 			// Set to initial state
-			iexec_busy.write(false);
-			ifetch_stop.write(false);
-			sync_intr.write(false);
-			err_fetch_intr.write(false);
-			err_instr_intr.write(false);
+			s_iexec_busy.write(false);
+			s_ifetch_stop.write(false);
+			s_sync_intr.write(false);
+			s_err_fetch_intr.write(false);
+			s_err_instr_intr.write(false);
 
 			wait();	// Wait for positive edge
 
 			// Loop until instruction fetch stop is requested
-			while(!ifetch_stop.read()) {
+			while(!s_ifetch_stop.read()) {
 				vxe::vxe_mem_rq rq;
 				// Read incoming instructions FIFO
 				rq = mem_fifo_in.read();
@@ -319,14 +319,14 @@ private:
 				out_rqs_fifo.read();
 
 				// Switch execution unit to busy state
-				iexec_busy.write(true);
+				s_iexec_busy.write(true);
 
 				// Check for error response
 				if(rq.type != vxe::vxe_mem_rq::rtype::RES_OK)
 				{
-					ifetch_stop.write(true);
+					s_ifetch_stop.write(true);
 					drain_instr_fifo();
-					err_fetch_intr.write(true);
+					s_err_fetch_intr.write(true);
 					wait();
 					continue;
 				}
@@ -368,9 +368,9 @@ private:
 						break;
 					default:
 						// Invalid instruction
-						ifetch_stop.write(true);
+						s_ifetch_stop.write(true);
 						drain_instr_fifo();
-						err_instr_intr.write(true);
+						s_err_instr_intr.write(true);
 						break;
 				}
 
@@ -392,9 +392,9 @@ private:
 			uint32_t new_ints = 0;		// Newly triggered raw interrupts
 			uint32_t new_ints_masked;	// New active interrupts
 			// Read interrupt condition signals
-			bool sync = sync_intr.read();
-			bool err_fetch = err_fetch_intr.read();
-			bool err_instr = err_instr_intr.read();
+			bool sync = s_sync_intr.read();
+			bool err_fetch = s_err_fetch_intr.read();
+			bool err_instr = s_err_instr_intr.read();
 
 			// Form raw interrupts register value
 			new_ints = vxe::setbits(new_ints, (sync ? 1u : 0u),
@@ -427,7 +427,7 @@ private:
 	{
 		bool busy;
 
-		if(ifetch_busy.read())
+		if(s_ifetch_busy.read())
 			busy = true;
 		else
 			busy = false;
@@ -447,12 +447,12 @@ private:
 	// VxE register file
 	register_set_if<uint32_t>& m_regs;
 	// Internal control signals
-	sc_signal<bool> ifetch_busy;
-	sc_signal<bool> ifetch_stop;
-	sc_signal<bool> iexec_busy;
-	sc_signal<bool> sync_intr;
-	sc_signal<bool> err_fetch_intr;
-	sc_signal<bool> err_instr_intr;
+	sc_signal<bool> s_ifetch_busy;
+	sc_signal<bool> s_ifetch_stop;
+	sc_signal<bool> s_iexec_busy;
+	sc_signal<bool> s_sync_intr;
+	sc_signal<bool> s_err_fetch_intr;
+	sc_signal<bool> s_err_instr_intr;
 	// Internal control FIFOs
 	sc_fifo<bool> out_rqs_fifo;
 	// Internal registers

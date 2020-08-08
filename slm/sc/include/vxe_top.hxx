@@ -152,8 +152,8 @@ SC_MODULE(vxe_top) {
 		cu.o_intr(o_intr);
 		cu.mem_fifo_in(cu_fifo_ds);
 		cu.mem_fifo_out(cu_fifo_us);
-		cu.i_start(cu_start_out);
-		cu.o_busy(cu_busy_in);
+		cu.i_start(s_cu_start_out);
+		cu.o_busy(s_cu_busy_in);
 		cu.i_vpu0_busy(s_vpu0_busy);
 		cu.i_vpu1_busy(s_vpu1_busy);
 		// Setup vector processing units connections
@@ -381,15 +381,15 @@ private:
 
 	[[noreturn]] void vxe_start_ctrl_thread()
 	{
-		cu_start_out.write(false);
+		s_cu_start_out.write(false);
 
 		while(true) {
 			bool s = vxe_start_fifo.read();
 			// Ignore all start requests if CU is already busy
-			if(s && !cu_busy_in.read()) {
-				cu_start_out.write(true);
+			if(s && !s_cu_busy_in.read()) {
+				s_cu_start_out.write(true);
 				wait();
-				cu_start_out.write(false);
+				s_cu_start_out.write(false);
 				wait();
 			}
 		}
@@ -416,8 +416,8 @@ private:
 	sc_fifo<vxe::vxe_mem_rq> master1_fifo_ds;
 	// Internal control
 	sc_fifo<bool> vxe_start_fifo;
-	sc_signal<bool> cu_start_out;
-	sc_signal<bool> cu_busy_in;
+	sc_signal<bool> s_cu_start_out;
+	sc_signal<bool> s_cu_busy_in;
 	sc_signal<bool> s_vpu0_busy;
 	sc_signal<bool> s_vpu1_busy;
 	// Command bus
