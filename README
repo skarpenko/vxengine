@@ -1,0 +1,49 @@
+    The VxEngine Project (https://github.com/skarpenko/vxengine)
+
+
+VxEngine is a lightweight vector engine which accelerates dot product vector
+operation. Due to scalable design it can be used in various IoT-class devices.
+
+
+PREREQUISITES
+
+  Here is the list of prerequisites required to play with VxEngine:
+
+  * FPGA design software. For example, Intel Quartus or Xilinx Vivado. It is
+    required for synthesizing VxEngine for FPGA. Check corresponding websites
+    for recent versions.
+
+  * Icarus Verilog v10.0 (http://iverilog.icarus.com/). Verilog simulation
+    tool which is used for running RTL simulation of VxEngine and verification
+    testbenches of its components.
+
+  * Verilator v3.874 (https://www.veripool.org/projects/verilator/). Verilator
+    converts synthesizable Verilog code into C++ or SystemC code. It is required
+    for building VxEngine system model and verification testbenches for its
+    components.
+
+  * GTK Wave (http://gtkwave.sourceforge.net/). GTK+ based wave viewer
+    which could be used for waveforms visualization.
+
+
+DIRECTORY STRUCTURE
+
+  /
+  |- alg        - algorithmic reference models.
+  |- fpga       - FPGA synthesis scripts and components.
+  |- hw         - hardware components.
+  |- slm        - system-level models.
+  |- sw         - software components.
+  -- setenv.sh  - environment configuration script.
+
+
+SUPPORTED FPGA BOARDS
+
+  * Terasic DE0-Nano-SoC Kit/Atlas-SoC Kit (http://de0-nano-soc.terasic.com/)
+
+
+CONTACTS
+
+  Stepan Karpenko
+  e-mail (1): carp@mail.ru
+  e-mail (2): stepan.karpenko@gmail.com
