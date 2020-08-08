@@ -304,6 +304,7 @@ private:
 			// Set to initial state
 			iexec_busy.write(false);
 			ifetch_stop.write(false);
+			sync_intr.write(false);
 			err_fetch_intr.write(false);
 			err_instr_intr.write(false);
 
@@ -387,8 +388,6 @@ private:
 
 		while(true) {
 			wait();	// wait for clock positive edge
-
-			o_intr.write(false);
 
 			uint32_t new_ints = 0;		// Newly triggered raw interrupts
 			uint32_t new_ints_masked;	// New active interrupts
