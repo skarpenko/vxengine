@@ -195,6 +195,46 @@ private:
 			wait();
 	}
 
+	/**
+	 * Get VPU number from tid field of the instruction
+	 * @param tid thread id
+	 * @return VPU number 0 or 1
+	 */
+	unsigned vpu_number(unsigned tid)
+	{
+		return (tid & 0x8u ? 1 : 0);
+	}
+
+	/**
+	 * Check if VPU0 thread
+	 * @param tid thread id
+	 * @return true if thread mapped to VPU0
+	 */
+	bool is_vpu0_tid(unsigned tid)
+	{
+		return vpu_number(tid) == 0;
+	}
+
+	/**
+	 * Check if VPU1 thread
+	 * @param tid thread id
+	 * @return true if thread mapped to VPU1
+	 */
+	bool is_vpu1_tid(unsigned tid)
+	{
+		return vpu_number(tid) == 1;
+	}
+
+	/**
+	 * Get VPU local thread id from tid field of the instruction
+	 * @param tid thread id
+	 * @return VPU local thread id
+	 */
+	unsigned vpu_local_tid(unsigned tid)
+	{
+		return tid & 0x7u;
+	}
+
 	/**** INSTRUCTIONS IMPLEMENTATION ****/
 
 	/**
@@ -210,14 +250,11 @@ private:
 	 */
 	void instr_setacc(const vxe::instr::setacc& setacc)
 	{
-		//TODO:
-		wait_for_vpus();
-
-		bool vpu0 = (setacc.tid & 0x8) == 0;
-		bool vpu1 = (setacc.tid & 0x8) != 0;
-		bool err = cmd_bus_command(vpu0, vpu1, 1, setacc.tid & 0x7, setacc.acc);
-		std::cout << name() << ": err = " << err << std::endl;
-		//TODO: add utility functions vpu_from_tid(), tid_mask();
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(is_vpu0_tid(setacc.tid), is_vpu1_tid(setacc.tid),
+				vxe::vpc::SETACC, vpu_local_tid(setacc.tid), setacc.acc);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -225,7 +262,11 @@ private:
 	 */
 	void instr_setvl(const vxe::instr::setvl& setvl)
 	{
-		//TODO:
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(is_vpu0_tid(setvl.tid), is_vpu1_tid(setvl.tid),
+					vxe::vpc::SETVL, vpu_local_tid(setvl.tid), setvl.len);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -233,7 +274,11 @@ private:
 	 */
 	void instr_setrs(const vxe::instr::setrs& setrs)
 	{
-		//TODO:
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(is_vpu0_tid(setrs.tid), is_vpu1_tid(setrs.tid),
+					vxe::vpc::SETRS, vpu_local_tid(setrs.tid), setrs.addr);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -241,7 +286,11 @@ private:
 	 */
 	void instr_setrt(const vxe::instr::setrt& setrt)
 	{
-		//TODO:
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(is_vpu0_tid(setrt.tid), is_vpu1_tid(setrt.tid),
+					vxe::vpc::SETRT, vpu_local_tid(setrt.tid), setrt.addr);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -249,7 +298,11 @@ private:
 	 */
 	void instr_setrd(const vxe::instr::setrd& setrd)
 	{
-		//TODO:
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(is_vpu0_tid(setrd.tid), is_vpu1_tid(setrd.tid),
+					vxe::vpc::SETRD, vpu_local_tid(setrd.tid), setrd.addr);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -257,7 +310,11 @@ private:
 	 */
 	void instr_seten(const vxe::instr::seten& seten)
 	{
-		//TODO:
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(is_vpu0_tid(seten.tid), is_vpu1_tid(seten.tid),
+					vxe::vpc::SETEN, vpu_local_tid(seten.tid), seten.en);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -265,7 +322,10 @@ private:
 	 */
 	void instr_prod(const vxe::instr::prod& prod)
 	{
-		//TODO:
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(true, true, vxe::vpc::PROD, 0, 0);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -273,7 +333,10 @@ private:
 	 */
 	void instr_store(const vxe::instr::store& store)
 	{
-		//TODO:
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(true, true, vxe::vpc::STORE, 0, 0);
+		if(err)
+			invalid_instruction();
 	}
 
 	/**
@@ -281,6 +344,7 @@ private:
 	 */
 	void instr_sync(const vxe::instr::sync& sync)
 	{
+		/* Wait if VPUs are busy */
 		wait_for_vpus();
 
 		/* If stop of execution requested */
@@ -292,6 +356,17 @@ private:
 		/* If interrupt requested */
 		if(sync.intr)
 			s_sync_intr.write(true);
+	}
+
+	/**
+	 * Stops execution and asserts invalid instruction condition
+	 * (to use in instr_exec_thread)
+	 */
+	void invalid_instruction()
+	{
+		s_ifetch_stop.write(true);
+		drain_instr_fifo();
+		s_err_instr_intr.write(true);
 	}
 
 	/**
@@ -335,7 +410,7 @@ private:
 				vxe::instr::generic g(rq.data_u64[0]);
 
 				// Decode and execute
-				switch (g.op) {
+				switch(g.op) {
 					case vxe::instr::nop::OP:
 						instr_nop(g);
 						break;
@@ -367,10 +442,7 @@ private:
 						instr_sync(g);
 						break;
 					default:
-						// Invalid instruction
-						s_ifetch_stop.write(true);
-						drain_instr_fifo();
-						s_err_instr_intr.write(true);
+						invalid_instruction();
 						break;
 				}
 

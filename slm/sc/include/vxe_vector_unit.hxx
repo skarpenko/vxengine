@@ -35,6 +35,8 @@
 
 // VxEngine Vector Processing Unit
 SC_MODULE(vxe_vector_unit) {
+	static constexpr unsigned NT = 8;	// Number of threads per VPU
+
 	sc_in<bool> clk;
 	sc_in<bool> nrst;
 
@@ -96,18 +98,6 @@ private:
 		o_cmd_ack.write(false);
 		o_cmd_err.write(false);
 
-		// TODO: test
-/*
-		s_fmac32_i_a.write(0x401a3237);
-		s_fmac32_i_b.write(0x3eae76d1);
-		s_fmac32_i_c.write(0x3ee9c749);
-		s_fmac32_i_valid.write(true);
-		for(int i = 0; i < 100; ++i) {
-			wait();
-			std::cout << s_fmac32_o_valid.read() << "    " << std::hex << s_fmac32_o_p.read() << std::endl;
-		}
-*/
-
 		while(true) {
 			wait(); // Wait for positive edge
 
@@ -117,27 +107,55 @@ private:
 			if(!i_cmd_select.read())
 				continue;
 
+			// Get operands
 			cmd_op = i_cmd_op.read();
 			cmd_thread = i_cmd_thread.read();
 			cmd_wdata = i_cmd_wdata.read();
 
+			// Wait while unit is busy
 			while(o_busy.read())
 				wait();
 
-			std::cout << name() << ": wdata = " << cmd_wdata << std::endl;
-			//TODO:
-			(void)cmd_op;
-			(void)cmd_thread;
+			switch(cmd_op) {
+				case vxe::vpc::SETACC:
+					reg_acc[cmd_thread] = cmd_wdata;
+					break;
+				case vxe::vpc::SETVL:
+					reg_len[cmd_thread] = cmd_wdata;
+					break;
+				case vxe::vpc::SETRS:
+					reg_rsa[cmd_thread] = cmd_wdata;
+					break;
+				case vxe::vpc::SETRT:
+					reg_rst[cmd_thread] = cmd_wdata;
+					break;
+				case vxe::vpc::SETRD:
+					reg_rsd[cmd_thread] = cmd_wdata;
+					break;
+				case vxe::vpc::SETEN:
+					reg_thr_en[cmd_thread] = (cmd_wdata & 1u) != 0;
+					break;
+				case vxe::vpc::PROD:
+				case vxe::vpc::STORE:
+					break;
+				default:
+					o_cmd_err.write(true);
+					break;
+			}
 
-			//TODO" define commands in vxe_internal.hxx, might correlate with instructions
-
-			//if(name() == std::string("sys_top.vxe.vpu1"))
 			o_cmd_ack.write(true);
 		}
 	}
 
 private:
 	const unsigned m_client_id;
+	// Internal registers
+	uint32_t reg_acc[NT];	// Accumulators
+	uint32_t reg_len[NT];	// Vector lengths
+	uint64_t reg_rsa[NT];	// Rs addresses
+	uint64_t reg_rst[NT];	// Rt addresses
+	uint64_t reg_rsd[NT];	// Rd addresses
+	bool reg_thr_en[NT];	// Thread enables
 	// FMAC32 signals
 	sc_signal<bool> s_fmac32_i_valid;
 	sc_signal<bool> s_fmac32_o_sign;
