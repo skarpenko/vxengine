@@ -75,13 +75,17 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 		printf("addr_lo = %08x\n", mmio_rreg32(vxe::rego::REG_PGM_ADDR_LO));
 		printf("addr_hi = %08x\n", mmio_rreg32(vxe::rego::REG_PGM_ADDR_HI));
 
-//		instr[0] = 0xDEADBEEFBEEFDEAD;
-//		instr[1] = 0xCAFEBABECAFEBABE;
-		instr[0] = vxe::instr::nop();
-		instr[1] = vxe::instr::nop();
-//		instr[2] = vxe::instr::setacc(9, 0xAABBCCDD);
-//		instr[3] = 0xDEADBEEF;
-		instr[4] = vxe::instr::sync(true, true);
+		int pc = 0;	// Program counter
+//		instr[pc++] = 0xDEADBEEFBEEFDEAD;
+//		instr[pc++] = 0xCAFEBABECAFEBABE;
+		instr[pc++] = vxe::instr::nop();
+		instr[pc++] = vxe::instr::nop();
+		instr[pc++] = vxe::instr::setacc(9, 0xAABBCCDD);
+		instr[pc++] = vxe::instr::setacc(7, 0xAABBCCDD);
+		instr[pc++] = vxe::instr::setrs(9, 0xAABBCCDD);
+		instr[pc++] = vxe::instr::setrt(7, 0xAABBCCDD);
+//		instr[pc++] = 0xDEADBEEFBEEFDEAD;
+		instr[pc++] = vxe::instr::sync(true, true);
 
 		mmio_wreg32(vxe::rego::REG_START, 0);
 
