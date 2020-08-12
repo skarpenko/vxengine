@@ -43,6 +43,19 @@ namespace vxe {
 	} // namespace mhc
 
 
+	// Vector processing unit commands
+	namespace vpc {
+		static constexpr unsigned SETACC	= 0x08;	// Set accumulator
+		static constexpr unsigned SETVL		= 0x09;	// Set vector length
+		static constexpr unsigned SETRS		= 0x0a;	// Set Rs address
+		static constexpr unsigned SETRT		= 0x0b;	// Set Rt address
+		static constexpr unsigned SETRD		= 0x0c;	// Set Rd address
+		static constexpr unsigned SETEN		= 0x0d;	// Set thread enable
+		static constexpr unsigned PROD		= 0x10;	// Compute product
+		static constexpr unsigned STORE		= 0x14;	// Store result to Rd address
+	} // namespace vpc
+
+
 	// Memory request
 	struct vxe_mem_rq {
 		enum class rtype {
