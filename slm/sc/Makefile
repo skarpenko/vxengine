@@ -32,6 +32,7 @@ SYSMODEL_HXX_FILES :=	\
 	include/vxe_ctrl_unit.hxx	\
 	include/vxe_vector_unit.hxx	\
 	include/vxe_pipe.hxx		\
+	 include/vxe_fifo64x32.hxx	\
 	$(VXENGINE_HOME)/slm/sc/vl/obj_dir/Vflp32_mac_5stg.h
 SYSMODEL_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude -Ivl	\
 	-I$(SYSTEMC_HOME)/include				\
