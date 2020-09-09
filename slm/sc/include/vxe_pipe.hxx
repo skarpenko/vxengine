@@ -42,7 +42,7 @@ SC_MODULE(vxe_pipe) {
 	sc_out<T> out;
 
 	SC_CTOR(vxe_pipe)
-		: clk("clk"), nrst("nrst")
+		: clk("clk"), nrst("nrst"), in("in"), out("out")
 	{
 		static_assert(NSTAGES > 0, "NSTAGES cannot be 0!");
 
