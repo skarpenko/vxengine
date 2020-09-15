@@ -58,16 +58,20 @@ namespace vxe {
 
 	// Memory request
 	struct vxe_mem_rq {
-		enum class rtype {
-			CMD_RD,	// Read command
-			CMD_WR,	// Write command
+		enum class rqtype {
+			REQ_RD,	// Read request
+			REQ_WR	// Write request
+		};
+		enum class rstype {
+			RES_NA,	// Not available
 			RES_OK,	// OK response to request
 			RES_AE,	// Address error response
 			RES_DE	// Data error response
 		};
 		unsigned tid;			// Transaction Id
 		uint64_t addr;			// Memory address
-		rtype type;			// Request type
+		rqtype req;			// Request type
+		rstype res;			// Response type
 		union {
 			// Read or write data
 			uint8_t data_u8[8];
@@ -81,7 +85,8 @@ namespace vxe {
 		vxe_mem_rq() {
 			tid = 0;
 			addr = 0;
-			type = rtype::CMD_RD;
+			req = rqtype::REQ_RD;
+			res = rstype::RES_NA;
 			data_u64[0] = 0;
 			for(bool& b : ben) b = false;
 		}
@@ -165,11 +170,11 @@ namespace vxe {
 			ben |= (rq.ben[i] << i);
 
 		// Send transaction data to stream
-		os << (rq.type == vxe_mem_rq::rtype::CMD_RD ? "READ" :
-				rq.type == vxe_mem_rq::rtype::CMD_WR ? "WRITE" : "RESP")
-			<< (rq.type == vxe_mem_rq::rtype::RES_OK ? " OKAY" :
-				rq.type == vxe_mem_rq::rtype::RES_AE ? " AERR" :
-				rq.type == vxe_mem_rq::rtype::RES_DE ? " DERR" : "")
+		os << (rq.res != vxe_mem_rq::rstype::RES_NA ? "RESP" :
+				rq.req == vxe_mem_rq::rqtype::REQ_WR ? "WRITE" : "READ")
+			<< (rq.res == vxe_mem_rq::rstype::RES_OK ? " OKAY" :
+				rq.res == vxe_mem_rq::rstype::RES_AE ? " AERR" :
+				rq.res == vxe_mem_rq::rstype::RES_DE ? " DERR" : "")
 			<< " tid="
 			<< std::setw(4) << std::setfill('0') << std::hex
 			<< rq.tid

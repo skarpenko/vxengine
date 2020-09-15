@@ -124,7 +124,7 @@ private:
 				// Prepare request
 				vxe::vxe_mem_rq rq;
 				rq.set_client_id(m_client_id);
-				rq.type = vxe::vxe_mem_rq::rtype::CMD_RD;
+				rq.req = vxe::vxe_mem_rq::rqtype::REQ_RD;
 				rq.addr = m_pgm_counter;
 				rq.set_ben_mask(0xFF);
 				// Send request
@@ -397,7 +397,7 @@ private:
 				s_iexec_busy.write(true);
 
 				// Check for error response
-				if(rq.type != vxe::vxe_mem_rq::rtype::RES_OK)
+				if(rq.res != vxe::vxe_mem_rq::rstype::RES_OK)
 				{
 					s_ifetch_stop.write(true);
 					drain_instr_fifo();

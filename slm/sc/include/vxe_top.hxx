@@ -313,12 +313,12 @@ private:
 		// Check response status
 		tlm::tlm_response_status status = gp->get_response_status();
 		if(status != tlm::tlm_response_status::TLM_OK_RESPONSE) {
-			rq.type = (status == tlm::tlm_response_status::TLM_ADDRESS_ERROR_RESPONSE ?
-				vxe::vxe_mem_rq::rtype::RES_AE : vxe::vxe_mem_rq::rtype::RES_DE);
+			rq.res = (status == tlm::tlm_response_status::TLM_ADDRESS_ERROR_RESPONSE ?
+				vxe::vxe_mem_rq::rstype::RES_AE : vxe::vxe_mem_rq::rstype::RES_DE);
 			std::cerr << name() << ": Error response => " << rq << std::endl;
 			fifo_ds.write(rq);
 		} else {
-			rq.type = vxe::vxe_mem_rq::rtype::RES_OK;
+			rq.res = vxe::vxe_mem_rq::rstype::RES_OK;
 			fifo_ds.write(rq);
 		}
 
@@ -341,7 +341,7 @@ private:
 
 		// Setup payload fields
 		ext->set_tid(rq.tid);
-		gp->set_command(rq.type == vxe::vxe_mem_rq::rtype::CMD_RD ?
+		gp->set_command(rq.req == vxe::vxe_mem_rq::rqtype::REQ_RD ?
 			tlm::tlm_command::TLM_READ_COMMAND : tlm::tlm_command::TLM_WRITE_COMMAND);
 		gp->set_address(rq.addr);
 		gp->set_data_length(sizeof(rq.data_u8));
