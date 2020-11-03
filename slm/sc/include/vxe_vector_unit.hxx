@@ -30,6 +30,7 @@
 #include <iostream>
 #include <systemc.h>
 #include "vxe_internal.hxx"
+#include "vxe_fifo64x32.hxx"
 #include "obj_dir/Vflp32_mac_5stg.h"
 
 
@@ -72,6 +73,12 @@ SC_MODULE(vxe_vector_unit) {
 		SC_THREAD(cmd_exec_thread);
 			sensitive << clk.pos();
 
+		SC_THREAD(mem_req_thread);
+			sensitive << clk.pos();
+
+		SC_THREAD(mem_resp_thread);
+			sensitive << clk.pos();
+
 		// Connect FMAC32 signals
 		fmac32.clk(clk);
 		fmac32.nrst(nrst);
@@ -97,12 +104,14 @@ private:
 		// Reset state
 		o_cmd_ack.write(false);
 		o_cmd_err.write(false);
+		s_dpcmd_valid.write(false);
 
 		while(true) {
 			wait(); // Wait for positive edge
 
 			o_cmd_ack.write(false);
 			o_cmd_err.write(false);
+			s_dpcmd_valid.write(false);
 
 			if(!i_cmd_select.read())
 				continue;
@@ -121,21 +130,28 @@ private:
 					reg_acc[cmd_thread] = cmd_wdata;
 					break;
 				case vxe::vpc::SETVL:
-					reg_len[cmd_thread] = cmd_wdata;
+					reg_rsl[cmd_thread] = cmd_wdata;
+					reg_rtl[cmd_thread] = cmd_wdata;
 					break;
 				case vxe::vpc::SETRS:
 					reg_rsa[cmd_thread] = cmd_wdata;
 					break;
 				case vxe::vpc::SETRT:
-					reg_rst[cmd_thread] = cmd_wdata;
+					reg_rta[cmd_thread] = cmd_wdata;
 					break;
 				case vxe::vpc::SETRD:
-					reg_rsd[cmd_thread] = cmd_wdata;
+					reg_rda[cmd_thread] = cmd_wdata;
 					break;
 				case vxe::vpc::SETEN:
 					reg_thr_en[cmd_thread] = (cmd_wdata & 1u) != 0;
 					break;
 				case vxe::vpc::PROD:
+					s_dpcmd_op.write(vxe::vpc::PROD);
+					s_dpcmd_valid.write(true);
+					wait();
+					s_dpcmd_valid.write(false);
+					while(s_dpcmd_done.read() == false)
+						wait();
 				case vxe::vpc::STORE:
 					break;
 				default:
@@ -147,14 +163,136 @@ private:
 		}
 	}
 
+	void set_load_addr(vxe::vxe_mem_rq& rq, uint64_t& addr, uint32_t& len)
+	{
+		if(addr & 1) {		// Address is not word aligned. Load only one word.
+			rq.addr = addr & (~1);
+			rq.set_ben_mask(0xF0);
+			addr += 1;
+			len -= 1;
+		} else if(len == 1) {	// Only one word remaining.
+			rq.addr = addr;
+			rq.set_ben_mask(0x0F);
+			addr += 1;
+			len -= 1;
+		} else {		// Can load two words at a time.
+			rq.addr = addr;
+			rq.set_ben_mask(0xFF);
+			addr += 2;
+			len -= 2;
+		}
+
+		// Convert addr to byte offset
+		rq.addr <<= 2;
+	}
+
+	void data_load()
+	{
+		unsigned done_mask = 0;	// Mask of completed threads
+
+		while(done_mask != NT-1) {
+			for (unsigned th = 0; th < NT; ++th) {
+				// Skip not enabled threads
+				if (!reg_thr_en[th]) {
+					done_mask |= 1 << th;
+					wait();
+					continue;
+				}
+
+				// Prepare request for Rs operand
+				if(reg_rsl[th] != 0) {
+					vxe::vxe_mem_rq rq;
+					rq.set_client_id(m_client_id);
+					rq.req = vxe::vxe_mem_rq::rqtype::REQ_RD;
+					rq.set_thread_id(th);
+					set_load_addr(rq, reg_rsa[th], reg_rsl[th]);
+					// Send request
+					mem_fifo_out.write(rq);
+					// Push to outstanding requests FIFO
+					out_rqs_fifo.write(true);
+				}
+
+				wait();	// Can issue second load only on next clock cycle.
+
+				// Prepare request for Rt operand
+				if(reg_rtl[th] != 0) {
+					vxe::vxe_mem_rq rq;
+					rq.set_client_id(m_client_id);
+					rq.req = vxe::vxe_mem_rq::rqtype::REQ_RD;
+					rq.set_thread_id(th);
+					set_load_addr(rq, reg_rta[th], reg_rtl[th]);
+					// Send request
+					mem_fifo_out.write(rq);
+					// Push to outstanding requests FIFO
+					out_rqs_fifo.write(true);
+				}
+
+				// Check completion status
+				if((reg_rsl[th] == 0) && (reg_rtl[th] == 0))
+					done_mask |= 1 << th;
+			}
+		}
+	}
+
+	void data_store()
+	{
+		//TODO:
+	}
+
+	[[noreturn]] void mem_req_thread()
+	{
+		while(true) {
+			wait(); // Wait for positive edge
+
+			bool dpcmd_valid = s_dpcmd_valid.read();
+
+			if(!dpcmd_valid)
+				continue;
+
+			uint8_t dpcmd_op = s_dpcmd_op.read();
+
+			switch(dpcmd_op) {
+				case vxe::vpc::PROD:
+					data_load();
+					break;
+				case vxe::vpc::STORE:
+					data_store();
+					break;
+				default:
+					std::cerr << name() << ": invalid dpcmd_op!"
+						  << std::endl;
+					continue;
+			}
+		}
+	}
+
+	[[noreturn]] void mem_resp_thread()
+	{
+		// Reset state
+		s_dpcmd_done.write(false);
+		//TODO: done condition is No mem transactions and FMAC is idle. Set probably not here.
+
+		while(true) {
+			vxe::vxe_mem_rq rq;
+			// Read incoming data FIFO
+			rq = mem_fifo_in.read();
+			// Drop outstanding request
+			out_rqs_fifo.read();
+
+			//TBD:
+			std::cout << rq << endl;
+		}
+	}
+
 private:
 	const unsigned m_client_id;
 	// Internal registers
 	uint32_t reg_acc[NT];	// Accumulators
-	uint32_t reg_len[NT];	// Vector lengths
 	uint64_t reg_rsa[NT];	// Rs addresses
-	uint64_t reg_rst[NT];	// Rt addresses
-	uint64_t reg_rsd[NT];	// Rd addresses
+	uint32_t reg_rsl[NT];	// Rs lengths
+	uint64_t reg_rta[NT];	// Rt addresses
+	uint32_t reg_rtl[NT];	// Rt lengths
+	uint64_t reg_rda[NT];	// Rd addresses
 	bool reg_thr_en[NT];	// Thread enables
 	// FMAC32 signals
 	sc_signal<bool> s_fmac32_i_valid;
@@ -167,4 +305,10 @@ private:
 	sc_signal<uint32_t> s_fmac32_i_b;
 	sc_signal<uint32_t> s_fmac32_i_c;
 	sc_signal<uint32_t> s_fmac32_o_p;
+	// Internal control FIFOs
+	sc_fifo<bool> out_rqs_fifo;
+	// Internal control signals
+	sc_signal<uint8_t> s_dpcmd_op;	// Data processing command operation
+	sc_signal<bool> s_dpcmd_valid;	// Data processing command valid
+	sc_signal<bool> s_dpcmd_done;	// Data processing command done
 };
