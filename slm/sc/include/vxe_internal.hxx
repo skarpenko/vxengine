@@ -68,7 +68,7 @@ namespace vxe {
 			RES_AE,	// Address error response
 			RES_DE	// Data error response
 		};
-		unsigned tid;			// Transaction Id
+		uint32_t tid;			// Transaction Id
 		uint64_t addr;			// Memory address
 		rqtype req;			// Request type
 		rstype res;			// Response type
@@ -98,8 +98,8 @@ namespace vxe {
 		void set_client_id(unsigned cid)
 		{
 			cid &= 0xFF;
-			tid &= 0xFF;
-			tid |= cid << 8;
+			tid &= 0xFFFFFF00;
+			tid |= cid;
 		}
 
 		/**
@@ -108,7 +108,7 @@ namespace vxe {
 		 */
 		unsigned get_client_id() const
 		{
-			return (tid >> 8) & 0xFF;
+			return tid & 0xFF;
 		}
 
 		/**
@@ -118,8 +118,8 @@ namespace vxe {
 		void set_thread_id(unsigned vid)
 		{
 			vid &= 0xFF;
-			tid &= 0xFF00;
-			tid |= vid;
+			tid &= 0xFFFF00FF;
+			tid |= vid << 8;
 		}
 
 		/**
@@ -128,7 +128,27 @@ namespace vxe {
 		 */
 		unsigned get_thread_id() const
 		{
-			return tid & 0xFF;
+			return (tid >> 8) & 0xFF;
+		}
+
+		/**
+		 * Set optional VPU thread argument
+		 * @param arg argument value
+		 */
+		void set_thread_arg(unsigned arg)
+		{
+			arg &= 0xFF;
+			tid &= 0xFF00FFFF;
+			tid |= arg << 16;
+		}
+
+		/**
+		 * Get optional VPU thread argument
+		 * @return argument value
+		 */
+		unsigned get_thread_arg() const
+		{
+			return (tid >> 16) & 0xFF;
 		}
 
 		/**
