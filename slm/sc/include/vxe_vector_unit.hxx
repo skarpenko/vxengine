@@ -205,6 +205,7 @@ private:
 					rq.set_client_id(m_client_id);
 					rq.req = vxe::vxe_mem_rq::rqtype::REQ_RD;
 					rq.set_thread_id(th);
+					rq.set_thread_arg(0);
 					set_load_addr(rq, reg_rsa[th], reg_rsl[th]);
 					// Send request
 					mem_fifo_out.write(rq);
@@ -220,6 +221,7 @@ private:
 					rq.set_client_id(m_client_id);
 					rq.req = vxe::vxe_mem_rq::rqtype::REQ_RD;
 					rq.set_thread_id(th);
+					rq.set_thread_arg(1);
 					set_load_addr(rq, reg_rta[th], reg_rtl[th]);
 					// Send request
 					mem_fifo_out.write(rq);
