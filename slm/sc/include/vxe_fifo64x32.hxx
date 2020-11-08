@@ -64,8 +64,11 @@ private:
 	{
 		while(true) {
 			do {
-				if(!nrst.read())
+				if(!nrst.read()) {
 					m_fifo.resize(0);
+					o_full.write(m_fifo.size() == DEPTH);
+					o_empty.write(m_fifo.empty());
+				}
 				wait();
 			} while(!nrst.read());
 
@@ -109,15 +112,23 @@ private:
 			if(!ignore_rd) {
 				data_pair& d = m_fifo.back();
 				if(d.v[0]) {
-					o_data.write(d.u32[0]);
 					d.v[0] = false;
 				} else if(d.v[1]) {
-					o_data.write(d.u32[1]);
 					d.v[1] = false;
 				}
 
 				if(!d.v[0] && !d.v[1]) {
 					m_fifo.pop_back();
+				}
+			}
+
+			// Update output
+			if(!m_fifo.empty() && (!ignore_rd || !ignore_wr)) {
+				data_pair& d = m_fifo.back();
+				if(d.v[0]) {
+					o_data.write(d.u32[0]);
+				} else if(d.v[1]) {
+					o_data.write(d.u32[1]);
 				}
 			}
 
