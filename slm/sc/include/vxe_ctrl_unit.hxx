@@ -127,10 +127,10 @@ private:
 				rq.req = vxe::vxe_mem_rq::rqtype::REQ_RD;
 				rq.addr = m_pgm_counter;
 				rq.set_ben_mask(0xFF);
-				// Send request
-				mem_fifo_out.write(rq);
 				// Push to outstanding requests FIFO
 				out_rqs_fifo.write(true);
+				// Send request
+				mem_fifo_out.write(rq);
 				// Increment program counter
 				m_pgm_counter += sizeof(vxe::instr::generic);
 			}
