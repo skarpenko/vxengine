@@ -30,6 +30,8 @@
 #include <cstdint>
 #include <iosfwd>
 #include <iomanip>
+#include <initializer_list>
+#include <type_traits>
 #pragma once
 
 
@@ -211,6 +213,51 @@ namespace vxe {
 		// Restore previous stream state
 		os.copyfmt(state);
 
+		return os;
+	}
+
+	// Word enable
+	template<size_t NWORDS>
+	struct word_enable {
+		bool we[NWORDS];
+
+		// Constructors
+		word_enable() { for(bool& w : we) w = false; }
+		word_enable(std::initializer_list<bool> l) {
+			bool *i1;
+			std::initializer_list<bool>::const_iterator i2;
+			for(i1 = &we[0], i2 = l.begin(); i1 != &we[NWORDS] && i2 != l.end(); ++i1, ++i2)
+				*i1 = *i2;
+		}
+
+		/**
+		 * Pack word enables into T type
+		 * @tparam T type (must be integral type wider than NWORDS bits)
+		 * @return packed word enables
+		 */
+		template<typename T>
+		T bits() const {
+			static_assert(std::is_integral<T>::value, "T must be an integral type.");
+			static_assert(std::numeric_limits<T>::digits >= NWORDS, "T must be wider than NWORDS bits.");
+			T m = 0;
+			for(size_t i = 0; i < NWORDS; ++i) {
+				m |= T(we[i] << i);
+			}
+			return m;
+		}
+	};
+
+	// Stream insertion operator for word_enable
+	template<size_t NWORDS>
+	inline std::ostream& operator<<(std::ostream& os, const word_enable<NWORDS>& we)
+	{
+		os << "[";
+		for(size_t i = 0; i < NWORDS; ++i) {
+			os << we.we[i];
+			if(i < NWORDS - 1)
+				os << ", ";
+		}
+		os << "]";
 		return os;
 	}
 
