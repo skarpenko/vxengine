@@ -179,11 +179,20 @@ private:
 		o_cmd_select_vpu0.write(false);
 		o_cmd_select_vpu1.write(false);
 
-		// Wait for acknowledgement
-		while(!(i_cmd_ack_vpu0.read() || !vpu0) || !(i_cmd_ack_vpu1.read() || !vpu1))
+		// Wait for acknowledgement from VPUs
+		bool ack0 = false;
+		bool ack1 = false;
+		bool err0 = false;
+		bool err1 = false;
+		while(!ack0 || !ack1) {
+			ack0 = ack0 || (i_cmd_ack_vpu0.read() || !vpu0);
+			ack1 = ack1 || (i_cmd_ack_vpu1.read() || !vpu1);
+			err0 = err0 || i_cmd_err_vpu0.read();
+			err1 = err1 || i_cmd_err_vpu1.read();
 			wait();
+		}
 
-		return i_cmd_err_vpu0.read() || i_cmd_err_vpu1.read();
+		return err0 || err1;
 	}
 
 	/**
