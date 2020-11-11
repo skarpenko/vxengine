@@ -304,6 +304,8 @@ private:
 		// Setup payload fields
 		rq.tid = gp->get_extension<vxe::vxe_tlm_gp_ext>()->get_tid();
 		rq.addr = gp->get_address();
+		rq.req = (gp->get_command() == tlm::tlm_command::TLM_READ_COMMAND ?
+			vxe::vxe_mem_rq::rqtype::REQ_RD : vxe::vxe_mem_rq::rqtype::REQ_WR);
 		memcpy(rq.data_u8, gp->get_data_ptr(), sizeof(rq.data_u8));
 		for(size_t i=0; i < sizeof(rq.ben); ++i) {
 			unsigned char *be = gp->get_byte_enable_ptr();
