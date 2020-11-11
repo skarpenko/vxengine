@@ -31,6 +31,7 @@
 #include <systemc.h>
 #include "vxe_internal.hxx"
 #include "vxe_fifo64x32.hxx"
+#include "vxe_pipe.hxx"
 #include "obj_dir/Vflp32_mac_5stg.h"
 
 
@@ -58,6 +59,11 @@ SC_MODULE(vxe_vector_unit) {
 
 	// FMAC32 unit
 	Vflp32_mac_5stg fmac32;
+	vxe_pipe<uint8_t, 5> thr_id_pipe;
+
+	// 64-to-32 FIFOs
+	sc_vector<vxe_fifo64x32<16>> f64x32_rs_fifo;
+	sc_vector<vxe_fifo64x32<16>> f64x32_rt_fifo;
 
 	SC_HAS_PROCESS(vxe_vector_unit);
 
@@ -67,7 +73,8 @@ SC_MODULE(vxe_vector_unit) {
 		, o_busy("o_busy")
 		, i_cmd_select("i_cmd_select"), o_cmd_ack("o_cmd_ack"), o_cmd_err("o_cmd_err")
 		, i_cmd_op("i_cmd_op"), i_cmd_thread("i_cmd_thread"), i_cmd_wdata("i_cmd_wdata")
-		, fmac32("fmac32")
+		, fmac32("fmac32"), thr_id_pipe("thr_id_pipe")
+		, f64x32_rs_fifo("f64x32_rs_fifo", NT), f64x32_rt_fifo("f64x32_rt_fifo", NT)
 		, m_client_id(client_id)
 	{
 		SC_THREAD(cmd_exec_thread);
@@ -78,6 +85,21 @@ SC_MODULE(vxe_vector_unit) {
 
 		SC_THREAD(mem_resp_thread);
 			sensitive << clk.pos();
+
+		SC_THREAD(op_issue_thread);
+			sensitive << clk.pos();
+
+		SC_THREAD(writeback_thread);
+			sensitive << clk.pos();
+
+		SC_METHOD(busy_logic_method);
+			sensitive << s_load_store_busy << s_exec_pipe_busy;
+
+		SC_METHOD(load_store_busy_logic_method);
+			sensitive << out_rqrs_fifo.data_written_event() << out_rqrs_fifo.data_read_event()
+				<< out_rqrt_fifo.data_written_event() << out_rqrt_fifo.data_read_event()
+				<< out_rqst_fifo.data_written_event() << out_rqst_fifo.data_read_event()
+				<< s_load_store_active;
 
 		// Connect FMAC32 signals
 		fmac32.clk(clk);
@@ -92,9 +114,41 @@ SC_MODULE(vxe_vector_unit) {
 		fmac32.i_b(s_fmac32_i_b);
 		fmac32.i_c(s_fmac32_i_c);
 		fmac32.o_p(s_fmac32_o_p);
+		// Connect thread Id pipe signals
+		thr_id_pipe.clk(clk);
+		thr_id_pipe.nrst(nrst);
+		thr_id_pipe.in(thr_id_pipe_in);
+		thr_id_pipe.out(thr_id_pipe_out);
+		// Connect 64-to-32 FIFOs signals
+		for(unsigned i = 0; i < NT; ++i) {
+			// Rs
+			f64x32_rs_fifo[i].clk(clk);
+			f64x32_rs_fifo[i].nrst(nrst);
+			f64x32_rs_fifo[i].i_data(f64x32_rs_fifo_wdata[i]);
+			f64x32_rs_fifo[i].i_write(f64x32_rs_fifo_write[i]);
+			f64x32_rs_fifo[i].i_valid(f64x32_rs_fifo_wvalid[i]);
+			f64x32_rs_fifo[i].o_full(f64x32_rs_fifo_full[i]);
+			f64x32_rs_fifo[i].i_read(f64x32_rs_fifo_read[i]);
+			f64x32_rs_fifo[i].o_empty(f64x32_rs_fifo_empty[i]);
+			f64x32_rs_fifo[i].o_data(f64x32_rs_fifo_rdata[i]);
+			// Rt
+			f64x32_rt_fifo[i].clk(clk);
+			f64x32_rt_fifo[i].nrst(nrst);
+			f64x32_rt_fifo[i].i_data(f64x32_rt_fifo_wdata[i]);
+			f64x32_rt_fifo[i].i_write(f64x32_rt_fifo_write[i]);
+			f64x32_rt_fifo[i].i_valid(f64x32_rt_fifo_wvalid[i]);
+			f64x32_rt_fifo[i].o_full(f64x32_rt_fifo_full[i]);
+			f64x32_rt_fifo[i].i_read(f64x32_rt_fifo_read[i]);
+			f64x32_rt_fifo[i].o_empty(f64x32_rt_fifo_empty[i]);
+			f64x32_rt_fifo[i].o_data(f64x32_rt_fifo_rdata[i]);
+		}
 	}
 
 private:
+	/**
+	 * Commands execution thread
+	 * Receives commands from CU
+	 */
 	[[noreturn]] void cmd_exec_thread()
 	{
 		uint8_t cmd_op;
@@ -150,9 +204,18 @@ private:
 					s_dpcmd_valid.write(true);
 					wait();
 					s_dpcmd_valid.write(false);
-					while(s_dpcmd_done.read() == false)
+					wait();
+					while(s_load_store_busy.read() || s_exec_pipe_busy.read())
 						wait();
+					break;
 				case vxe::vpc::STORE:
+					s_dpcmd_op.write(vxe::vpc::STORE);
+					s_dpcmd_valid.write(true);
+					wait();
+					s_dpcmd_valid.write(false);
+					wait();
+					while(s_load_store_busy.read())
+						wait();
 					break;
 				default:
 					o_cmd_err.write(true);
@@ -163,6 +226,12 @@ private:
 		}
 	}
 
+	/**
+	 * Set load address and byte enable mask
+	 * @param rq request structure
+	 * @param addr load address
+	 * @param len current vector length
+	 */
 	void set_load_addr(vxe::vxe_mem_rq& rq, uint64_t& addr, uint32_t& len)
 	{
 		if(addr & 1) {		// Address is not word aligned. Load only one word.
@@ -186,14 +255,17 @@ private:
 		rq.addr <<= 2;
 	}
 
+	/**
+	 * Data loads handler
+	 */
 	void data_load()
 	{
 		unsigned done_mask = 0;	// Mask of completed threads
 
-		while(done_mask != NT-1) {
+		while(done_mask != (1 << NT) - 1) {
 			for (unsigned th = 0; th < NT; ++th) {
 				// Skip not enabled threads
-				if (!reg_thr_en[th]) {
+				if(!reg_thr_en[th]) {
 					done_mask |= 1 << th;
 					wait();
 					continue;
@@ -207,13 +279,13 @@ private:
 					rq.set_thread_id(th);
 					rq.set_thread_arg(0);
 					set_load_addr(rq, reg_rsa[th], reg_rsl[th]);
+					// Push to outstanding requests FIFO
+					out_rqrs_fifo.write(vxe::word_enable<2>({ !!rq.ben[0], !!rq.ben[4] }));
 					// Send request
 					mem_fifo_out.write(rq);
-					// Push to outstanding requests FIFO
-					out_rqs_fifo.write(true);
 				}
 
-				wait();	// Can issue second load only on next clock cycle.
+				wait();	// Can issue second load only on the next clock cycle.
 
 				// Prepare request for Rt operand
 				if(reg_rtl[th] != 0) {
@@ -223,36 +295,110 @@ private:
 					rq.set_thread_id(th);
 					rq.set_thread_arg(1);
 					set_load_addr(rq, reg_rta[th], reg_rtl[th]);
+					// Push to outstanding requests FIFO
+					out_rqrt_fifo.write(vxe::word_enable<2>({ !!rq.ben[0], !!rq.ben[4] }));
 					// Send request
 					mem_fifo_out.write(rq);
-					// Push to outstanding requests FIFO
-					out_rqs_fifo.write(true);
 				}
 
 				// Check completion status
 				if((reg_rsl[th] == 0) && (reg_rtl[th] == 0))
 					done_mask |= 1 << th;
+
+				wait();
 			}
 		}
 	}
 
+	/**
+	 * Data stores handler
+	 */
 	void data_store()
 	{
-		//TODO:
+		for (unsigned th = 0; th < NT; th += 2) {
+			// Skip not enabled pairs of threads
+			if(!reg_thr_en[th] && !reg_thr_en[th + 1]) {
+				wait();
+				continue;
+			}
+
+			// Check if we can merge store for neighbour threads
+			if(reg_thr_en[th] && reg_thr_en[th + 1] && ((reg_rda[th] & ~1) == (reg_rda[th + 1] & ~1))) {
+				vxe::vxe_mem_rq rq;
+				rq.set_client_id(m_client_id);
+				rq.req = vxe::vxe_mem_rq::rqtype::REQ_WR;
+				rq.set_thread_id(th);
+				rq.addr = (reg_rda[th] & ~1) << 2;
+				rq.set_ben_mask(0xFF);
+				// Note: stores to the same address have undefined behavior
+				rq.data_u32[0] = ((reg_rda[th] & 1) == 0 ? reg_acc[th] : reg_acc[th + 1]);
+				rq.data_u32[1] = ((reg_rda[th] & 1) != 0 ? reg_acc[th] : reg_acc[th + 1]);
+				// Push to outstanding requests FIFO
+				out_rqst_fifo.write(true);
+				// Send request
+				mem_fifo_out.write(rq);
+
+				wait();
+				continue;
+			}
+
+			// If we cannot merge then send one by one
+			if(reg_thr_en[th]) {
+				vxe::vxe_mem_rq rq;
+				rq.set_client_id(m_client_id);
+				rq.req = vxe::vxe_mem_rq::rqtype::REQ_WR;
+				rq.set_thread_id(th);
+				rq.addr = (reg_rda[th] & ~1) << 2;
+				rq.set_ben_mask((reg_rda[th] & 1) == 0 ? 0x0F : 0xF0);
+				rq.data_u32[0] = ((reg_rda[th] & 1) == 0 ? reg_acc[th] : 0xDEADBEEF);
+				rq.data_u32[1] = ((reg_rda[th] & 1) != 0 ? reg_acc[th] : 0xDEADBEEF);
+				// Push to outstanding requests FIFO
+				out_rqst_fifo.write(true);
+				// Send request
+				mem_fifo_out.write(rq);
+
+				wait();
+				continue;
+			}
+
+			if(reg_thr_en[th + 1]) {
+				vxe::vxe_mem_rq rq;
+				rq.set_client_id(m_client_id);
+				rq.req = vxe::vxe_mem_rq::rqtype::REQ_WR;
+				rq.set_thread_id(th + 1);
+				rq.addr = (reg_rda[th + 1] & ~1) << 2;
+				rq.set_ben_mask((reg_rda[th + 1] & 1) == 0 ? 0x0F : 0xF0);
+				rq.data_u32[0] = ((reg_rda[th + 1] & 1) == 0 ? reg_acc[th] : 0xDEADBEEF);
+				rq.data_u32[1] = ((reg_rda[th + 1] & 1) != 0 ? reg_acc[th] : 0xDEADBEEF);
+				// Push to outstanding requests FIFO
+				out_rqst_fifo.write(true);
+				// Send request
+				mem_fifo_out.write(rq);
+
+				wait();
+				continue;
+			}
+		}
 	}
 
+	/**
+	 * Memory requests thread
+	 * Handle loads and stores
+	 */
 	[[noreturn]] void mem_req_thread()
 	{
 		while(true) {
+			s_load_store_active.write(false);
 			wait(); // Wait for positive edge
 
+			// Check if command to start is valid
 			bool dpcmd_valid = s_dpcmd_valid.read();
-
 			if(!dpcmd_valid)
 				continue;
 
-			uint8_t dpcmd_op = s_dpcmd_op.read();
+			s_load_store_active.write(true);
 
+			uint8_t dpcmd_op = s_dpcmd_op.read();
 			switch(dpcmd_op) {
 				case vxe::vpc::PROD:
 					data_load();
@@ -262,28 +408,169 @@ private:
 					break;
 				default:
 					std::cerr << name() << ": invalid dpcmd_op!"
-						  << std::endl;
+						<< std::endl;
 					continue;
 			}
 		}
 	}
 
+	/**
+	 * Memory response thread
+	 * Handles responses from memory
+	 */
 	[[noreturn]] void mem_resp_thread()
 	{
 		// Reset state
-		s_dpcmd_done.write(false);
-		//TODO: done condition is No mem transactions and FMAC is idle. Set probably not here.
+		for(unsigned i = 0; i < NT; ++i) {
+			f64x32_rs_fifo_write[i].write(false);
+			f64x32_rt_fifo_write[i].write(false);
+		}
 
 		while(true) {
 			vxe::vxe_mem_rq rq;
+			vxe::word_enable<2> we;
+			unsigned thread;
+			unsigned arg;
+
 			// Read incoming data FIFO
 			rq = mem_fifo_in.read();
-			// Drop outstanding request
-			out_rqs_fifo.read();
 
-			//TBD:
-			std::cout << rq << endl;
+			// Thread and argument id
+			thread = rq.get_thread_id();
+			arg = rq.get_thread_arg();
+
+			// Drop outstanding request item
+			if(rq.req == vxe::vxe_mem_rq::rqtype::REQ_RD)
+				we = (arg == 0 ? out_rqrs_fifo.read() : out_rqrt_fifo.read());
+			else
+				out_rqst_fifo.read();
+
+			//TODO: errors check
+//			cout << rq << endl;
+
+			if(rq.req != vxe::vxe_mem_rq::rqtype::REQ_RD)
+				continue;
+
+			// Store data to 64x32b FIFOs
+			if(arg == 0) {
+				while(f64x32_rs_fifo_full[thread].read())
+					wait();
+				f64x32_rs_fifo_wdata[thread].write(rq.data_u64[0]);
+				f64x32_rs_fifo_wvalid[thread].write(we.bits<unsigned>());
+				f64x32_rs_fifo_write[thread].write(true);
+				wait();
+				f64x32_rs_fifo_write[thread].write(false);
+			} else {
+				while(f64x32_rt_fifo_full[thread].read())
+					wait();
+				f64x32_rt_fifo_wdata[thread].write(rq.data_u64[0]);
+				f64x32_rt_fifo_wvalid[thread].write(we.bits<unsigned>());
+				f64x32_rt_fifo_write[thread].write(true);
+				wait();
+				f64x32_rt_fifo_write[thread].write(false);
+			}
 		}
+	}
+
+	/**
+	 * FMAC operation issue thread
+	 */
+	[[noreturn]] void op_issue_thread()
+	{
+		// Reset state
+		for(unsigned thread = 0; thread < NT; ++thread) {
+			f64x32_rs_fifo_read[thread].write(false);
+			f64x32_rt_fifo_read[thread].write(false);
+		}
+
+		while(true) {
+			s_exec_pipe_busy.write(false);
+			s_fmac32_i_valid.write(false);
+			if(!nrst.read()) {
+				wait();
+				continue;
+			}
+
+			for(unsigned thread = 0; thread < NT; ++thread) {
+				// Evaluate execute pipe busy state
+				bool fmac_busy = (fmac_slots_fifo.num_available() != 0);
+				bool issue_busy = false;
+				for(unsigned i = 0; i < NT; ++i) {
+					if(!f64x32_rs_fifo_empty[i].read() || !f64x32_rt_fifo_empty[i].read()) {
+						issue_busy = true;
+						break;
+					}
+				}
+				s_exec_pipe_busy.write(fmac_busy || issue_busy);
+
+				wait();
+
+				s_fmac32_i_valid.write(false);
+
+				// Ignore disabled threads and threads with no data available
+				if(!reg_thr_en[thread] || f64x32_rs_fifo_empty[thread].read() ||
+					f64x32_rt_fifo_empty[thread].read()) {
+					continue;
+				}
+
+				uint32_t rs, rt;
+
+				// Read FMAC operands
+				f64x32_rs_fifo_read[thread].write(true);
+				f64x32_rt_fifo_read[thread].write(true);
+				wait();
+				f64x32_rs_fifo_read[thread].write(false);
+				f64x32_rt_fifo_read[thread].write(false);
+
+				rs = f64x32_rs_fifo_rdata[thread].read();
+				rt = f64x32_rt_fifo_rdata[thread].read();
+
+				// Send to FMAC pipeline
+				s_fmac32_i_a.write(reg_acc[thread]);
+				s_fmac32_i_b.write(rs);
+				s_fmac32_i_c.write(rt);
+				s_fmac32_i_valid.write(true);
+				thr_id_pipe_in.write(thread);
+				fmac_slots_fifo.write(true);
+			}
+		}
+	}
+
+	/**
+	 * Writeback thread
+	 * Writes results back to accumulator registers
+	 */
+	[[noreturn]] void writeback_thread()
+	{
+		while(true) {
+			wait();
+
+			if(!s_fmac32_o_valid.read())
+				continue;
+
+			unsigned thread = thr_id_pipe_out.read();
+			reg_acc[thread] = s_fmac32_o_p.read();
+			fmac_slots_fifo.read();
+		}
+	}
+
+	/**
+	 * VPU busy logic method
+	 */
+	void busy_logic_method()
+	{
+		o_busy.write(s_load_store_busy.read() || s_exec_pipe_busy.read());
+	}
+
+	/**
+	 * Load/Store busy logic method
+	 */
+	void load_store_busy_logic_method()
+	{
+		bool out_ld1 = (out_rqrs_fifo.num_available() != 0);
+		bool out_ld2 = (out_rqrt_fifo.num_available() != 0);
+		bool out_st = (out_rqst_fifo.num_available() != 0);
+		s_load_store_busy.write(out_ld1 || out_ld2 || out_st || s_load_store_active.read());
 	}
 
 private:
@@ -307,10 +594,36 @@ private:
 	sc_signal<uint32_t> s_fmac32_i_b;
 	sc_signal<uint32_t> s_fmac32_i_c;
 	sc_signal<uint32_t> s_fmac32_o_p;
+	// Thread Id pipe signals
+	sc_signal<uint8_t> thr_id_pipe_in;
+	sc_signal<uint8_t> thr_id_pipe_out;
 	// Internal control FIFOs
-	sc_fifo<bool> out_rqs_fifo;
+	sc_fifo<vxe::word_enable<2>> out_rqrs_fifo;
+	sc_fifo<vxe::word_enable<2>> out_rqrt_fifo;
+	sc_fifo<bool> out_rqst_fifo;
+	// 64-to-32 Rs FIFOs signals
+	sc_signal<uint64_t> f64x32_rs_fifo_wdata[NT];
+	sc_signal<sc_uint<2>> f64x32_rs_fifo_wvalid[NT];
+	sc_signal<bool> f64x32_rs_fifo_write[NT];
+	sc_signal<bool> f64x32_rs_fifo_read[NT];
+	sc_signal<uint32_t> f64x32_rs_fifo_rdata[NT];
+	sc_signal<bool> f64x32_rs_fifo_empty[NT];
+	sc_signal<bool> f64x32_rs_fifo_full[NT];
+	// 64-to-32 Rt FIFOs signals
+	sc_signal<uint64_t> f64x32_rt_fifo_wdata[NT];
+	sc_signal<sc_uint<2>> f64x32_rt_fifo_wvalid[NT];
+	sc_signal<bool> f64x32_rt_fifo_write[NT];
+	sc_signal<bool> f64x32_rt_fifo_read[NT];
+	sc_signal<uint32_t> f64x32_rt_fifo_rdata[NT];
+	sc_signal<bool> f64x32_rt_fifo_empty[NT];
+	sc_signal<bool> f64x32_rt_fifo_full[NT];
+	// Occupied FMAC slots FIFO
+	sc_fifo<bool> fmac_slots_fifo;
+	// Busy signals
+	sc_signal<bool> s_load_store_busy;
+	sc_signal<bool> s_exec_pipe_busy;
 	// Internal control signals
 	sc_signal<uint8_t> s_dpcmd_op;	// Data processing command operation
 	sc_signal<bool> s_dpcmd_valid;	// Data processing command valid
-	sc_signal<bool> s_dpcmd_done;	// Data processing command done
+	sc_signal<bool> s_load_store_active;
 };
