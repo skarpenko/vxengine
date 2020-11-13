@@ -28,10 +28,6 @@ set(CMAKE_CXX_STANDARD 17)
 
 
 include_directories(include)
-include_directories($ENV{VXENGINE_HOME}/slm/sc/vl)
-include_directories($ENV{SYSTEMC_HOME}/include)
-include_directories($ENV{VERILATOR_HOME}/share/verilator/include)
-include_directories($ENV{VERILATOR_HOME}/share/verilator/include/vltstd)
 
 
 # System model
@@ -63,6 +59,10 @@ add_executable(vxmodel.elf
 	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg.h
 	$ENV{VERILATOR_HOME}/share/verilator/include/verilated.cpp)
 
+target_include_directories(vxmodel.elf PUBLIC $ENV{VXENGINE_HOME}/slm/sc/vl)
+target_include_directories(vxmodel.elf PUBLIC $ENV{SYSTEMC_HOME}/include)
+target_include_directories(vxmodel.elf PUBLIC $ENV{VERILATOR_HOME}/share/verilator/include)
+target_include_directories(vxmodel.elf PUBLIC $ENV{VERILATOR_HOME}/share/verilator/include/vltstd)
 target_compile_options(vxmodel.elf PUBLIC --std=c++17 -O3 -g -Wall)
 target_link_options(vxmodel.elf PUBLIC -Wl,-rpath=$ENV{SYSTEMC_HOME}/lib-linux64
 	-L$ENV{SYSTEMC_HOME}/lib-linux64)
@@ -87,4 +87,6 @@ add_library(simple_test SHARED
 	include/simple_cpu_if.h
 	include/vxe_common.hxx)
 
+target_include_directories(simple_test PUBLIC $ENV{VXENGINE_HOME}/alg)
+target_include_directories(simple_test PUBLIC $ENV{VXENGINE_HOME}/slm/sc/src/so/include)
 target_compile_options(simple_test PUBLIC --std=c++17 -O3 -g -Wall)
