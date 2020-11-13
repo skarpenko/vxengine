@@ -50,7 +50,9 @@ SIMPLE_TEST_CXX_FILES :=	\
 SIMPLE_TEST_HXX_FILES :=	\
 	include/simple_cpu_if.h	\
 	include/vxe_common.hxx
-SIMPLE_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude
+SIMPLE_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-I$(VXENGINE_HOME)/alg					\
+	-I$(VXENGINE_HOME)/slm/sc/src/so/include
 SIMPLE_TEST_LDFLAGS := --shared -fPIC
 
 
