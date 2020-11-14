@@ -368,8 +368,8 @@ private:
 				rq.set_thread_id(th + 1);
 				rq.addr = (reg_rda[th + 1] & ~1) << 2;
 				rq.set_ben_mask((reg_rda[th + 1] & 1) == 0 ? 0x0F : 0xF0);
-				rq.data_u32[0] = ((reg_rda[th + 1] & 1) == 0 ? reg_acc[th] : 0xDEADBEEF);
-				rq.data_u32[1] = ((reg_rda[th + 1] & 1) != 0 ? reg_acc[th] : 0xDEADBEEF);
+				rq.data_u32[0] = ((reg_rda[th + 1] & 1) == 0 ? reg_acc[th + 1] : 0xDEADBEEF);
+				rq.data_u32[1] = ((reg_rda[th + 1] & 1) != 0 ? reg_acc[th + 1] : 0xDEADBEEF);
 				// Push to outstanding requests FIFO
 				out_rqst_fifo.write(true);
 				// Send request
