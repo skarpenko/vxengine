@@ -469,6 +469,8 @@ private:
 				wait();
 				f64x32_rt_fifo_write[thread].write(false);
 			}
+
+			wait();
 		}
 	}
 
