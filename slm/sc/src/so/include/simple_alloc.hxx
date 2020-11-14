@@ -57,8 +57,8 @@ namespace sw {
 		{
 			m_next = m_start;
 		}
-		simple_allocator(uint8_t *ptr, uint64_t start, uint64_t end) noexcept
-			: m_ptr(ptr), m_start(start), m_end(end)
+		simple_allocator(void *ptr, uint64_t start, uint64_t end) noexcept
+			: m_ptr(reinterpret_cast<uint8_t*>(ptr)), m_start(start), m_end(end)
 		{
 			m_next = m_start;
 		}

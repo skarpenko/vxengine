@@ -103,7 +103,7 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 	mem = reinterpret_cast<uint8_t*>(dmi.ptr);
 
 	std::cout << "Setting up memory allocator." << std::endl;
-	mem_alloc = sw::simple_allocator(reinterpret_cast<uint8_t*>(dmi.ptr), dmi.start, dmi.end);
+	mem_alloc = sw::simple_allocator(dmi.ptr, dmi.start, dmi.end);
 
 	// Check ID register
 	uint32_t vxe_id, vxe_id_tmp;
