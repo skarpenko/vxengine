@@ -135,16 +135,16 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 		float vgen_n1 = 0.5;
 		float vgen_n2 = 1.0;
 		float vgen_n3 = 2.0;
-		for (size_t i = 0; i < VEC_PAIRS; ++i) {
+		for(size_t i = 0; i < VEC_PAIRS; ++i) {
 			auto rs = mem_alloc.allocate(VEC_LEN * sizeof(float), sizeof(float));
 			auto rt = mem_alloc.allocate(VEC_LEN * sizeof(float), sizeof(float));
 			if (rs.vaddr == nullptr || rt.vaddr == nullptr) {
 				std::cerr << "Error: failed to allocate vector pair: " << i << std::endl;
 				return -1;
 			}
-			vpairs[i].rs = reinterpret_cast<float *>(rs.vaddr);
+			vpairs[i].rs = reinterpret_cast<float*>(rs.vaddr);
 			vpairs[i].rs_pa = rs.paddr;
-			vpairs[i].rt = reinterpret_cast<float *>(rt.vaddr);
+			vpairs[i].rt = reinterpret_cast<float*>(rt.vaddr);
 			vpairs[i].rt_pa = rt.paddr;
 			// Generate pair
 			std::cout << "Generating pair No." << i << std::endl;
@@ -163,7 +163,7 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 	{
 		auto r1 = mem_alloc.allocate(VEC_PAIRS * sizeof(float), sizeof(float));
 		auto r2 = mem_alloc.allocate(VEC_PAIRS * sizeof(float), sizeof(float));
-		if (r1.vaddr == nullptr || r2.vaddr == nullptr) {
+		if(r1.vaddr == nullptr || r2.vaddr == nullptr) {
 			std::cerr << "Error: failed to allocate space for results." << std::endl;
 			return -1;
 		}
@@ -173,7 +173,7 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 	}
 
 	std::cout << "Computing reference result." << std::endl;
-	for (size_t i = 0; i < VEC_PAIRS; ++i) {
+	for(size_t i = 0; i < VEC_PAIRS; ++i) {
 		ref_result[i] = vector_prod(0.0, vpairs[i].rs, vpairs[i].rt, VEC_LEN);
 	}
 
@@ -264,14 +264,15 @@ extern "C" int simple_cpu_entry(struct simple_cpu_if *cpu_if)
 
 	// Verify result
 	std::cout << "Verifying result." << std::endl;
-	for (size_t i = 0; i < VEC_PAIRS; ++i) {
+	bool verif_failed = false;
+	for(size_t i = 0; i < VEC_PAIRS; ++i) {
 		if(ref_result[i] != vxe_result[i]) {
-			std::cerr << "FAILED: " << ref_result[i] << " != "
-				<< vxe_result[i] << "!" << std::endl;
-			return -1;
+			std::cerr << "Thread" << i << ": " << ref_result[i] << " != "
+				<< vxe_result[i] << " mismatch!" << std::endl;
+			verif_failed = true;
 		}
 	}
-	std::cout << "PASS!" << std::endl;
+	std::cout << (!verif_failed ? "PASS!" : "FAILED!") << std::endl;
 
 	wait_cycles(50);
 
