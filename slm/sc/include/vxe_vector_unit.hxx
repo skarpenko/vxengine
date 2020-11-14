@@ -446,7 +446,7 @@ private:
 				out_rqst_fifo.read();
 
 			//TODO: errors check
-//			cout << rq << endl;
+//			cout << rq << " " << (rq.req == vxe::vxe_mem_rq::rqtype::REQ_RD ? "RD" : "WR") << endl;
 
 			if(rq.req != vxe::vxe_mem_rq::rqtype::REQ_RD)
 				continue;
@@ -533,6 +533,8 @@ private:
 				thr_id_pipe_in.write(thread);
 				fmac_slots_fifo.write(true);
 			}
+
+			wait(); // Wait for pos edge after last thread processed
 		}
 	}
 
