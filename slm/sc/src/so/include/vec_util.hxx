@@ -92,4 +92,21 @@ namespace sw {
 		}
 	}
 
+	/**
+	 * Generate a vector of a linear numeric sequence
+	 * @tparam T type of vector elements
+	 * @param n0 start value
+	 * @param s step
+	 * @param out output vector
+	 * @param len output vector length
+	 */
+	template<typename T>
+	void gen_vector_linear(T n0, T s, T *out, size_t len)
+	{
+		for(size_t i = 0; i < len; ++i) {
+			out[i] = n0;
+			n0 += s;
+		}
+	}
+
 } // namespace sw
