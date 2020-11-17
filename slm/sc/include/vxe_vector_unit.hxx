@@ -358,7 +358,6 @@ private:
 				mem_fifo_out.write(rq);
 
 				wait();
-				continue;
 			}
 
 			if(reg_thr_en[th + 1]) {
@@ -376,7 +375,6 @@ private:
 				mem_fifo_out.write(rq);
 
 				wait();
-				continue;
 			}
 		}
 	}
