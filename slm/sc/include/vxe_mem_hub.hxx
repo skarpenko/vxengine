@@ -291,7 +291,7 @@ private:
 				master1_fifo_out.write(rq);
 
 			wait();
-			if(fifo_vpu1_to_m0.nb_read(rq))
+			if(fifo_vpu1_to_m1.nb_read(rq))
 				master1_fifo_out.write(rq);
 		}
 	}
