@@ -100,10 +100,18 @@ SC_MODULE(vxe_mem_hub) {
 private:
 	enum class dest_port { M0, M1 };	// Master 0 or Master 1
 
-	// Returns destination master port for a given address value
-	dest_port pick_port(uint64_t addr)
+	// Returns destination master port for a given request
+	dest_port pick_port(const vxe::vxe_mem_rq& rq)
 	{
-		return !(addr & (1ull << 12u)) ? dest_port::M0 : dest_port::M1;
+		// CU requests always go through M0
+		if(rq.get_client_id() == vxe::mhc::CU)
+			return dest_port::M0;
+
+		// VPU loads depend on argument type, stores depend on VPU number
+		if(rq.req == vxe::vxe_mem_rq::rqtype::REQ_RD)
+			return rq.get_thread_arg() == 0 ? dest_port::M0 : dest_port::M1;
+		else
+			return rq.get_client_id() == vxe::mhc::VPU0 ? dest_port::M0 : dest_port::M1;
 	}
 
 private:
@@ -111,7 +119,7 @@ private:
 	{
 		while(true) {
 			vxe::vxe_mem_rq rq = cu_fifo_in.read();
-			switch(pick_port(rq.addr)) {
+			switch(pick_port(rq)) {
 				case dest_port::M0:
 					fifo_cu_to_m0.write(rq);
 					break;
@@ -146,7 +154,7 @@ private:
 	{
 		while(true) {
 			vxe::vxe_mem_rq rq = vpu0_fifo_in.read();
-			switch(pick_port(rq.addr)) {
+			switch(pick_port(rq)) {
 				case dest_port::M0:
 					fifo_vpu0_to_m0.write(rq);
 					break;
@@ -181,7 +189,7 @@ private:
 	{
 		while(true) {
 			vxe::vxe_mem_rq rq = vpu1_fifo_in.read();
-			switch(pick_port(rq.addr)) {
+			switch(pick_port(rq)) {
 				case dest_port::M0:
 					fifo_vpu1_to_m0.write(rq);
 					break;
