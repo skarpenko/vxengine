@@ -1,0 +1,8 @@
+# Floating point ReLU module testbench
+
++define+TRACE_FILE="tb_flp_relu.vcd"
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/flp/src/flp_pack.v
+${VXENGINE_HOME}/hw/flp/src/flp_unpack.v
+src/flp_relu.v
+tb/tb_flp_relu.v
