@@ -1,0 +1,13 @@
+// Testbench for floating point ReLU module
+
+-CFLAGS --std=c++11
+-CFLAGS -I${VXENGINE_HOME}/alg/flp
+-CFLAGS -I${VXENGINE_HOME}/alg/relu
+-CFLAGS -I${VXENGINE_HOME}/hw/flp/vl/include
+--top-module vl_flp_relu_test
+-cc
+${VXENGINE_HOME}/hw/flp/src/flp_pack.v
+${VXENGINE_HOME}/hw/flp/src/flp_unpack.v
+${VXENGINE_HOME}/hw/relu/src/flp_relu.v
+${VXENGINE_HOME}/hw/relu/vl/tb/vl_flp_relu_test.v
+${VXENGINE_HOME}/hw/relu/vl/tb/vl_flp_relu_test.cxx
