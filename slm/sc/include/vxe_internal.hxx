@@ -55,7 +55,18 @@ namespace vxe {
 		static constexpr unsigned SETEN		= 0x0d;	// Set thread enable
 		static constexpr unsigned PROD		= 0x10;	// Compute product
 		static constexpr unsigned STORE		= 0x14;	// Store result to Rd address
+		static constexpr unsigned ACTF		= 0x11;	// Run activation function
 	} // namespace vpc
+
+
+	// Activation function command data
+	union vpu_af_cmd_data {
+		struct {
+			uint64_t pl : 56;	// Optional payload
+			uint64_t af : 8;	// Activation function type
+		};
+		uint64 u64;
+	};
 
 
 	// Memory request
