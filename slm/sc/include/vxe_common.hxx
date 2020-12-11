@@ -153,6 +153,22 @@ namespace vxe {
 			operator uint64_t() const { return u64; }
 		};
 
+		// Generic activation function instruction (it's not a real instruction)
+		union generic_af {
+			static constexpr unsigned OP = 0x02;	// Opcode value
+			struct {
+				uint64_t pl	: 51;	// Optional
+				uint64_t af	: 8;	// Activation function type
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			explicit generic_af(uint64_t _u = 0) : u64(_u) {}
+			generic_af(const union generic& g) : u64(g) {}
+
+			operator uint64_t() const { return u64; }
+		};
+
 		// NOP - No Operation - used for padding
 		union nop {
 			static constexpr unsigned OP = 0x00;	// Opcode value
@@ -367,6 +383,41 @@ namespace vxe {
 				stop = _stop;
 				intr = _intr;
 			}
+
+			operator uint64_t() const { return u64; }
+		};
+
+		// RELU - ReLU activation - Run ReLU on accumulators of enabled threads
+		union relu {
+			static constexpr unsigned OP = 0x02;	// Opcode value
+			static constexpr unsigned AF = 0x00;	// Activation type
+			struct {
+				uint64_t _z0	: 51;	// Must be zero
+				uint64_t af	: 8;	// Activation function type
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			relu() : _z0(0), af(AF), op(OP) {}
+			relu(const union generic& g) : u64(g) {}
+
+			operator uint64_t() const { return u64; }
+		};
+
+		// LRELU - Leaky ReLU activation - Run leaky ReLU on accumulators of enabled threads
+		union lrelu {
+			static constexpr unsigned OP = 0x02;	// Opcode value
+			static constexpr unsigned AF = 0x01;	// Activation type
+			struct {
+				uint64_t ed	: 7;	// Exponent diff / scale factor
+				uint64_t _z0	: 44;	// Must be zero
+				uint64_t af	: 8;	// Activation function type
+				uint64_t op	: 5;	// Opcode
+			};
+			uint64_t u64;
+
+			lrelu(int e) : ed(0x7F & e), _z0(0), af(AF), op(OP) {}
+			lrelu(const union generic& g) : u64(g) {}
 
 			operator uint64_t() const { return u64; }
 		};
