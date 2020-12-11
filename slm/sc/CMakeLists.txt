@@ -57,6 +57,7 @@ add_executable(vxmodel.elf
 	include/vxe_fifo64x32.hxx
 	# Verilator dependencies
 	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg.h
+	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_relu.h
 	$ENV{VERILATOR_HOME}/share/verilator/include/verilated.cpp)
 
 target_include_directories(vxmodel.elf PUBLIC $ENV{VXENGINE_HOME}/slm/sc/vl)
@@ -67,7 +68,8 @@ target_compile_options(vxmodel.elf PUBLIC --std=c++17 -O3 -g -Wall)
 target_link_options(vxmodel.elf PUBLIC -Wl,-rpath=$ENV{SYSTEMC_HOME}/lib-linux64
 	-L$ENV{SYSTEMC_HOME}/lib-linux64)
 target_link_libraries(vxmodel.elf -lsystemc -lpthread -ldl
-	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg__ALL.a)
+	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg__ALL.a
+	$ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_relu__ALL.a)
 
 
 # Verilated FMAC32 model
@@ -78,6 +80,17 @@ add_custom_command(
 	COMMAND verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3
 		-f vl_flp32_mac_5stg.lst
 	COMMAND make -j1 -C obj_dir -f Vflp32_mac_5stg.mk
+)
+
+
+# Verilated FReLU32 model
+add_custom_command(
+	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_relu__ALL.a
+	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_relu.h
+	WORKING_DIRECTORY $ENV{VXENGINE_HOME}/slm/sc/vl
+	COMMAND verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3
+		-f vl_flp32_relu.lst
+	COMMAND make -j1 -C obj_dir -f Vflp32_relu.mk
 )
 
 

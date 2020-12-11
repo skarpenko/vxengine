@@ -1,0 +1,8 @@
+// Verilator file list for floating point ReLU module
+
+--top-module flp32_relu
+-sc
+${VXENGINE_HOME}/hw/flp/src/flp_pack.v
+${VXENGINE_HOME}/hw/flp/src/flp_unpack.v
+${VXENGINE_HOME}/hw/relu/src/flp_relu.v
+${VXENGINE_HOME}/hw/relu/src/flp32_relu.v
