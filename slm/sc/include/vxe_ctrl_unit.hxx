@@ -368,6 +368,21 @@ private:
 	}
 
 	/**
+	 * Activation function instruction
+	 */
+	void instr_actf(const vxe::instr::generic_af& actf)
+	{
+		vxe::vpu_af_cmd_data afdata;
+		afdata.af = actf.af;
+		afdata.pl = actf.pl;
+
+		/* Send a command to VPUs */
+		bool err = cmd_bus_command(true, true, vxe::vpc::ACTF, 0, afdata.u64);
+		if (err)
+			invalid_instruction();
+	}
+
+	/**
 	 * Stops execution and asserts invalid instruction condition
 	 * (to use in instr_exec_thread)
 	 */
@@ -449,6 +464,9 @@ private:
 						break;
 					case vxe::instr::sync::OP:
 						instr_sync(g);
+						break;
+					case vxe::instr::generic_af::OP:
+						instr_actf(g);
 						break;
 					default:
 						invalid_instruction();

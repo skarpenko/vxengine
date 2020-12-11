@@ -217,6 +217,9 @@ private:
 					while(s_load_store_busy.read())
 						wait();
 					break;
+				case vxe::vpc::ACTF:
+					// TODO:
+					break;
 				default:
 					o_cmd_err.write(true);
 					break;
@@ -626,6 +629,7 @@ private:
 	sc_signal<bool> s_exec_pipe_busy;
 	// Internal control signals
 	sc_signal<uint8_t> s_dpcmd_op;	// Data processing command operation
+	sc_signal<uint64_t> s_dpcmd_pl;	// Data processing command payload
 	sc_signal<bool> s_dpcmd_valid;	// Data processing command valid
 	sc_signal<bool> s_load_store_active;
 };
