@@ -33,6 +33,7 @@
 #include "vxe_fifo64x32.hxx"
 #include "vxe_pipe.hxx"
 #include "obj_dir/Vflp32_mac_5stg.h"
+#include "obj_dir/Vflp32_relu.h"
 
 
 // VxEngine Vector Processing Unit
@@ -61,6 +62,9 @@ SC_MODULE(vxe_vector_unit) {
 	Vflp32_mac_5stg fmac32;
 	vxe_pipe<uint8_t, 5> thr_id_pipe;
 
+	// FRELU32 unit
+	Vflp32_relu frelu32;
+
 	// 64-to-32 FIFOs
 	sc_vector<vxe_fifo64x32<16>> f64x32_rs_fifo;
 	sc_vector<vxe_fifo64x32<16>> f64x32_rt_fifo;
@@ -74,6 +78,7 @@ SC_MODULE(vxe_vector_unit) {
 		, i_cmd_select("i_cmd_select"), o_cmd_ack("o_cmd_ack"), o_cmd_err("o_cmd_err")
 		, i_cmd_op("i_cmd_op"), i_cmd_thread("i_cmd_thread"), i_cmd_wdata("i_cmd_wdata")
 		, fmac32("fmac32"), thr_id_pipe("thr_id_pipe")
+		, frelu32("frelu32")
 		, f64x32_rs_fifo("f64x32_rs_fifo", NT), f64x32_rt_fifo("f64x32_rt_fifo", NT)
 		, m_client_id(client_id)
 	{
@@ -87,6 +92,9 @@ SC_MODULE(vxe_vector_unit) {
 			sensitive << clk.pos();
 
 		SC_THREAD(op_issue_thread);
+			sensitive << clk.pos();
+
+		SC_THREAD(activationf_thread);
 			sensitive << clk.pos();
 
 		SC_THREAD(writeback_thread);
@@ -119,6 +127,11 @@ SC_MODULE(vxe_vector_unit) {
 		thr_id_pipe.nrst(nrst);
 		thr_id_pipe.in(thr_id_pipe_in);
 		thr_id_pipe.out(thr_id_pipe_out);
+		// Connect FRELU32 signals
+		frelu32.i_l(s_frelu32_i_leaky);
+		frelu32.i_e(s_frelu32_i_exp_diff);
+		frelu32.i_v(s_frelu32_i_value);
+		frelu32.o_r(s_frelu32_o_result);
 		// Connect 64-to-32 FIFOs signals
 		for(unsigned i = 0; i < NT; ++i) {
 			// Rs
@@ -143,6 +156,21 @@ SC_MODULE(vxe_vector_unit) {
 			f64x32_rt_fifo[i].o_data(f64x32_rt_fifo_rdata[i]);
 		}
 	}
+
+private:
+	/**
+	 * ReLU unit writeback result data
+	 */
+	struct relu_writeback {
+		uint8_t thread;
+		uint32_t value;
+		relu_writeback() {}
+		relu_writeback(uint8_t th, uint32_t v)
+			: thread(th), value(v) {}
+		operator uint64_t() const {
+			return (uint64_t(thread) << 32) | value;
+		}
+	};
 
 private:
 	/**
@@ -218,7 +246,14 @@ private:
 						wait();
 					break;
 				case vxe::vpc::ACTF:
-					// TODO:
+					s_dpcmd_op.write(vxe::vpc::ACTF);
+					s_dpcmd_pl.write(cmd_wdata);
+					s_dpcmd_valid.write(true);
+					wait();
+					s_dpcmd_valid.write(false);
+					wait();
+					while(s_actf_pipe_busy.read())
+						wait();
 					break;
 				default:
 					o_cmd_err.write(true);
@@ -392,25 +427,21 @@ private:
 			s_load_store_active.write(false);
 			wait(); // Wait for positive edge
 
-			// Check if command to start is valid
+			// Check for valid start condition
 			bool dpcmd_valid = s_dpcmd_valid.read();
-			if(!dpcmd_valid)
+			uint8_t dpcmd_op = s_dpcmd_op.read();
+			if(!dpcmd_valid || (dpcmd_op != vxe::vpc::PROD && dpcmd_op != vxe::vpc::STORE))
 				continue;
 
 			s_load_store_active.write(true);
 
-			uint8_t dpcmd_op = s_dpcmd_op.read();
-			switch(dpcmd_op) {
-				case vxe::vpc::PROD:
-					data_load();
-					break;
-				case vxe::vpc::STORE:
-					data_store();
-					break;
-				default:
-					std::cerr << name() << ": invalid dpcmd_op!"
-						<< std::endl;
-					continue;
+			if(dpcmd_op == vxe::vpc::PROD) {
+				data_load();
+			} else if(dpcmd_op == vxe::vpc::STORE) {
+				data_store();
+			} else {
+				std::cerr << name() << ": invalid dpcmd_op for mem_req!"
+					<< std::endl;
 			}
 		}
 	}
@@ -542,6 +573,61 @@ private:
 	}
 
 	/**
+	 * Activation function thread
+	 * Executes activations for accumulators of enabled threads
+	 */
+	[[noreturn]] void activationf_thread()
+	{
+		while(true) {
+			s_actf_pipe_busy.write(false);
+			wait();
+
+			// Check for atart condition
+			bool dpcmd_valid = s_dpcmd_valid.read();
+			uint8_t dpcmd_op = s_dpcmd_op.read();
+			if(!dpcmd_valid || dpcmd_op != vxe::vpc::ACTF)
+				continue;
+
+			s_actf_pipe_busy.write(true);
+
+			vxe::vpu_af_cmd_data pl;
+			pl.u64 = s_dpcmd_pl.read();
+
+			// Check that correct activation function code passed
+			if(pl.af != vxe::instr::relu::AF && pl.af != vxe::instr::lrelu::AF) {
+				std::cerr << name() << ": invalid activation type!"
+					<< std::endl;
+				continue;
+			}
+
+			bool leaky = (pl.af == vxe::instr::lrelu::AF);
+			uint32_t exp_diff = (pl.pl & 0x7F);	// Only 7-bits are used
+
+			// Compute activations
+			for(unsigned th = 0; th < NT; ++th) {
+				if(!reg_thr_en[th]) {
+					wait();
+					continue;
+				}
+
+				// Trigger ReLU logic
+				s_frelu32_i_leaky.write(leaky);
+				s_frelu32_i_exp_diff.write(exp_diff);
+				s_frelu32_i_value.write(reg_acc[th]);
+				wait();
+
+				// Send result to writeback
+				relu_writeback wb(th, s_frelu32_o_result.read());
+				relu_wb_fifo.write(wb);
+			}
+
+			// Wait while writeback FIFO is not empty
+			while(relu_wb_fifo.num_available() != 0)
+				wait();
+		}
+	}
+
+	/**
 	 * Writeback thread
 	 * Writes results back to accumulator registers
 	 */
@@ -550,12 +636,14 @@ private:
 		while(true) {
 			wait();
 
-			if(!s_fmac32_o_valid.read())
-				continue;
-
-			unsigned thread = thr_id_pipe_out.read();
-			reg_acc[thread] = s_fmac32_o_p.read();
-			fmac_slots_fifo.read();
+			if(s_fmac32_o_valid.read()) {
+				unsigned thread = thr_id_pipe_out.read();
+				reg_acc[thread] = s_fmac32_o_p.read();
+				fmac_slots_fifo.read();
+			} else if(relu_wb_fifo.num_available() != 0) {
+				relu_writeback wb = relu_wb_fifo.read();
+				reg_acc[wb.thread] = wb.value;
+			}
 		}
 	}
 
@@ -564,7 +652,7 @@ private:
 	 */
 	void busy_logic_method()
 	{
-		o_busy.write(s_load_store_busy.read() || s_exec_pipe_busy.read());
+		o_busy.write(s_load_store_busy.read() || s_exec_pipe_busy.read() || s_actf_pipe_busy.read());
 	}
 
 	/**
@@ -602,7 +690,13 @@ private:
 	// Thread Id pipe signals
 	sc_signal<uint8_t> thr_id_pipe_in;
 	sc_signal<uint8_t> thr_id_pipe_out;
+	// FRELU32 signals
+	sc_signal<bool> s_frelu32_i_leaky;
+	sc_signal<uint32_t> s_frelu32_i_exp_diff;
+	sc_signal<uint32_t> s_frelu32_i_value;
+	sc_signal<uint32_t> s_frelu32_o_result;
 	// Internal control FIFOs
+	sc_fifo<relu_writeback> relu_wb_fifo;
 	sc_fifo<vxe::word_enable<2>> out_rqrs_fifo;
 	sc_fifo<vxe::word_enable<2>> out_rqrt_fifo;
 	sc_fifo<bool> out_rqst_fifo;
@@ -627,6 +721,7 @@ private:
 	// Busy signals
 	sc_signal<bool> s_load_store_busy;
 	sc_signal<bool> s_exec_pipe_busy;
+	sc_signal<bool> s_actf_pipe_busy;
 	// Internal control signals
 	sc_signal<uint8_t> s_dpcmd_op;	// Data processing command operation
 	sc_signal<uint64_t> s_dpcmd_pl;	// Data processing command payload
