@@ -27,7 +27,7 @@ project(relu)
 set(CMAKE_CXX_STANDARD 14)
 
 add_compile_options(--std=c++14 -O3 -g -Wall)
-include_directories($ENV{VXENGINE_HOME}/alg/flp)
+include_directories($ENV{VXENGINE_HOME}/alg)
 
 add_executable(relu
 	main.cxx

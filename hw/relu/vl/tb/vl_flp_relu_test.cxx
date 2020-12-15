@@ -40,8 +40,8 @@
 #include "vl_common.hxx"	// Common Verilator types
 
 // Floating point ReLU reference model
-#include "hwrelu.hxx"
-#include "common.hxx"
+#include "flp/common.hxx"
+#include "relu/hwrelu.hxx"
 
 
 #define EXP_REDUCE	(-4)		// Exponent adjustment for leaky ReLU

@@ -33,8 +33,8 @@
 #include <stdexcept>
 #include <vector>
 #include <cstdint>
+#include "flp/common.hxx"
 #include "hwrelu.hxx"
-#include "common.hxx"
 
 
 #define EXP_REDUCE	(-4)		/* Exponent adjustment value for leaky ReLU */

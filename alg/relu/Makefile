@@ -31,7 +31,7 @@ hxx-files :=		\
 
 
 relu: $(cxx-files) $(hxx-files)
-	g++ --std=c++14 -O3 -g -Wall -I$(VXENGINE_HOME)/alg/flp	\
+	g++ --std=c++14 -O3 -g -Wall -I$(VXENGINE_HOME)/alg	\
 		-o relu $(cxx-files)
 
 

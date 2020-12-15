@@ -27,7 +27,7 @@
  * Rectified linear unit (ReLU) and leaky ReLU
  */
 
-#include "hwfp.hxx"
+#include "flp/hwfp.hxx"
 #pragma once
 
 
