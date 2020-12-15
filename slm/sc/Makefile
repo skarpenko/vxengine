@@ -58,9 +58,23 @@ SIMPLE_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 SIMPLE_TEST_LDFLAGS := --shared -fPIC
 
 
+# ReLU test build options
+RELU_TEST_TARGET := librelu_test.so
+RELU_TEST_CXX_FILES :=	\
+	src/so/relu_test/relu_test.cxx
+RELU_TEST_HXX_FILES :=	\
+	include/simple_cpu_if.h	\
+	include/vxe_common.hxx
+RELU_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-I$(VXENGINE_HOME)/alg				\
+	-I$(VXENGINE_HOME)/slm/sc/src/so/include
+RELU_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(SYSMODEL_TARGET)
 TARGETS += $(SIMPLE_TEST_TARGET)
+TARGETS += $(RELU_TEST_TARGET)
 
 
 # Main goal
@@ -105,6 +119,13 @@ $(SIMPLE_TEST_TARGET): $(SIMPLE_TEST_CXX_FILES) $(SIMPLE_TEST_HXX_FILES)
 	@echo "Building [$(SIMPLE_TEST_TARGET)]"
 	@g++ $(SIMPLE_TEST_CFLAGS) -o $(SIMPLE_TEST_TARGET)	\
 		$(SIMPLE_TEST_CXX_FILES) $(SIMPLE_TEST_LDFLAGS)
+
+
+# ReLU test build target
+$(RELU_TEST_TARGET): $(RELU_TEST_CXX_FILES) $(RELU_TEST_HXX_FILES)
+	@echo "Building [$(RELU_TEST_TARGET)]"
+	@g++ $(RELU_TEST_CFLAGS) -o $(RELU_TEST_TARGET)	\
+		$(RELU_TEST_CXX_FILES) $(RELU_TEST_LDFLAGS)
 
 
 # Do clean
