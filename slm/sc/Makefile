@@ -71,10 +71,23 @@ RELU_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 RELU_TEST_LDFLAGS := --shared -fPIC
 
 
+# MLP test build options
+MLP_TEST_TARGET := libmlp_test.so
+MLP_TEST_CXX_FILES :=	\
+	src/so/mlp_test/mlp_test.cxx
+MLP_TEST_HXX_FILES :=	\
+	include/simple_cpu_if.h	\
+	include/vxe_common.hxx
+MLP_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-I$(VXENGINE_HOME)/slm/sc/src/so/include
+MLP_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(SYSMODEL_TARGET)
 TARGETS += $(SIMPLE_TEST_TARGET)
 TARGETS += $(RELU_TEST_TARGET)
+TARGETS += $(MLP_TEST_TARGET)
 
 
 # Main goal
@@ -126,6 +139,13 @@ $(RELU_TEST_TARGET): $(RELU_TEST_CXX_FILES) $(RELU_TEST_HXX_FILES)
 	@echo "Building [$(RELU_TEST_TARGET)]"
 	@g++ $(RELU_TEST_CFLAGS) -o $(RELU_TEST_TARGET)	\
 		$(RELU_TEST_CXX_FILES) $(RELU_TEST_LDFLAGS)
+
+
+# MLP test build target
+$(MLP_TEST_TARGET): $(MLP_TEST_CXX_FILES) $(MLP_TEST_HXX_FILES)
+	@echo "Building [$(MLP_TEST_TARGET)]"
+	@g++ $(MLP_TEST_CFLAGS) -o $(MLP_TEST_TARGET)	\
+		$(MLP_TEST_CXX_FILES) $(MLP_TEST_LDFLAGS)
 
 
 # Do clean

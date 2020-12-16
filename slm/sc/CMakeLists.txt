@@ -114,3 +114,13 @@ add_library(relu_test SHARED
 target_include_directories(relu_test PUBLIC $ENV{VXENGINE_HOME}/alg)
 target_include_directories(relu_test PUBLIC $ENV{VXENGINE_HOME}/slm/sc/src/so/include)
 target_compile_options(relu_test PUBLIC --std=c++17 -O3 -g -Wall)
+
+
+# MLP test
+add_library(mlp_test SHARED
+	src/so/mlp_test/mlp_test.cxx
+	include/simple_cpu_if.h
+	include/vxe_common.hxx)
+
+target_include_directories(mlp_test PUBLIC $ENV{VXENGINE_HOME}/slm/sc/src/so/include)
+target_compile_options(mlp_test PUBLIC --std=c++17 -O3 -g -Wall)
