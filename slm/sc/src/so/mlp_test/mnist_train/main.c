@@ -44,17 +44,17 @@
 #define MNIST_IMAGE_MIN		(0.0)
 #define MNIST_IMAGE_MAX		(1.0)
 #define MNIST_LABEL_MAX		(1.0)
-#define MNIST_LIMIT_TRAIN_DB	(100)
-#define MNIST_LIMIT_TEST_DB	(100)
+#define MNIST_LIMIT_TRAIN_DB	(200)
+#define MNIST_LIMIT_TEST_DB	(10)
 
 
 /* Training parameters */
 #define MLP_MF		(0.9)		/* Momentum factor */
 #define MLP_LR		(0.0000001)	/* Learning rate */
 #define MLP_WD		(0.0)		/* Weight decay */
-#define MLP_BATCH	(10)		/* Batch size */
-#define MLP_EPOCHS_B	(10000)		/* Epochs per batch */
-#define MLP_EPOCHS	(10)		/* Epochs */
+#define MLP_BATCH	(40)		/* Batch size */
+#define MLP_EPOCHS_B	(40)		/* Epochs per batch */
+#define MLP_EPOCHS	(15000)		/* Epochs */
 
 
 /* MNIST train data set */
