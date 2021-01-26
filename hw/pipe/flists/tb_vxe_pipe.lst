@@ -1,0 +1,6 @@
+# Pipe testbench
+
++define+TRACE_FILE="tb_vxe_pipe.vcd"
++timescale+1us/100ns
+src/vxe_pipe.v
+tb/tb_vxe_pipe.v
