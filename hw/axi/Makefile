@@ -5,7 +5,8 @@
 # Available testbenches
 TESTBENCHES := \
 	tb_axi4_lite_biu \
-	tb_vxe_axi4slv_biu
+	tb_vxe_axi4slv_biu \
+	tb_vxe_axi4mas_biu
 
 
 TB ?=
