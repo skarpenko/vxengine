@@ -49,6 +49,7 @@ module tb_vxe_axi4slv_biu();
 	reg [2:0]		S_AXI4_AWSIZE;
 	reg [1:0]		S_AXI4_AWBURST;
 	reg			S_AXI4_AWLOCK;
+	reg [3:0]		S_AXI4_AWCACHE;
 	reg [2:0]		S_AXI4_AWPROT;
 	reg			S_AXI4_AWVALID;
 	wire			S_AXI4_AWREADY;
@@ -70,6 +71,7 @@ module tb_vxe_axi4slv_biu();
 	reg [2:0]		S_AXI4_ARSIZE;
 	reg [1:0]		S_AXI4_ARBURST;
 	reg			S_AXI4_ARLOCK;
+	reg [3:0]		S_AXI4_ARCACHE;
 	reg [2:0]		S_AXI4_ARPROT;
 	reg			S_AXI4_ARVALID;
 	wire			S_AXI4_ARREADY;
@@ -232,6 +234,7 @@ module tb_vxe_axi4slv_biu();
 		S_AXI4_AWSIZE = 3'b0;
 		S_AXI4_AWBURST = 2'b0;
 		S_AXI4_AWLOCK = 1'b0;
+		S_AXI4_AWCACHE = 4'b0;
 		S_AXI4_AWPROT = 3'b0;
 		S_AXI4_AWVALID = 1'b0;
 		S_AXI4_WDATA = {DATA_WIDTH{1'b0}};
@@ -245,6 +248,7 @@ module tb_vxe_axi4slv_biu();
 		S_AXI4_ARSIZE = 3'b0;
 		S_AXI4_ARBURST = 2'b0;
 		S_AXI4_ARLOCK = 1'b0;
+		S_AXI4_ARCACHE = 4'b0;
 		S_AXI4_ARPROT = 3'b0;
 		S_AXI4_ARVALID = 1'b0;
 		S_AXI4_RREADY = 1'b0;
@@ -371,6 +375,7 @@ module tb_vxe_axi4slv_biu();
 		.S_AXI4_AWSIZE(S_AXI4_AWSIZE),
 		.S_AXI4_AWBURST(S_AXI4_AWBURST),
 		.S_AXI4_AWLOCK(S_AXI4_AWLOCK),
+		.S_AXI4_AWCACHE(S_AXI4_AWCACHE),
 		.S_AXI4_AWPROT(S_AXI4_AWPROT),
 		.S_AXI4_AWVALID(S_AXI4_AWVALID),
 		.S_AXI4_AWREADY(S_AXI4_AWREADY),
@@ -389,6 +394,7 @@ module tb_vxe_axi4slv_biu();
 		.S_AXI4_ARSIZE(S_AXI4_ARSIZE),
 		.S_AXI4_ARBURST(S_AXI4_ARBURST),
 		.S_AXI4_ARLOCK(S_AXI4_ARLOCK),
+		.S_AXI4_ARCACHE(S_AXI4_ARCACHE),
 		.S_AXI4_ARPROT(S_AXI4_ARPROT),
 		.S_AXI4_ARVALID(S_AXI4_ARVALID),
 		.S_AXI4_ARREADY(S_AXI4_ARREADY),

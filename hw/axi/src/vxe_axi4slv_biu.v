@@ -37,6 +37,7 @@ module vxe_axi4slv_biu(
 	S_AXI4_AWSIZE,
 	S_AXI4_AWBURST,
 	S_AXI4_AWLOCK,
+	S_AXI4_AWCACHE,
 	S_AXI4_AWPROT,
 	S_AXI4_AWVALID,
 	S_AXI4_AWREADY,
@@ -55,6 +56,7 @@ module vxe_axi4slv_biu(
 	S_AXI4_ARSIZE,
 	S_AXI4_ARBURST,
 	S_AXI4_ARLOCK,
+	S_AXI4_ARCACHE,
 	S_AXI4_ARPROT,
 	S_AXI4_ARVALID,
 	S_AXI4_ARREADY,
@@ -95,6 +97,7 @@ input wire [7:0]		S_AXI4_AWLEN;
 input wire [2:0]		S_AXI4_AWSIZE;
 input wire [1:0]		S_AXI4_AWBURST;
 input wire			S_AXI4_AWLOCK;
+input wire [3:0]		S_AXI4_AWCACHE;
 input wire [2:0]		S_AXI4_AWPROT;
 input wire			S_AXI4_AWVALID;
 output wire			S_AXI4_AWREADY;
@@ -116,6 +119,7 @@ input wire [7:0]		S_AXI4_ARLEN;
 input wire [2:0]		S_AXI4_ARSIZE;
 input wire [1:0]		S_AXI4_ARBURST;
 input wire			S_AXI4_ARLOCK;
+input wire [3:0]		S_AXI4_ARCACHE;
 input wire [2:0]		S_AXI4_ARPROT;
 input wire			S_AXI4_ARVALID;
 output wire			S_AXI4_ARREADY;
