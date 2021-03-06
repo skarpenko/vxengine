@@ -75,17 +75,17 @@ module vxe_axi4mas_biu(
 	biu_awpop,
 	biu_bcid,
 	biu_bresp,
-	biu_bpush,
 	biu_bready,
-	biu_araddr,
+	biu_bpush,
 	biu_arcid,
+	biu_araddr,
 	biu_arvalid,
-	biu_rcid,
 	biu_arpop,
+	biu_rcid,
 	biu_rdata,
 	biu_rresp,
-	biu_rpush,
-	biu_rready
+	biu_rready,
+	biu_rpush
 );
 parameter ADDR_WIDTH = 32;
 parameter DATA_WIDTH = 32;
@@ -151,8 +151,8 @@ input wire			biu_awvalid;
 output reg			biu_awpop;
 output reg [CID_WIDTH-1:0]	biu_bcid;
 output reg [1:0]		biu_bresp;
-output reg			biu_bpush;
 input wire			biu_bready;
+output reg			biu_bpush;
 /* BIU interface read path */
 input wire [CID_WIDTH-1:0]	biu_arcid;
 input wire [ADDR_WIDTH-1:0]	biu_araddr;
@@ -161,8 +161,8 @@ output reg			biu_arpop;
 output reg [CID_WIDTH-1:0]	biu_rcid;
 output reg [DATA_WIDTH-1:0]	biu_rdata;
 output reg [1:0]		biu_rresp;
-output reg			biu_rpush;
 input wire			biu_rready;
+output reg			biu_rpush;
 
 
 /* Returns burst size signal value */

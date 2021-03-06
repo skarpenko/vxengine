@@ -92,8 +92,8 @@ module tb_vxe_axi4mas_biu();
 	wire			biu_awpop;
 	wire [CID_WIDTH-1:0]	biu_bcid;
 	wire [1:0]		biu_bresp;
-	wire			biu_bpush;
 	reg			biu_bready;
+	wire			biu_bpush;
 	/* BIU interface read path */
 	reg [CID_WIDTH-1:0]	biu_arcid;
 	reg [ADDR_WIDTH-1:0]	biu_araddr;
@@ -102,8 +102,8 @@ module tb_vxe_axi4mas_biu();
 	wire [CID_WIDTH-1:0]	biu_rcid;
 	wire [DATA_WIDTH-1:0]	biu_rdata;
 	wire [1:0]		biu_rresp;
-	wire			biu_rpush;
 	reg			biu_rready;
+	wire			biu_rpush;
 
 
 	always
@@ -304,17 +304,17 @@ module tb_vxe_axi4mas_biu();
 		.biu_awpop(biu_awpop),
 		.biu_bcid(biu_bcid),
 		.biu_bresp(biu_bresp),
-		.biu_bpush(biu_bpush),
 		.biu_bready(biu_bready),
-		.biu_araddr(biu_araddr),
+		.biu_bpush(biu_bpush),
 		.biu_arcid(biu_arcid),
+		.biu_araddr(biu_araddr),
 		.biu_arvalid(biu_arvalid),
-		.biu_rcid(biu_rcid),
 		.biu_arpop(biu_arpop),
+		.biu_rcid(biu_rcid),
 		.biu_rdata(biu_rdata),
 		.biu_rresp(biu_rresp),
-		.biu_rpush(biu_rpush),
-		.biu_rready(biu_rready)
+		.biu_rready(biu_rready),
+		.biu_rpush(biu_rpush)
 	);
 
 
