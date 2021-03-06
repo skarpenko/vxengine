@@ -97,7 +97,7 @@ localparam [1:0] EXOKAY	= 2'b01;
 localparam [1:0] SLVERR	= 2'b10;
 localparam [1:0] DECERR	= 2'b11;
 /* FSM states */
-localparam FSM_AXI_IDLE = 1'b0;
+localparam FSM_AXI_READY = 1'b0;
 localparam FSM_AXI_WAIT = 1'b1;
 /* AXI global signals */
 input wire			M_AXI4_ACLK;
@@ -201,9 +201,9 @@ begin
 		M_AXI4_AWVALID <= 1'b0;
 		M_AXI4_WVALID <= 1'b0;
 		biu_awpop <= 1'b0;
-		awfsm_state <= FSM_AXI_IDLE;
+		awfsm_state <= FSM_AXI_READY;
 	end
-	else if(awfsm_state == FSM_AXI_IDLE)
+	else if(awfsm_state == FSM_AXI_READY)
 	begin
 		M_AXI4_AWVALID <= 1'b0;
 		M_AXI4_WVALID <= 1'b0;
@@ -233,7 +233,7 @@ begin
 			M_AXI4_WVALID <= 1'b0;
 
 		if(M_AXI4_AWREADY && M_AXI4_WREADY)
-			awfsm_state <= FSM_AXI_IDLE;
+			awfsm_state <= FSM_AXI_READY;
 	end
 end
 
@@ -278,9 +278,9 @@ begin
 	begin
 		M_AXI4_ARVALID <= 1'b0;
 		biu_arpop <= 1'b0;
-		arfsm_state <= FSM_AXI_IDLE;
+		arfsm_state <= FSM_AXI_READY;
 	end
-	else if(arfsm_state == FSM_AXI_IDLE)
+	else if(arfsm_state == FSM_AXI_READY)
 	begin
 		M_AXI4_ARVALID <= 1'b0;
 		biu_arpop <= 1'b0;
@@ -300,7 +300,7 @@ begin
 		biu_arpop <= 1'b0;
 
 		if(M_AXI4_ARREADY)
-			arfsm_state <= FSM_AXI_IDLE;
+			arfsm_state <= FSM_AXI_READY;
 	end
 end
 
