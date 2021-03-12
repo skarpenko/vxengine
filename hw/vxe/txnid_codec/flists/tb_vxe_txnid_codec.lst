@@ -1,0 +1,7 @@
+# Transaction Id coder and decoder testbench
+
++define+TRACE_FILE="tb_vxe_txnid_codec.vcd"
++timescale+1us/100ns
+src/vxe_txnid_coder.v
+src/vxe_txnid_decoder.v
+tb/tb_vxe_txnid_codec.v
