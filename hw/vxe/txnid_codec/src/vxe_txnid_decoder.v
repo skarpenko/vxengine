@@ -29,8 +29,7 @@
 
 
 /* Txn Id decoder */
-module vxe_txnid_decoder
-(
+module vxe_txnid_decoder(
 	i_txnid,
 	o_client_id,
 	o_thread_id,

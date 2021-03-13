@@ -29,8 +29,7 @@
 
 
 /* Txn Id coder */
-module vxe_txnid_coder
-(
+module vxe_txnid_coder(
 	i_client_id,
 	i_thread_id,
 	i_argument,
