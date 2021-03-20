@@ -1,5 +1,5 @@
 # The VxEngine Project
-# VxEngine top testbench
+# Transaction Id coder and decoder testbench
 
 
 # Available testbenches
