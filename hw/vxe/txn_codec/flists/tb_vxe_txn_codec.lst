@@ -1,0 +1,9 @@
+# Transaction coders and decoders testbench
+
++define+TRACE_FILE="tb_vxe_txn_codec.vcd"
++timescale+1us/100ns
+src/vxe_txnreq_coder.v
+src/vxe_txnreq_decoder.v
+src/vxe_txnres_coder.v
+src/vxe_txnres_decoder.v
+tb/tb_vxe_txn_codec.v
