@@ -97,8 +97,9 @@ localparam [1:0] EXOKAY	= 2'b01;
 localparam [1:0] SLVERR	= 2'b10;
 localparam [1:0] DECERR	= 2'b11;
 /* FSM states */
-localparam FSM_AXI_READY = 1'b0;
-localparam FSM_AXI_WAIT = 1'b1;
+localparam [2:0] FSM_IDLE = 3'b001;
+localparam [2:0] FSM_SEND = 3'b010;
+localparam [2:0] FSM_WAIT = 3'b100;
 /* AXI global signals */
 input wire			M_AXI4_ACLK;
 input wire			M_AXI4_ARESETn;
@@ -191,7 +192,7 @@ assign M_AXI4_WLAST = 1'b1;			/* Always last */
 
 
 /* Write request channel FSM state */
-reg awfsm_state;
+reg [2:0] awfsm_state;
 
 /* Request */
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
@@ -201,14 +202,18 @@ begin
 		M_AXI4_AWVALID <= 1'b0;
 		M_AXI4_WVALID <= 1'b0;
 		biu_awpop <= 1'b0;
-		awfsm_state <= FSM_AXI_READY;
+		awfsm_state <= FSM_IDLE;
 	end
-	else if(awfsm_state == FSM_AXI_READY)
+	else if(awfsm_state == FSM_IDLE)
 	begin
-		M_AXI4_AWVALID <= 1'b0;
-		M_AXI4_WVALID <= 1'b0;
-		biu_awpop <= 1'b0;
-
+		if(biu_awvalid)
+		begin
+			biu_awpop <= 1'b1;
+			awfsm_state <= FSM_SEND;
+		end
+	end
+	else if(awfsm_state == FSM_SEND)
+	begin
 		if(biu_awvalid)
 		begin
 			M_AXI4_AWID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, biu_awcid };
@@ -217,15 +222,22 @@ begin
 			M_AXI4_WDATA <= biu_awdata;
 			M_AXI4_WSTRB <= biu_awstrb;
 			M_AXI4_WVALID <= 1'b1;
-			biu_awpop <= 1'b1;
 			if(!M_AXI4_AWREADY || !M_AXI4_WREADY)
-				awfsm_state <= FSM_AXI_WAIT;
+			begin
+				biu_awpop <= 1'b0;
+				awfsm_state <= FSM_WAIT;
+			end
+		end
+		else
+		begin
+			M_AXI4_AWVALID <= 1'b0;
+			M_AXI4_WVALID <= 1'b0;
+			biu_awpop <= 1'b0;
+			awfsm_state <= FSM_IDLE;
 		end
 	end
-	else if(awfsm_state == FSM_AXI_WAIT)
+	else if(awfsm_state == FSM_WAIT)
 	begin
-		biu_awpop <= 1'b0;
-
 		if(M_AXI4_AWREADY)
 			M_AXI4_AWVALID <= 1'b0;
 
@@ -233,27 +245,65 @@ begin
 			M_AXI4_WVALID <= 1'b0;
 
 		if(M_AXI4_AWREADY && M_AXI4_WREADY)
-			awfsm_state <= FSM_AXI_READY;
+		begin
+			biu_awpop <= 1'b1;
+			awfsm_state <= FSM_SEND;
+		end
 	end
 end
 
 
-assign M_AXI4_BREADY = biu_bready;
-
 /* Response */
+assign M_AXI4_BREADY = ~bfull && ~balmost_full;
+
+reg [(CID_WIDTH+2)-1:0] bfifo[0:3];	/* Incoming response data FIFO */
+reg [2:0] brp;				/* Read pointer */
+reg [2:0] bwp;				/* Write pointer */
+reg bblock;				/* Block incoming responses */
+/* FIFO states */
+wire bfull = (brp[1:0] == bwp[1:0]) && (brp[2] != bwp[2]);
+wire bempty = (brp[1:0] == bwp[1:0]) && (brp[2] == bwp[2]);
+wire balmost_full = ((brp[1:0] - 1'b1) == bwp[1:0]) && (brp[2] != bwp[2]);
+
+
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
 begin
 	if(!M_AXI4_ARESETn)
 	begin
-		biu_bpush <= 1'b0;
+		bwp <= 3'b000;
+		bblock <= 1'b0;
 	end
-	else if(M_AXI4_BVALID && biu_bready)
+	else if(!bblock)
 	begin
-		biu_bcid <= M_AXI4_BID[CID_WIDTH-1:0];
-		biu_bresp <= M_AXI4_BRESP;
-		biu_bpush <= 1'b1;
+		if(M_AXI4_BVALID && ~bfull)
+		begin
+			bfifo[bwp[1:0]] <= { M_AXI4_BID[CID_WIDTH-1:0],
+				M_AXI4_BRESP };
+			bwp <= bwp + 1'b1;
+		end
+		bblock <= ~M_AXI4_BREADY;
 	end
 	else
+	begin
+		if(M_AXI4_BREADY)
+			bblock <= 1'b0;
+	end
+end
+
+always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
+begin
+	if(!M_AXI4_ARESETn)
+	begin
+		brp <= 3'b000;
+		biu_bpush <= 1'b0;
+	end
+	else if(~bempty && biu_bready)
+	begin
+		{ biu_bcid, biu_bresp } <= bfifo[brp[1:0]];
+		biu_bpush <= 1'b1;
+		brp <= brp + 1'b1;
+	end
+	else if(biu_bready)
 		biu_bpush <= 1'b0;
 end
 
@@ -269,7 +319,7 @@ assign M_AXI4_ARPROT = 3'b010;			/* Unprivileged, non-secure, data access */
 
 
 /* Read request channel FSM state */
-reg arfsm_state;
+reg [2:0] arfsm_state;
 
 /* Request */
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
@@ -278,50 +328,98 @@ begin
 	begin
 		M_AXI4_ARVALID <= 1'b0;
 		biu_arpop <= 1'b0;
-		arfsm_state <= FSM_AXI_READY;
+		arfsm_state <= FSM_IDLE;
 	end
-	else if(arfsm_state == FSM_AXI_READY)
+	else if(arfsm_state == FSM_IDLE)
 	begin
-		M_AXI4_ARVALID <= 1'b0;
-		biu_arpop <= 1'b0;
-
+		if(biu_arvalid)
+		begin
+			biu_arpop <= 1'b1;
+			arfsm_state <= FSM_SEND;
+		end
+	end
+	else if(arfsm_state == FSM_SEND)
+	begin
 		if(biu_arvalid)
 		begin
 			M_AXI4_ARID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, biu_arcid };
 			M_AXI4_ARADDR <= biu_araddr;
 			M_AXI4_ARVALID <= 1'b1;
-			biu_arpop <= 1'b1;
 			if(!M_AXI4_ARREADY)
-				arfsm_state <= FSM_AXI_WAIT;
+			begin
+				biu_arpop <= 1'b0;
+				arfsm_state <= FSM_WAIT;
+			end
+		end
+		else
+		begin
+			M_AXI4_ARVALID <= 1'b0;
+			biu_arpop <= 1'b0;
+			arfsm_state <= FSM_IDLE;
 		end
 	end
-	else if(arfsm_state == FSM_AXI_WAIT)
+	else if(arfsm_state == FSM_WAIT)
 	begin
-		biu_arpop <= 1'b0;
-
 		if(M_AXI4_ARREADY)
-			arfsm_state <= FSM_AXI_READY;
+		begin
+			biu_arpop <= 1'b1;
+			arfsm_state <= FSM_SEND;
+		end
 	end
 end
 
 
-assign M_AXI4_RREADY = biu_rready;
-
 /* Response */
+assign M_AXI4_RREADY = ~rfull && ~ralmost_full;
+
+reg [(CID_WIDTH+DATA_WIDTH+2)-1:0] rfifo[0:3];	/* Incoming response data FIFO */
+reg [2:0] rrp;					/* Read pointer */
+reg [2:0] rwp;					/* Write pointer */
+reg rblock;					/* Block incoming responses */
+/* FIFO states */
+wire rfull = (rrp[1:0] == rwp[1:0]) && (rrp[2] != rwp[2]);
+wire rempty = (rrp[1:0] == rwp[1:0]) && (rrp[2] == rwp[2]);
+wire ralmost_full = ((rrp[1:0] - 1'b1) == rwp[1:0]) && (rrp[2] != rwp[2]);
+
+
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
 begin
 	if(!M_AXI4_ARESETn)
 	begin
-		biu_rpush <= 1'b0;
+		rwp <= 3'b000;
+		rblock <= 1'b0;
 	end
-	else if(M_AXI4_RVALID && biu_rready)
+	else if(!rblock)
 	begin
-		biu_rcid <= M_AXI4_RID[CID_WIDTH-1:0];
-		biu_rdata <= M_AXI4_RDATA;
-		biu_rresp <= M_AXI4_RRESP;
-		biu_rpush <= 1'b1;
+		if(M_AXI4_RVALID && ~rfull)
+		begin
+			rfifo[rwp[1:0]] <= { M_AXI4_RID[CID_WIDTH-1:0],
+				M_AXI4_RDATA, M_AXI4_RRESP };
+			rwp <= rwp + 1'b1;
+		end
+		rblock <= ~M_AXI4_RREADY;
 	end
 	else
+	begin
+		if(M_AXI4_RREADY)
+			rblock <= 1'b0;
+	end
+end
+
+always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
+begin
+	if(!M_AXI4_ARESETn)
+	begin
+		rrp <= 3'b000;
+		biu_rpush <= 1'b0;
+	end
+	else if(~rempty && biu_rready)
+	begin
+		{ biu_rcid, biu_rdata, biu_rresp } <= rfifo[rrp[1:0]];
+		biu_rpush <= 1'b1;
+		rrp <= rrp + 1'b1;
+	end
+	else if(biu_rready)
 		biu_rpush <= 1'b0;
 end
 

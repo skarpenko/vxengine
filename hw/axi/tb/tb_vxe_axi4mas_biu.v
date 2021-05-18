@@ -126,11 +126,11 @@ module tb_vxe_axi4mas_biu();
 
 		@(posedge clk)
 		begin
-			biu_arvalid <= 1'b0;
 		end
 
 		@(posedge clk)
 		begin
+			biu_arvalid <= 1'b0;
 		end
 	end
 	endtask
@@ -154,11 +154,11 @@ module tb_vxe_axi4mas_biu();
 
 		@(posedge clk)
 		begin
-			biu_awvalid <= 1'b0;
 		end
 
 		@(posedge clk)
 		begin
+			biu_awvalid <= 1'b0;
 		end
 	end
 	endtask
