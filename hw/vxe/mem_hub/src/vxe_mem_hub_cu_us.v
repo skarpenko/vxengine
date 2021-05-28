@@ -38,11 +38,11 @@ module vxe_mem_hub_cu_us(
 	i_rqa_vld,
 	i_rqa,
 	o_rqa_rd,
-	/* Route to Master 0  */
+	/* Route to Master 0 */
 	i_m0_rqa_rdy,
 	o_m0_rqa,
 	o_m0_rqa_wr,
-	/* Route to Master 1  */
+	/* Route to Master 1 */
 	i_m1_rqa_rdy,
 	o_m1_rqa,
 	o_m1_rqa_wr
@@ -61,11 +61,11 @@ input wire		i_m_sel;
 input wire		i_rqa_vld;
 input wire [43:0]	i_rqa;
 output reg		o_rqa_rd;
-/* Route to Master 0  */
+/* Route to Master 0 */
 input wire		i_m0_rqa_rdy;
 output wire [43:0]	o_m0_rqa;
 output wire		o_m0_rqa_wr;
-/* Route to Master 1  */
+/* Route to Master 1 */
 input wire		i_m1_rqa_rdy;
 output wire [43:0]	o_m1_rqa;
 output wire		o_m1_rqa_wr;
