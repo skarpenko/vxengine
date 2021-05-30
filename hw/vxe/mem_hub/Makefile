@@ -4,7 +4,8 @@
 
 # Available testbenches
 TESTBENCHES := \
-	tb_vxe_mem_hub_cu_us
+	tb_vxe_mem_hub_cu_us	\
+	tb_vxe_mem_hub_cu_ds
 
 
 TB ?=
