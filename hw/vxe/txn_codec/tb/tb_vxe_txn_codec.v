@@ -38,6 +38,7 @@ module tb_vxe_txn_codec();
 	localparam PCLK = 2*HCLK;	/* Clock period */
 
 	reg		clk;
+	/***/
 	reg [5:0]	i_txnid_rq;
 	reg		i_rnw_rq;
 	reg [36:0]	i_addr_rq;
@@ -50,6 +51,7 @@ module tb_vxe_txn_codec();
 	wire [36:0]	o_addr_rq;
 	wire [63:0]	o_data_rq;
 	wire [7:0]	o_ben_rq;
+	/***/
 	reg [5:0]	i_txnid_rs;
 	reg		i_rnw_rs;
 	reg [1:0]	i_err_rs;
@@ -60,6 +62,28 @@ module tb_vxe_txn_codec();
 	wire		o_rnw_rs;
 	wire [1:0]	o_err_rs;
 	wire [63:0]	o_data_rs;
+	/***/
+	reg [5:0]	i_txnid_rqa;
+	reg		i_rnw_rqa;
+	reg [36:0]	i_addr_rqa;
+	wire [43:0]	reqa_vec_txn;
+	wire [5:0]	o_txnid_rqa;
+	wire		o_rnw_rqa;
+	wire [36:0]	o_addr_rqa;
+	/***/
+	reg [63:0]	i_data_rqd;
+	reg [7:0]	i_ben_rqd;
+	wire [71:0]	reqd_vec_dat;
+	wire [63:0]	o_data_rqd;
+	wire [7:0]	o_ben_rqd;
+	/***/
+	reg [5:0]	i_txnid_rss;
+	reg		i_rnw_rss;
+	reg [1:0]	i_err_rss;
+	wire [8:0]	ress_vec_txn;
+	wire [5:0]	o_txnid_rss;
+	wire		o_rnw_rss;
+	wire [1:0]	o_err_rss;
 
 	always
 		#HCLK clk = !clk;
@@ -71,15 +95,28 @@ module tb_vxe_txn_codec();
 		$dumpvars(0, tb_vxe_txn_codec);
 
 		clk = 1;
+		/***/
 		i_txnid_rq = 6'b0;
 		i_rnw_rq = 1'b0;
 		i_addr_rq = 37'b0;
 		i_data_rq = 64'b0;
 		i_ben_rq = 8'b0;
+		/***/
 		i_txnid_rs = 6'b0;
 		i_rnw_rs = 1'b0;
 		i_err_rs = 2'b0;
 		i_data_rs = 64'b0;
+		/***/
+		i_txnid_rqa = 6'b0;
+		i_rnw_rqa = 1'b0;
+		i_addr_rqa = 37'b0;
+		/***/
+		i_data_rqd = 64'b0;
+		i_ben_rqd = 8'b0;
+		/***/
+		i_txnid_rss = 6'b0;
+		i_rnw_rss = 1'b0;
+		i_err_rss = 2'b0;
 
 
 		@(posedge clk);
@@ -93,6 +130,13 @@ module tb_vxe_txn_codec();
 			i_addr_rq <= 37'h03_0303_0303;
 			i_data_rq <= 64'hfefe_fafa_dada_dede;
 			i_ben_rq <= 8'h33;
+			/***/
+			i_txnid_rqa <= 6'h3f;
+			i_rnw_rqa <= 1'b0;
+			i_addr_rqa <= 37'h03_0303_0303;
+			/***/
+			i_data_rqd <= 64'hfefe_fafa_dada_dede;
+			i_ben_rqd <= 8'h33;
 		end
 
 		@(posedge clk);
@@ -105,6 +149,13 @@ module tb_vxe_txn_codec();
 			i_addr_rq <= 37'h1f_1313_1313;
 			i_data_rq <= 64'hdede_dada_fafa_fefe;
 			i_ben_rq <= 8'h11;
+			/***/
+			i_txnid_rqa <= 6'h2a;
+			i_rnw_rqa <= 1'b1;
+			i_addr_rqa <= 37'h1f_1313_1313;
+			/***/
+			i_data_rqd <= 64'hdede_dada_fafa_fefe;
+			i_ben_rqd <= 8'h11;
 		end
 
 		@(posedge clk);
@@ -117,6 +168,10 @@ module tb_vxe_txn_codec();
 			i_rnw_rs <= 1'b0;
 			i_err_rs <= 2'b11;
 			i_data_rs <= 64'hfefe_fafa_dada_dede;
+			/***/
+			i_txnid_rss <= 6'h3f;
+			i_rnw_rss <= 1'b0;
+			i_err_rss <= 2'b11;
 		end
 
 		@(posedge clk);
@@ -129,6 +184,10 @@ module tb_vxe_txn_codec();
 			i_rnw_rs <= 1'b1;
 			i_err_rs <= 2'b10;
 			i_data_rs <= 64'hdede_dada_fafa_fefe;
+			/***/
+			i_txnid_rss <= 6'h2a;
+			i_rnw_rss <= 1'b1;
+			i_err_rss <= 2'b10;
 		end
 
 
@@ -173,6 +232,49 @@ module tb_vxe_txn_codec();
 		.o_rnw(o_rnw_rs),
 		.o_err(o_err_rs),
 		.o_data(o_data_rs)
+	);
+
+
+	/* Request coder/decoder instances (address only) */
+	vxe_txnreqa_coder txnreqa_coder(
+		.i_txnid(i_txnid_rqa),
+		.i_rnw(i_rnw_rqa),
+		.i_addr(i_addr_rqa),
+		.o_req_vec_txn(reqa_vec_txn)
+	);
+	vxe_txnreqa_decoder txnreqa_decoder(
+		.i_req_vec_txn(reqa_vec_txn),
+		.o_txnid(o_txnid_rqa),
+		.o_rnw(o_rnw_rqa),
+		.o_addr(o_addr_rqa)
+	);
+
+
+	/* Request coder/decoder instances (data only) */
+	vxe_txnreqd_coder txnreqd_coder(
+		.i_data(i_data_rqd),
+		.i_ben(i_ben_rqd),
+		.o_req_vec_dat(reqd_vec_dat)
+	);
+	vxe_txnreqd_decoder txnreqd_decoder(
+		.i_req_vec_dat(reqd_vec_dat),
+		.o_data(o_data_rqd),
+		.o_ben(o_ben_rqd)
+	);
+
+
+	/* Response coder/decoder instances (status only) */
+	vxe_txnress_coder txnress_coder(
+		.i_txnid(i_txnid_rss),
+		.i_rnw(i_rnw_rss),
+		.i_err(i_err_rss),
+		.o_res_vec_txn(ress_vec_txn)
+	);
+	vxe_txnress_decoder txnress_decoder(
+		.i_res_vec_txn(ress_vec_txn),
+		.o_txnid(o_txnid_rss),
+		.o_rnw(o_rnw_rss),
+		.o_err(o_err_rss)
 	);
 
 
