@@ -49,8 +49,8 @@ module vxe_mem_hub_cu_us(
 );
 /* FSM states */
 localparam [1:0]	FSM_IDLE = 2'b00;	/* Idle */
-localparam [1:0]	FSM_RDXX = 2'b10;	/* Read source */
-localparam [1:0]	FSM_XXWR = 2'b01;	/* Write destination */
+localparam [1:0]	FSM_RDXX = 2'b01;	/* Read source */
+localparam [1:0]	FSM_XXWR = 2'b10;	/* Write destination */
 localparam [1:0]	FSM_RDWR = 2'b11;	/* Read and write */
 /* Global signals */
 input wire		clk;
