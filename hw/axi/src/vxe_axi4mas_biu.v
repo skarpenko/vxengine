@@ -260,10 +260,11 @@ reg [(CID_WIDTH+2)-1:0] bfifo[0:3];	/* Incoming response data FIFO */
 reg [2:0] brp;				/* Read pointer */
 reg [2:0] bwp;				/* Write pointer */
 reg bblock;				/* Block incoming responses */
+wire [2:0] brp1 = brp - 1'b1;		/* Read pointer - 1 */
 /* FIFO states */
 wire bfull = (brp[1:0] == bwp[1:0]) && (brp[2] != bwp[2]);
 wire bempty = (brp[1:0] == bwp[1:0]) && (brp[2] == bwp[2]);
-wire balmost_full = ((brp[1:0] - 1'b1) == bwp[1:0]) && (brp[2] != bwp[2]);
+wire balmost_full = (brp1[1:0] == bwp[1:0]) && (brp1[2] != bwp[2]);
 
 
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
@@ -376,10 +377,11 @@ reg [(CID_WIDTH+DATA_WIDTH+2)-1:0] rfifo[0:3];	/* Incoming response data FIFO */
 reg [2:0] rrp;					/* Read pointer */
 reg [2:0] rwp;					/* Write pointer */
 reg rblock;					/* Block incoming responses */
+wire [2:0] rrp1 = rrp - 1'b1;			/* Read pointer - 1 */
 /* FIFO states */
 wire rfull = (rrp[1:0] == rwp[1:0]) && (rrp[2] != rwp[2]);
 wire rempty = (rrp[1:0] == rwp[1:0]) && (rrp[2] == rwp[2]);
-wire ralmost_full = ((rrp[1:0] - 1'b1) == rwp[1:0]) && (rrp[2] != rwp[2]);
+wire ralmost_full = (rrp1[1:0] == rwp[1:0]) && (rrp1[2] != rwp[2]);
 
 
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
