@@ -29,6 +29,6 @@
 
 
 /* Client Ids */
-localparam [1:0] CLNT_CU	= 0;	/* Control Unit */
-localparam [1:0] CLNT_VPU0	= 1;	/* Vector Processing Unit 0 */
-localparam [1:0] CLNT_VPU1	= 2;	/* Vector Processing Unit 1 */
+localparam [1:0] CLNT_CU	= 2'd0;		/* Control Unit */
+localparam [1:0] CLNT_VPU0	= 2'd1;		/* Vector Processing Unit 0 */
+localparam [1:0] CLNT_VPU1	= 2'd2;		/* Vector Processing Unit 1 */
