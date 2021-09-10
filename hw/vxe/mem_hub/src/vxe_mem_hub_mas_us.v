@@ -224,7 +224,7 @@ begin
 			begin
 				/* If request is WRITE and hold register is
 				 * valid then copy data from the hold register
-				 * to outgoing data FIFO. The re-enable reads
+				 * to outgoing data FIFO. Then re-enable read
 				 * from data channel.
 				 */
 				m_rqd_fifo[m_rqd_fifo_wp[1:0]] <= v0_data_hold_r;
@@ -298,7 +298,7 @@ begin
 			begin
 				/* If request is WRITE and hold register is
 				 * valid then copy data from the hold register
-				 * to outgoing data FIFO. The re-enable reads
+				 * to outgoing data FIFO. Then re-enable read
 				 * from data channel.
 				 */
 				m_rqd_fifo[m_rqd_fifo_wp[1:0]] <= v1_data_hold_r;
@@ -311,7 +311,7 @@ begin
 				/* If request is READ, incoming data is valid
 				 * and hold register is not valid then copy data
 				 * to the hold register and disable further
-				 * reads from data channel.
+				 * read from data channel.
 				 *
 				 * It is required to keep proper order of
 				 * request and data channels.
