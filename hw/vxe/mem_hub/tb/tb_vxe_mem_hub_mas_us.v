@@ -680,7 +680,7 @@ module tb_vxe_mem_hub_mas_us();
 		.out_vld(vpu1_us_rqd_vld)
 	);
 
-	/* Address FIFO for master port requests */
+	/* Address FIFO for outgoing requests to master port */
 	vxe_fifo #(
 		.DATA_WIDTH(44),
 		.DEPTH_POW2(2)
@@ -695,7 +695,7 @@ module tb_vxe_mem_hub_mas_us();
 		.out_vld(m_rqa_vld)
 	);
 
-	/* Data FIFO for master port requests */
+	/* Data FIFO for outgoing requests to master port */
 	vxe_fifo #(
 		.DATA_WIDTH(72),
 		.DEPTH_POW2(2)
