@@ -6,7 +6,5 @@
 ${VXENGINE_HOME}/hw/fifo/src/vxe_fifo.v
 ${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqa_decoder.v
 ${VXENGINE_HOME}/hw/vxe/txnid_codec/src/vxe_txnid_decoder.v
-${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqa_coder.v
-${VXENGINE_HOME}/hw/vxe/txnid_codec/src/vxe_txnid_coder.v
 src/vxe_mem_hub_vpu_us.v
 tb/tb_vxe_mem_hub_vpu_us.v
