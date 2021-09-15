@@ -7,7 +7,8 @@ TESTBENCHES := \
 	tb_vxe_mem_hub_cu_us	\
 	tb_vxe_mem_hub_cu_ds	\
 	tb_vxe_mem_hub_vpu_us	\
-	tb_vxe_mem_hub_mas_us
+	tb_vxe_mem_hub_mas_us	\
+	tb_vxe_mem_hub_mas_ds
 
 
 TB ?=
