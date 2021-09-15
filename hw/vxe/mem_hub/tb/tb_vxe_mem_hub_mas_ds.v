@@ -337,7 +337,6 @@ module tb_vxe_mem_hub_mas_ds();
 		start_send_resp(CLNT_VPU0, 1'b0, 64'hB1B2B3B4B5B6B7B8, 4'h4);
 		start_send_resp(CLNT_VPU1, 1'b0, 64'hC1C2C3C4C5C6C7C8, 4'h4);
 
-
 		start_send_resp(CLNT_CU, 1'b0, 64'hA1A2A3A4A5A6A7A8, 4'h5);
 		start_send_resp(CLNT_VPU0, 1'b0, 64'hB1B2B3B4B5B6B7B8, 4'h5);
 		start_send_resp(CLNT_VPU1, 1'b0, 64'hC1C2C3C4C5C6C7C8, 4'h5);
@@ -406,7 +405,6 @@ module tb_vxe_mem_hub_mas_ds();
 		start_send_resp(CLNT_VPU0, 1'b0, 64'hB1B2B3B4B5B6B7B8, 4'h4);
 		start_send_resp(CLNT_VPU1, 1'b0, 64'hC1C2C3C4C5C6C7C8, 4'h4);
 
-
 		start_send_resp(CLNT_CU, 1'b0, 64'hA1A2A3A4A5A6A7A8, 4'h5);
 		start_send_resp(CLNT_VPU0, 1'b0, 64'hB1B2B3B4B5B6B7B8, 4'h5);
 		start_send_resp(CLNT_VPU1, 1'b0, 64'hC1C2C3C4C5C6C7C8, 4'h5);
@@ -474,7 +472,6 @@ module tb_vxe_mem_hub_mas_ds();
 		start_send_resp(CLNT_CU, 1'b0, 64'hA1A2A3A4A5A6A7A8, 4'h4);
 		start_send_resp(CLNT_VPU0, 1'b0, 64'hB1B2B3B4B5B6B7B8, 4'h4);
 		start_send_resp(CLNT_VPU1, 1'b0, 64'hC1C2C3C4C5C6C7C8, 4'h4);
-
 
 		start_send_resp(CLNT_CU, 1'b0, 64'hA1A2A3A4A5A6A7A8, 4'h5);
 		start_send_resp(CLNT_VPU0, 1'b0, 64'hB1B2B3B4B5B6B7B8, 4'h5);
