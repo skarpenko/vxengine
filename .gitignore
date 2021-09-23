@@ -19,6 +19,7 @@
 *.tar
 *.vcd
 *.xz
+*.gtkw
 
 #
 # git files that shouldn't be ignored
