@@ -1,0 +1,18 @@
+# VxE Memory Hub testbench (set of simple routing tests)
+
+
++define+TRACE_FILE="tb_vxe_mem_hub_simple.vcd"
++incdir+${VXENGINE_HOME}/hw/vxe/include
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/fifo/src/vxe_fifo.v
+${VXENGINE_HOME}/hw/vxe/txnid_codec/src/vxe_txnid_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqa_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnress_decoder.v
+src/vxe_mem_hub_cu_ds.v
+src/vxe_mem_hub_cu_us.v
+src/vxe_mem_hub_mas_ds.v
+src/vxe_mem_hub_mas_us.v
+src/vxe_mem_hub_vpu_ds.v
+src/vxe_mem_hub_vpu_us.v
+src/vxe_mem_hub.v
+tb/tb_vxe_mem_hub_simple.v
