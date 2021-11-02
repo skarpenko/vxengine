@@ -1,0 +1,11 @@
+# VxE AXI switch testbench (set of simple routing tests)
+
++define+TRACE_FILE="tb_vxe_axi_switch.vcd"
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqa_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqd_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnress_coder.v
+src/vxe_axi_switch_us.v
+src/vxe_axi_switch_ds.v
+src/vxe_axi_switch.v
+tb/tb_vxe_axi_switch.v
