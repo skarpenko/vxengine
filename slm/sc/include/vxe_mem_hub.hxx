@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 
 #include <iostream>
 #include <systemc.h>
+#include "register_set.hxx"
+#include "vxe_common.hxx"
 #include "vxe_internal.hxx"
 
 
@@ -58,13 +60,16 @@ SC_MODULE(vxe_mem_hub) {
 	sc_fifo_in<vxe::vxe_mem_rq> master1_fifo_in;
 	sc_fifo_out<vxe::vxe_mem_rq> master1_fifo_out;
 
-	SC_CTOR(vxe_mem_hub)
-		: clk("clk"), nrst("nrst")
+	SC_HAS_PROCESS(vxe_mem_hub);
+
+	vxe_mem_hub(::sc_core::sc_module_name name, register_set_if<uint32_t>& regs)
+		: ::sc_core::sc_module(name), clk("clk"), nrst("nrst")
 		, cu_fifo_in("cu_fifo_in"), cu_fifo_out("cu_fifo_out")
 		, vpu0_fifo_in("vpu0_fifo_in"), vpu0_fifo_out("vpu0_fifo_out")
 		, vpu1_fifo_in("vpu1_fifo_in"), vpu1_fifo_out("vpu1_fifo_out")
 		, master0_fifo_in("master0_fifo_in"), master0_fifo_out("master0_fifo_out")
 		, master1_fifo_in("master1_fifo_in"), master1_fifo_out("master1_fifo_out")
+		, m_regs(regs)
 	{
 		SC_THREAD(cu_fifo_in_thread);
 			sensitive << clk.pos();
@@ -103,9 +108,10 @@ private:
 	// Returns destination master port for a given request
 	dest_port pick_port(const vxe::vxe_mem_rq& rq)
 	{
-		// CU requests always go through M0
+		// Master for CU requests is selected through REG_CTRL register
 		if(rq.get_client_id() == vxe::mhc::CU)
-			return dest_port::M0;
+			return m_regs.get_reg(vxe::regi::REG_CTRL) & vxe::bits::REG_CTRL::CU_MAS_SEL_MASK
+				? dest_port::M1 : dest_port::M0;
 
 		// VPU loads depend on argument type, stores depend on VPU number
 		if(rq.req == vxe::vxe_mem_rq::rqtype::REQ_RD)
@@ -305,6 +311,8 @@ private:
 	}
 
 private:
+	// VxE register file
+	register_set_if<uint32_t>& m_regs;
 	// Upstream traffic FIFOs
 	sc_fifo<vxe::vxe_mem_rq> fifo_cu_to_m0;
 	sc_fifo<vxe::vxe_mem_rq> fifo_cu_to_m1;

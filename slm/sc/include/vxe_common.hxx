@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -75,7 +75,7 @@ namespace vxe {
 	// Register valid bit masks
 	namespace regm {
 		static constexpr unsigned REG_ID			= 0xFFFFFFFF;
-		static constexpr unsigned REG_CTRL			= 0x0000000F;
+		static constexpr unsigned REG_CTRL			= 0x00000001;
 		static constexpr unsigned REG_STATUS			= 0x0000000F;
 		static constexpr unsigned REG_INTR_ACT			= 0x0000000F;
 		static constexpr unsigned REG_INTR_MSK			= 0x0000000F;
@@ -92,6 +92,12 @@ namespace vxe {
 
 	// Register bit fields
 	namespace bits {
+
+		// Control register
+		namespace REG_CTRL {
+			static constexpr unsigned CU_MAS_SEL_MASK	= 0x00000001;
+			static constexpr unsigned CU_MAS_SEL_SHIFT	= 0x00000000;
+		} // namespace REG_CTRL
 
 		// Status register
 		namespace REG_STATUS {
