@@ -61,6 +61,7 @@ module tb_vxe_regio();
 	wire [3:0]	o_intu_msk;
 	wire		o_intu_ack_vld;
 	wire [3:0]	o_intu_ack;
+	wire		o_cu_mas_sel;
 
 
 	always
@@ -257,6 +258,17 @@ module tb_vxe_regio();
 
 		@(posedge clk)
 		begin
+			i_wreg_idx <= REG_CTRL;
+			i_wenable <= 1'b1;
+			i_wdata <= 32'h0000_0001;
+		end
+		@(posedge clk) i_wenable <= 1'b0;
+
+		wait_pos_clk();
+		wait_pos_clk();
+
+		@(posedge clk)
+		begin
 			i_wreg_idx <= REG_INTR_ACT;
 			i_wenable <= 1'b1;
 			i_wdata <= 32'hdddd_dddc;
@@ -327,7 +339,8 @@ module tb_vxe_regio();
 		.i_intu_act(i_intu_act),
 		.o_intu_msk(o_intu_msk),
 		.o_intu_ack_vld(o_intu_ack_vld),
-		.o_intu_ack(o_intu_ack)
+		.o_intu_ack(o_intu_ack),
+		.o_cu_mas_sel(o_cu_mas_sel)
 	);
 
 

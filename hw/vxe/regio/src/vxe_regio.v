@@ -54,7 +54,9 @@ module vxe_regio(
 	i_intu_act,
 	o_intu_msk,
 	o_intu_ack_vld,
-	o_intu_ack
+	o_intu_ack,
+	/* Memory hub interface signals */
+	o_cu_mas_sel
 );
 `include "vxe_regio_params.vh"
 input wire		clk;
@@ -83,6 +85,7 @@ input wire [3:0]	i_intu_act;
 output wire [3:0]	o_intu_msk;
 output reg		o_intu_ack_vld;
 output reg [3:0]	o_intu_ack;
+output wire		o_cu_mas_sel;
 
 
 /* Always ready to accept and returns no error */
@@ -95,9 +98,11 @@ assign o_rerror = 1'b0;
 /* Internal wires and registers for reg I/O */
 reg [36:0]	reg_pgm_addr;
 reg [3:0]	reg_intr_mask;
+reg		reg_cu_mas_sel;
 
 assign o_cu_pgm_addr = reg_pgm_addr;
 assign o_intu_msk = reg_intr_mask;
+assign o_cu_mas_sel = reg_cu_mas_sel;
 
 
 /* Register write logic */
@@ -109,6 +114,7 @@ begin
 		o_intu_ack_vld <= 1'b0;
 		reg_pgm_addr <= 37'b0;
 		reg_intr_mask <= 4'b0;
+		reg_cu_mas_sel <= 1'b0;
 	end
 	else
 	begin
@@ -117,6 +123,7 @@ begin
 		if(i_wenable)
 		begin
 			case(i_wreg_idx)
+			REG_CTRL:		reg_cu_mas_sel <= i_wdata[0];
 			REG_INTR_ACT: begin
 				o_intu_ack <= i_wdata[3:0];
 				o_intu_ack_vld <= 1'b1;
@@ -140,7 +147,7 @@ begin
 	begin
 		case(i_rreg_idx)
 		REG_ID:				o_rdata = VXENGINE_ID;
-		REG_CTRL:			o_rdata = 32'h0000_0000;	/* Not used */
+		REG_CTRL:			o_rdata = { 31'h0, reg_cu_mas_sel };
 		REG_STATUS:			o_rdata = { 31'h0, i_cu_busy};
 		REG_INTR_ACT:			o_rdata = { 28'h0, i_intu_act };
 		REG_INTR_MSK:			o_rdata = { 28'h0, reg_intr_mask };
