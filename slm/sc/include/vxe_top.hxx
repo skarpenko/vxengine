@@ -263,7 +263,7 @@ private:
 				break;
 			case vxe::regi::REG_START:
 				if(trans.is_read())
-					v = 0x0;
+					v = 0xFFFFFFFF;
 				else
 					vxe_start_fifo.write(true);
 				break;
