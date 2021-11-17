@@ -76,9 +76,9 @@ reg		m_rqa_wr;
 wire		m_rqa_rdy;
 
 assign m_rqa_rdy	= (i_m_sel == 1'b0) ? i_m0_rqa_rdy : i_m1_rqa_rdy;
-assign o_m0_rqa		= (i_m_sel == 1'b0) ? m_rqa : o_m0_rqa;
+assign o_m0_rqa		= (i_m_sel == 1'b0) ? m_rqa : 44'b0000;
 assign o_m0_rqa_wr	= (i_m_sel == 1'b0) ? m_rqa_wr : 1'b0;
-assign o_m1_rqa		= (i_m_sel == 1'b1) ? m_rqa : o_m1_rqa;
+assign o_m1_rqa		= (i_m_sel == 1'b1) ? m_rqa : 44'b0000;
 assign o_m1_rqa_wr	= (i_m_sel == 1'b1) ? m_rqa_wr : 1'b0;
 
 
