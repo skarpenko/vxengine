@@ -60,10 +60,10 @@ input wire		clk;
 input wire		nrst;
 /* Incoming request */
 input wire		i_m_rqa_vld;
-output wire [43:0]	i_m_rqa;
+input wire [43:0]	i_m_rqa;
 output reg		o_m_rqa_rd;
 input wire		i_m_rqd_vld;
-output wire [71:0]	i_m_rqd;
+input wire [71:0]	i_m_rqd;
 output reg		o_m_rqd_rd;
 /* Outgoing request */
 output reg [5:0]	biu_awcid;
