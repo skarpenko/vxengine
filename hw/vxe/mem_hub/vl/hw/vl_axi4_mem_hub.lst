@@ -1,0 +1,24 @@
+// Verilator file list for memory hub unit with AXI4 interface
+
++incdir+${VXENGINE_HOME}/hw/vxe/include
+-clk clk
+--top-module vl_axi4_mem_hub
+-sc
+${VXENGINE_HOME}/hw/fifo/src/vxe_fifo.v
+${VXENGINE_HOME}/hw/axi/src/vxe_axi4mas_biu.v
+${VXENGINE_HOME}/hw/vxe/txnid_codec/src/vxe_txnid_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqa_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqd_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnress_coder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnress_decoder.v
+${VXENGINE_HOME}/hw/vxe/axi_switch/src/vxe_axi_switch_us.v
+${VXENGINE_HOME}/hw/vxe/axi_switch/src/vxe_axi_switch_ds.v
+${VXENGINE_HOME}/hw/vxe/axi_switch/src/vxe_axi_switch.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/src/vxe_mem_hub_cu_ds.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/src/vxe_mem_hub_cu_us.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/src/vxe_mem_hub_mas_ds.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/src/vxe_mem_hub_mas_us.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/src/vxe_mem_hub_vpu_ds.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/src/vxe_mem_hub_vpu_us.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/src/vxe_mem_hub.v
+${VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw/vl_axi4_mem_hub.v
