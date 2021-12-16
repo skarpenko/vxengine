@@ -15,6 +15,7 @@ TBMEMHUB_HXX_FILES :=		\
 	include/tb_top.hxx	\
 	$(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h
 TBMEMHUB_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude -Ivl	\
+	-I$(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw			\
 	-I$(SYSTEMC_HOME)/include				\
 	-I$(VERILATOR_HOME)/share/verilator/include		\
 	-I$(VERILATOR_HOME)/share/verilator/include/vltstd
