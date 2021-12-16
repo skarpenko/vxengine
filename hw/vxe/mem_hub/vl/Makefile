@@ -13,6 +13,9 @@ TBMEMHUB_CXX_FILES :=	\
 TBMEMHUB_HXX_FILES :=		\
 	include/trace.hxx	\
 	include/tb_top.hxx	\
+	include/axi4_2port_mem.hxx	\
+	include/axi4_mem_port.hxx	\
+	include/axi4_internal.hxx	\
 	$(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h
 TBMEMHUB_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude -Ivl	\
 	-I$(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw			\
