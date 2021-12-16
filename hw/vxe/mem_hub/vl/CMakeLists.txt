@@ -38,6 +38,10 @@ add_executable(tb_mem_hub.elf
 	include/axi4_2port_mem.hxx
 	include/axi4_mem_port.hxx
 	include/axi4_internal.hxx
+	include/stimulus.hxx
+	include/stimulus_common.hxx
+	include/stimulus_cu.hxx
+	include/stimulus_vpu.hxx
 	# Verilator dependencies
 	$ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h
 	$ENV{VERILATOR_HOME}/share/verilator/include/verilated.cpp)
