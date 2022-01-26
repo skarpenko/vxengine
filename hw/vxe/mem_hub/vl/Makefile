@@ -9,7 +9,10 @@ TARGETS :=
 TBMEMHUB_TARGET := tb_mem_hub.elf
 TBMEMHUB_CXX_FILES :=	\
 	src/main.cxx	\
-	$(VERILATOR_HOME)/share/verilator/include/verilated.cpp
+	$(VERILATOR_HOME)/share/verilator/include/verilated.cpp	\
+	$(VERILATOR_HOME)/share/verilator/include/verilated_vcd_sc.cpp	\
+	$(VERILATOR_HOME)/share/verilator/include/verilated_vcd_c.cpp
+
 TBMEMHUB_HXX_FILES :=		\
 	include/trace.hxx	\
 	include/tb_top.hxx	\
@@ -57,7 +60,7 @@ $(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub__ALL.a:	\
 $(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h: hw/vl_axi4_mem_hub.lst
 	@echo "Verilating [Mem_Hub]"
 	@$(VERILATOR_HOME)/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3	\
-		--Wno-fatal -O3 --Mdir hw/obj_dir -f hw/vl_axi4_mem_hub.lst
+		--Wno-fatal -O3 --trace --Mdir hw/obj_dir -f hw/vl_axi4_mem_hub.lst
 
 
 # Do clean
@@ -67,3 +70,4 @@ clean:
 	-@rm -f $(TARGETS)
 	-@rm -Rf hw/obj_dir
 	-@rm -f trace.vcd
+	-@rm -f vltrace.vcd

@@ -44,7 +44,9 @@ add_executable(tb_mem_hub.elf
 	include/stimulus_vpu.hxx
 	# Verilator dependencies
 	$ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h
-	$ENV{VERILATOR_HOME}/share/verilator/include/verilated.cpp)
+	$ENV{VERILATOR_HOME}/share/verilator/include/verilated.cpp
+	$ENV{VERILATOR_HOME}/share/verilator/include/verilated_vcd_sc.cpp
+	$ENV{VERILATOR_HOME}/share/verilator/include/verilated_vcd_c.cpp)
 
 target_include_directories(tb_mem_hub.elf PUBLIC $ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw)
 target_include_directories(tb_mem_hub.elf PUBLIC $ENV{SYSTEMC_HOME}/include)
@@ -63,6 +65,6 @@ add_custom_command(
 	OUTPUT $ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h
 	WORKING_DIRECTORY $ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw
 	COMMAND $ENV{VERILATOR_HOME}/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3
-		--Wno-fatal -O3 -f vl_axi4_mem_hub.lst
+		--Wno-fatal -O3 --trace -f vl_axi4_mem_hub.lst
 	COMMAND make -j1 -C obj_dir -f Vvl_axi4_mem_hub.mk
 )

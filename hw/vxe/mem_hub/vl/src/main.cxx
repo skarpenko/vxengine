@@ -31,6 +31,8 @@
 #include <iomanip>
 #include <cstring>
 #include <systemc.h>
+#include <verilated.h>
+#include <verilated_vcd_sc.h>
 #include <tb_top.hxx>
 #include <trace.hxx>
 
@@ -40,8 +42,10 @@ int sc_main(int argc, char *argv[])
 {
 	constexpr unsigned SZ_MB = 1024*1024;
 	sc_trace_file *sys_trace = nullptr;	// trace file
+	VerilatedVcdSc *vl_trace = nullptr;	// Verilator SC trace
 	unsigned ram_size = 4*SZ_MB;
 	bool do_trace = false;
+	bool do_vtrace = false;
 
 	// Hint for help
 	if(argc < 2)
@@ -52,11 +56,14 @@ int sc_main(int argc, char *argv[])
 		if(!strcmp(argv[i], "-h")) {
 			std::cout << std::endl << "Command line arguments:" << std::endl
 				  << "\t-h                   - this help screen;" << std::endl
-				  << "\t-trace               - dump trace." << std::endl
+				  << "\t-trace               - dump trace;" << std::endl
+				  << "\t-vtrace              - dump Verilator trace." << std::endl
 				  << std::endl;
 			return 0;
 		} else if(!strcmp(argv[i], "-trace")) {
 			do_trace = true;
+		} else if(!strcmp(argv[i], "-vtrace")) {
+			do_vtrace = true;
 		} else {
 			std::cerr << "Unknown argument: " << argv[i] << std::endl;
 		}
@@ -67,6 +74,7 @@ int sc_main(int argc, char *argv[])
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 	std::cout << "Simulation parameters:" << std::endl;
 	std::cout << "> Tracing: " << (do_trace ? "ON" : "OFF") << std::endl;
+	std::cout << "> Verilator Tracing: " << (do_vtrace ? "ON" : "OFF") << std::endl;
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 
 	// System clock and reset
@@ -82,6 +90,16 @@ int sc_main(int argc, char *argv[])
 	// Bind signals
 	top.clk(sys_clk);
 	top.nrst(nrst);
+
+	// Setup Verilator trace
+	if(do_vtrace) {
+		Verilated::traceEverOn(true);
+		vl_trace = new VerilatedVcdSc();
+		if(vl_trace) {
+			top.mem_hub.trace(vl_trace, 99);
+			vl_trace->open("vltrace.vcd");
+		}
+	}
 
 	// Setup tracing
 	sys_trace = (do_trace ? sc_create_vcd_trace_file("trace") : nullptr);
@@ -207,6 +225,15 @@ int sc_main(int argc, char *argv[])
 	sc_start(100, SC_NS);
 	nrst = 1;
 	sc_start();
+
+	top.mem_hub.final();	// Done simulating
+
+	// Close Verilator trace
+	if(vl_trace) {
+		vl_trace->close();
+		delete vl_trace;
+		vl_trace = nullptr;
+	}
 
 	// Close trace file
 	if(sys_trace)
