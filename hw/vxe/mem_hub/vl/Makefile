@@ -56,8 +56,8 @@ $(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub__ALL.a:	\
 	@$(MAKE) -j1 -C hw/obj_dir -f Vvl_axi4_mem_hub.mk
 $(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h: hw/vl_axi4_mem_hub.lst
 	@echo "Verilating [Mem_Hub]"
-	@verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3	\
-		--Mdir hw/obj_dir -f hw/vl_axi4_mem_hub.lst
+	@$(VERILATOR_HOME)/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3	\
+		--Wno-fatal -O3 --Mdir hw/obj_dir -f hw/vl_axi4_mem_hub.lst
 
 
 # Do clean

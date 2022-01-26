@@ -62,7 +62,7 @@ add_custom_command(
 	OUTPUT $ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub__ALL.a
 	OUTPUT $ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h
 	WORKING_DIRECTORY $ENV{VXENGINE_HOME}/hw/vxe/mem_hub/vl/hw
-	COMMAND verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3
-		-f vl_axi4_mem_hub.lst
+	COMMAND $ENV{VERILATOR_HOME}/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3
+		--Wno-fatal -O3 -f vl_axi4_mem_hub.lst
 	COMMAND make -j1 -C obj_dir -f Vvl_axi4_mem_hub.mk
 )
