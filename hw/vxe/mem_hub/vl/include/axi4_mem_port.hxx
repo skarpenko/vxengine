@@ -120,6 +120,9 @@ private:
 	{
 		AWREADY.write(true);
 
+		// Wait for reset release
+		while(!nrst) wait();
+
 		while(true) {
 			bool ready = fifo_awaddr.num_free() != 0;
 
@@ -154,6 +157,9 @@ private:
 	{
 		WREADY.write(true);
 
+		// Wait for reset release
+		while(!nrst) wait();
+
 		while(true) {
 			bool ready = fifo_wdata.num_free() != 0;
 
@@ -183,6 +189,9 @@ private:
 	{
 		BVALID.write(false);
 
+		// Wait for reset release
+		while(!nrst) wait();
+
 		while(true) {
 			bool valid = fifo_bresp.num_available() != 0;
 
@@ -207,6 +216,9 @@ private:
 	[[noreturn]] void rd_addr_thread()
 	{
 		ARREADY.write(true);
+
+		// Wait for reset release
+		while(!nrst) wait();
 
 		while(true) {
 			bool ready = fifo_araddr.num_free() != 0;
@@ -241,6 +253,9 @@ private:
 	[[noreturn]] void rd_resp_thread()
 	{
 		RVALID.write(false);
+
+		// Wait for reset release
+		while(!nrst) wait();
 
 		while(true) {
 			bool valid = fifo_rresp.num_available() != 0;
