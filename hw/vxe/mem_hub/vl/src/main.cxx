@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -35,6 +35,9 @@
 #include <verilated_vcd_sc.h>
 #include <tb_top.hxx>
 #include <trace.hxx>
+
+
+void setup_tests(tb_top& top);
 
 
 // MAIN
@@ -86,6 +89,9 @@ int sc_main(int argc, char *argv[])
 
 	// Set memory size
 	top.memory.mem.resize(ram_size);
+
+	// Setup tests to run
+	setup_tests(top);
 
 	// Bind signals
 	top.clk(sys_clk);
@@ -240,4 +246,15 @@ int sc_main(int argc, char *argv[])
 		sc_close_vcd_trace_file(sys_trace);
 
 	return 0;
+}
+
+void setup_tests(tb_top& top)
+{
+	// Filling regions with patterns
+	top.stimul.add_test(std::make_shared<stimul::test_write_region>("Write: Region 0, VPU0", 0, 0,
+		0xFEFEFAFABEBE0000));
+	top.stimul.add_test(std::make_shared<stimul::test_write_region>("Write: Region 1, VPU1", 1, 1,
+		0xDADABEBEAEAE0000));
+	top.stimul.add_test(std::make_shared<stimul::test_write_region>("Write: Region 2, VPU0", 2, 0,
+		0xAEAEBEBEFEFE0000));
 }

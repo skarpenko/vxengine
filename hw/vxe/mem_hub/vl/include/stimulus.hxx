@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,9 +29,11 @@
 
 #include <cstdint>
 #include <systemc.h>
+#include <list>
 #include "stimulus_common.hxx"
 #include "stimulus_cu.hxx"
 #include "stimulus_vpu.hxx"
+#include "stimulus_test.hxx"
 #pragma once
 
 
@@ -105,6 +107,9 @@ SC_MODULE(stimulus) {
 		, i_vpu1_rsd_vld("i_vpu1_rsd_vld"), i_vpu1_rsd("i_vpu1_rsd"), o_vpu1_rsd_rd("o_vpu1_rsd_rd")
 		, cu("cu", stimul::mhc::CU), vpu0("vpu0", stimul::mhc::VPU0), vpu1("vpu1", stimul::mhc::VPU1)
 	{
+		SC_THREAD(test_issue_thread)
+			sensitive << clk.pos();
+
 		// Connect CU signals
 		cu.clk(clk);
 		cu.nrst(nrst);
@@ -151,4 +156,42 @@ SC_MODULE(stimulus) {
 		vpu1.i_vpu_rsd(i_vpu1_rsd);
 		vpu1.o_vpu_rsd_rd(o_vpu1_rsd_rd);
 	}
+
+	void add_test(std::shared_ptr<stimul::test_base> t)
+	{
+		m_tests.push_back(t);
+	}
+
+private:
+	[[noreturn]] void test_issue_thread()
+	{
+		auto it = m_tests.begin();
+		while(true) {
+			if(it == m_tests.end()) {
+				sc_stop();
+				while(true)
+					wait();
+			}
+
+			// Issue tests
+			cu.assign_trace((*it)->get_cu_trace());
+			vpu0.assign_trace((*it)->get_vpu0_trace());
+			vpu1.assign_trace((*it)->get_vpu1_trace());
+
+			// Set CU master port select
+			o_cu_m_sel.write((*it)->cu_mas() == 1);
+
+			std::cout << "Running... " << (*it)->name() << std::endl;
+
+			while(!(*it)->done())
+				wait();
+
+			wait();
+
+			++it;
+		}
+	}
+
+private:
+	std::list<std::shared_ptr<stimul::test_base>> m_tests;	// Tests list
 };

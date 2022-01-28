@@ -7,22 +7,27 @@ TARGETS :=
 
 # Memory hub testbench build options
 TBMEMHUB_TARGET := tb_mem_hub.elf
-TBMEMHUB_CXX_FILES :=	\
-	src/main.cxx	\
+TBMEMHUB_CXX_FILES :=		\
+	src/main.cxx		\
+	src/stimulus_trace.cxx	\
+	src/stimulus_test.cxx	\
 	$(VERILATOR_HOME)/share/verilator/include/verilated.cpp	\
 	$(VERILATOR_HOME)/share/verilator/include/verilated_vcd_sc.cpp	\
 	$(VERILATOR_HOME)/share/verilator/include/verilated_vcd_c.cpp
 
-TBMEMHUB_HXX_FILES :=		\
-	include/trace.hxx	\
-	include/tb_top.hxx	\
+TBMEMHUB_HXX_FILES :=			\
+	include/trace.hxx		\
+	include/tb_top.hxx		\
 	include/axi4_2port_mem.hxx	\
 	include/axi4_mem_port.hxx	\
 	include/axi4_internal.hxx	\
-	include/stimulus.hxx	\
+	include/stimulus.hxx		\
 	include/stimulus_common.hxx	\
-	include/stimulus_cu.hxx	\
+	include/stimulus_cu.hxx		\
 	include/stimulus_vpu.hxx	\
+	include/stimulus_patgen.hxx	\
+	include/stimulus_trace.hxx	\
+	include/stimulus_test.hxx	\
 	$(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h
 TBMEMHUB_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude -Ivl	\
 	-I$(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw			\

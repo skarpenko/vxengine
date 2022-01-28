@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@
 #include <cstdint>
 #include <systemc.h>
 #include "stimulus_common.hxx"
+#include "stimulus_trace.hxx"
 #pragma once
 
 
@@ -61,46 +62,31 @@ SC_MODULE(stimulus_cu) {
 		, i_cu_rsd_vld("i_cu_rsd_vld"), i_cu_rsd("i_cu_rsd"), o_cu_rsd_rd("o_cu_rsd_rd")
 		, m_cid(client_id)
 	{
-		SC_THREAD(temp)
-			sensitive << clk;
-
 		SC_THREAD(upstream_thread)
 			sensitive << clk.pos();
 
-//TODO: uncomment when traces play back will be implemented
-//		SC_THREAD(downstream_thread)
-//			sensitive << clk.pos();
+		SC_THREAD(downstream_thread)
+			sensitive << clk.pos();
+
+		SC_THREAD(trace_play_thread)
+			sensitive << clk.pos();
+
+		SC_THREAD(trace_verif_thread)
+			sensitive << clk.pos();
 	}
 
-	[[noreturn]] void temp()
+	void assign_trace(std::shared_ptr<stimul::trace_gen_base> trace)
 	{
-		uint64_t addr = 0;
-
-		o_cu_rss_rd = true;
-		o_cu_rsd_rd = true;
-
-		while(true) {
-			send_rd(addr);
-			addr += 8;
-		}
-	}
-
-	void send_rd(uint64_t addr)
-	{
-		//TODO: check addr
-		stimul::req_addr rqa;
-
-		rqa.txnid = stimul::mktxnid(m_cid, 0, 0);
-		rqa.rnw = true;
-		rqa.addr = addr;
-
-		fifo_rqa.write(rqa);
+		m_trace = trace;
 	}
 
 private:
 	[[noreturn]] void upstream_thread()
 	{
 		o_cu_rqa_wr.write(false);
+
+		// Wait for reset release
+		while(!nrst) wait();
 
 		while(true) {
 			if(fifo_rqa.num_available() && i_cu_rqa_rdy.read()) {
@@ -120,10 +106,14 @@ private:
 		o_cu_rss_rd.write(false);
 		o_cu_rsd_rd.write(false);
 
-		while(true) {
-			bool rds;
-			bool rdd;
+		// Wait for reset release
+		while(!nrst) wait();
 
+		while(true) {
+			bool rds;	// Response status is available
+			bool rdd;	// Response data is available
+
+			// Read status
 			if(fifo_rss.num_free() && i_cu_rss_vld) {
 				o_cu_rss_rd.write(true);
 				rds = true;
@@ -132,6 +122,7 @@ private:
 				rds = false;
 			}
 
+			// Read data
 			if(fifo_rsd.num_free() && i_cu_rsd_vld) {
 				o_cu_rsd_rd.write(true);
 				rdd = true;
@@ -142,12 +133,14 @@ private:
 
 			wait();
 
+			// Status
 			if(rds) {
 				stimul::res_stat rss;
 				rss.unpack(i_cu_rss.read());
 				fifo_rss.write(rss);
 			}
 
+			// Data
 			if(rdd) {
 				stimul::res_data rsd;
 				rsd.unpack(i_cu_rsd.read());
@@ -156,9 +149,78 @@ private:
 		}
 	}
 
+	[[noreturn]] void trace_play_thread()
+	{
+		// Wait for reset release
+		while(!nrst) wait();
+
+		while(true) {
+			if(m_trace == nullptr || m_trace->done()) {
+				wait();
+				continue;
+			}
+
+			while(!m_trace->done()) {
+				stimul::trace_req *rq = m_trace->next_req();
+
+				if(rq == nullptr) {
+					wait();
+					continue;
+				}
+
+				stimul::req_addr rqa;
+				rqa.txnid = stimul::mktxnid(m_cid, 0, 0);
+				rqa.rnw = rq->rnw;
+				rqa.addr = rq->addr;
+
+				fifo_rqa.write(rqa);
+			}
+
+			wait();
+		}
+	}
+
+	[[noreturn]] void trace_verif_thread()
+	{
+		while(true) {
+			if(m_trace == nullptr || m_trace->done()) {
+				wait();
+				continue;
+			}
+
+			while(!m_trace->done()) {
+				stimul::trace_res *ref_rs = m_trace->next_res();
+				stimul::trace_res rs;
+				stimul::res_stat rss;
+				stimul::res_data rsd;
+
+				if(ref_rs == nullptr) {
+					wait();
+					continue;
+				}
+
+				rss = fifo_rss.read();
+				rsd = fifo_rsd.read();
+
+				rs = stimul::trace_res(rss.rnw, rss.err, rsd.data,
+						stimul::txnid_thread_id(rss.txnid),
+						stimul::txnid_argument(rss.txnid));
+
+				if(rs != *ref_rs) {
+					std::cout << "\tMismatch(" << name()
+						<< "): [" << rs << "] != [" << *ref_rs << "]" << std::endl;
+				}
+			}
+
+			wait();
+		}
+	}
+
 private:
 	unsigned			m_cid;
 	sc_fifo<stimul::req_addr>	fifo_rqa;
 	sc_fifo<stimul::res_stat>	fifo_rss;
 	sc_fifo<stimul::res_data>	fifo_rsd;
+	// Test trace
+	std::shared_ptr<stimul::trace_gen_base>	m_trace;
 };
