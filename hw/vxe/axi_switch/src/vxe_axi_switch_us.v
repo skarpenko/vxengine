@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -66,14 +66,14 @@ input wire		i_m_rqd_vld;
 input wire [71:0]	i_m_rqd;
 output reg		o_m_rqd_rd;
 /* Outgoing request */
-output reg [5:0]	biu_awcid;
-output reg [39:0]	biu_awaddr;
-output reg [63:0]	biu_awdata;
-output reg [7:0]	biu_awstrb;
+output wire [5:0]	biu_awcid;
+output wire [39:0]	biu_awaddr;
+output wire [63:0]	biu_awdata;
+output wire [7:0]	biu_awstrb;
 output wire		biu_awvalid;
 input wire		biu_awpop;
-output reg [5:0]	biu_arcid;
-output reg [39:0]	biu_araddr;
+output wire [5:0]	biu_arcid;
+output wire [39:0]	biu_araddr;
 output wire		biu_arvalid;
 input wire		biu_arpop;
 
@@ -212,6 +212,11 @@ wire [36:0]	rq_awaddr = wr_addr_fifo[wr_addr_fifo_rp[1:0]][36:0];
 wire [63:0]	rq_awdata;
 wire [7:0]	rq_awstrb;
 
+assign biu_awcid = rq_awcid;
+assign biu_awaddr = { rq_awaddr, 3'b000 };
+assign biu_awdata = rq_awdata;
+assign biu_awstrb = rq_awstrb;
+
 always @(posedge clk or negedge nrst)
 begin
 	if(!nrst)
@@ -221,10 +226,6 @@ begin
 	end
 	else if(biu_awpop && biu_awvalid)
 	begin
-		biu_awcid <= rq_awcid;
-		biu_awaddr <= { rq_awaddr, 3'b000 };
-		biu_awdata <= rq_awdata;
-		biu_awstrb <= rq_awstrb;
 		wr_addr_fifo_rp <= wr_addr_fifo_rp + 1'b1;
 		wr_data_fifo_rp <= wr_data_fifo_rp + 1'b1;
 	end
@@ -244,6 +245,9 @@ vxe_txnreqd_decoder wr_data_dec(
 wire [5:0]	rq_arcid = rd_addr_fifo[rd_addr_fifo_rp[1:0]][42:37];
 wire [36:0]	rq_araddr = rd_addr_fifo[rd_addr_fifo_rp[1:0]][36:0];
 
+assign		biu_arcid = rq_arcid;
+assign		biu_araddr = { rq_araddr, 3'b000 };
+
 always @(posedge clk or negedge nrst)
 begin
 	if(!nrst)
@@ -252,8 +256,6 @@ begin
 	end
 	else if(biu_arpop && biu_arvalid)
 	begin
-		biu_arcid <= rq_arcid;
-		biu_araddr <= { rq_araddr, 3'b000 };
 		rd_addr_fifo_rp <= rd_addr_fifo_rp + 1'b1;
 	end
 end
