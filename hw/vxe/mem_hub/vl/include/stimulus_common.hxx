@@ -70,7 +70,7 @@ namespace stimul {
 		// Send data to stream
 		os << "TXNID="
 			<< std::setw(2) << std::setfill('0') << std::hex
-			<< rqa.txnid
+			<< static_cast<unsigned>(rqa.txnid)
 			<< " RNW="
 			<< std::setw(1)
 			<< rqa.rnw
@@ -110,7 +110,7 @@ namespace stimul {
 			<< rqd.data
 			<< " BEN="
 			<< std::setw(2) << std::setfill('0') << std::hex
-			<< rqd.ben;
+			<< static_cast<unsigned>(rqd.ben);
 
 		// Restore previous stream state
 		os.copyfmt(state);
@@ -142,13 +142,13 @@ namespace stimul {
 		// Send data to stream
 		os << "TXNID="
 			<< std::setw(2) << std::setfill('0') << std::hex
-			<< rss.txnid
+			<< static_cast<unsigned>(rss.txnid)
 			<< " RNW="
 			<< std::setw(1)
 			<< rss.rnw
 			<< " ERR="
 			<< std::setw(2) << std::setfill('0') << std::hex
-			<< rss.err;
+			<< static_cast<unsigned>(rss.err);
 
 		// Restore previous stream state
 		os.copyfmt(state);
@@ -188,14 +188,48 @@ namespace stimul {
 	 * @param client_id Client Id (CU, VPU0, VPU1)
 	 * @param thread_id Thread Id (VPU only)
 	 * @param arg Argument type (VPU only)
-	 * @return
+	 * @return Transaction Id
 	 */
-	uint8_t mktxnid(uint8_t client_id, uint8_t thread_id, uint8_t arg)
+	inline uint8_t mktxnid(uint8_t client_id, uint8_t thread_id, uint8_t arg)
 	{
 		client_id &= 3;
 		thread_id &= 7;
 		arg &= 1;
 		return (client_id << 4) | (thread_id << 1) | arg;
+	}
+
+	/**
+	 * Extract client Id from transaction Id
+	 * @param txnid Transaction Id
+	 * @return Client Id
+	 */
+	inline uint8_t txnid_client_id(uint8_t txnid)
+	{
+		txnid >>= 4;
+		txnid &= 3;
+		return txnid;
+	}
+
+	/**
+	 * Extract thread Id from transaction Id
+	 * @param txnid Transaction Id
+	 * @return Thread Id
+	 */
+	inline uint8_t txnid_thread_id(uint8_t txnid)
+	{
+		txnid >>= 1;
+		txnid &= 7;
+		return txnid;
+	}
+
+	/**
+	 * Extract argument type from transaction Id
+	 * @param txnid Transaction Id
+	 * @return Argument type
+	 */
+	inline uint8_t txnid_argument(uint8_t txnid)
+	{
+		return txnid & 1;
 	}
 
 } // namespace stimul
