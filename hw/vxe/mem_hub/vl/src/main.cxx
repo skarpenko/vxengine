@@ -38,6 +38,7 @@
 
 
 void setup_tests(tb_top& top);
+void dump_memory(const std::vector<uint8_t>& mem);
 
 
 // MAIN
@@ -49,6 +50,7 @@ int sc_main(int argc, char *argv[])
 	unsigned ram_size = 4*SZ_MB;
 	bool do_trace = false;
 	bool do_vtrace = false;
+	bool do_memdump = false;
 
 	// Hint for help
 	if(argc < 2)
@@ -58,15 +60,18 @@ int sc_main(int argc, char *argv[])
 	for(int i=1; i<argc; ++i) {
 		if(!strcmp(argv[i], "-h")) {
 			std::cout << std::endl << "Command line arguments:" << std::endl
-				  << "\t-h                   - this help screen;" << std::endl
-				  << "\t-trace               - dump trace;" << std::endl
-				  << "\t-vtrace              - dump Verilator trace." << std::endl
-				  << std::endl;
+				<< "\t-h                   - this help screen;" << std::endl
+				<< "\t-trace               - dump trace;" << std::endl
+				<< "\t-vtrace              - dump Verilator trace;" << std::endl
+				<< "\t-memdump             - dump memory contents." << std::endl
+				<< std::endl;
 			return 0;
 		} else if(!strcmp(argv[i], "-trace")) {
 			do_trace = true;
 		} else if(!strcmp(argv[i], "-vtrace")) {
 			do_vtrace = true;
+		} else if(!strcmp(argv[i], "-memdump")) {
+			do_memdump = true;
 		} else {
 			std::cerr << "Unknown argument: " << argv[i] << std::endl;
 		}
@@ -76,8 +81,9 @@ int sc_main(int argc, char *argv[])
 	std::cout << std::endl;
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 	std::cout << "Simulation parameters:" << std::endl;
-	std::cout << "> Tracing: " << (do_trace ? "ON" : "OFF") << std::endl;
+	std::cout << "> Tracing          : " << (do_trace ? "ON" : "OFF") << std::endl;
 	std::cout << "> Verilator Tracing: " << (do_vtrace ? "ON" : "OFF") << std::endl;
+	std::cout << "> Memory dump      : " << (do_memdump ? "ON" : "OFF") << std::endl;
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 
 	// System clock and reset
@@ -245,6 +251,10 @@ int sc_main(int argc, char *argv[])
 	if(sys_trace)
 		sc_close_vcd_trace_file(sys_trace);
 
+	// Dump memory contents
+	if(do_memdump)
+		dump_memory(top.memory.mem);
+
 	return 0;
 }
 
@@ -257,4 +267,33 @@ void setup_tests(tb_top& top)
 		0xDADABEBEAEAE0000));
 	top.stimul.add_test(std::make_shared<stimul::test_write_region>("Write: Region 2, VPU0", 2, 0,
 		0xAEAEBEBEFEFE0000));
+}
+
+void dump_memory(const std::vector<uint8_t>& mem)
+{
+	std::cout << "Dumping memory..." << std::endl;
+
+	std::ofstream of("memdump.txt");
+
+	bool print = true;
+	uint64_t addr = 0;
+	const uint64_t *data;
+	unsigned len = mem.size() / sizeof(uint64_t);
+
+	for(unsigned i = 0; i < len; ++i) {
+		data = reinterpret_cast<const uint64_t*>(&mem[addr]);
+		addr += sizeof(uint64_t);
+
+		if(*data == 0 && print) {
+			of << std::string(16, ' ') << "..." << std::endl;
+			print = false;
+			continue;
+		} else if(*data == 0)
+			continue;
+
+		print = true;
+
+		of << std::setw(16) << std::setfill('0') << std::hex << addr << ": "
+			<< std::setw(16) << std::setfill('0') << std::hex << *data << std::endl;
+	}
 }

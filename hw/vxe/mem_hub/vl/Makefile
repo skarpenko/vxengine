@@ -76,3 +76,4 @@ clean:
 	-@rm -Rf hw/obj_dir
 	-@rm -f trace.vcd
 	-@rm -f vltrace.vcd
+	-@rm -f memdump.txt
