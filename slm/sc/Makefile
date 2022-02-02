@@ -112,8 +112,8 @@ $(VXENGINE_HOME)/slm/sc/vl/obj_dir/Vflp32_mac_5stg__ALL.a:	\
 	@$(MAKE) -j1 -C vl/obj_dir -f Vflp32_mac_5stg.mk
 $(VXENGINE_HOME)/slm/sc/vl/obj_dir/Vflp32_mac_5stg.h: vl/vl_flp32_mac_5stg.lst
 	@echo "Verilating [FMAC32]"
-	@verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3	\
-		--Mdir vl/obj_dir -f vl/vl_flp32_mac_5stg.lst
+	@$(VERILATOR_HOME)/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3	\
+		--Wno-fatal -O3 --Mdir vl/obj_dir -f vl/vl_flp32_mac_5stg.lst
 
 
 # Verilated FReLU32 model targets
@@ -123,8 +123,8 @@ $(VXENGINE_HOME)/slm/sc/vl/obj_dir/Vflp32_relu__ALL.a:	\
 	@$(MAKE) -j1 -C vl/obj_dir -f Vflp32_relu.mk
 $(VXENGINE_HOME)/slm/sc/vl/obj_dir/Vflp32_relu.h: vl/vl_flp32_relu.lst
 	@echo "Verilating [FReLU32]"
-	@verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3	\
-		--Mdir vl/obj_dir -f vl/vl_flp32_relu.lst
+	@$(VERILATOR_HOME)/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3	\
+		--Wno-fatal -O3 --Mdir vl/obj_dir -f vl/vl_flp32_relu.lst
 
 
 # Simple test build target

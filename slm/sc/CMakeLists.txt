@@ -77,8 +77,8 @@ add_custom_command(
 	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg__ALL.a
 	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_mac_5stg.h
 	WORKING_DIRECTORY $ENV{VXENGINE_HOME}/slm/sc/vl
-	COMMAND verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3
-		-f vl_flp32_mac_5stg.lst
+	COMMAND $ENV{VERILATOR_HOME}/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3
+		--Wno-fatal -O3 -f vl_flp32_mac_5stg.lst
 	COMMAND make -j1 -C obj_dir -f Vflp32_mac_5stg.mk
 )
 
@@ -88,8 +88,8 @@ add_custom_command(
 	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_relu__ALL.a
 	OUTPUT $ENV{VXENGINE_HOME}/slm/sc/vl/obj_dir/Vflp32_relu.h
 	WORKING_DIRECTORY $ENV{VXENGINE_HOME}/slm/sc/vl
-	COMMAND verilator -CFLAGS --std=c++17 -CFLAGS -O3 --Wno-fatal -O3
-		-f vl_flp32_relu.lst
+	COMMAND $ENV{VERILATOR_HOME}/bin/verilator -CFLAGS --std=c++17 -CFLAGS -O3
+		--Wno-fatal -O3 -f vl_flp32_relu.lst
 	COMMAND make -j1 -C obj_dir -f Vflp32_relu.mk
 )
 
