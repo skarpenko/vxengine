@@ -34,17 +34,24 @@
 // Local definitions
 namespace {
 	uint64_t REGIONS_BASE = 0x1000;		// Base address for regions
-	uint64_t REGION_SIZE = 8 * 1024;	// 8KB
-	uint64_t region_bases[] = {
-		REGIONS_BASE + 0 * REGION_SIZE,
-		REGIONS_BASE + 1 * REGION_SIZE,
-		REGIONS_BASE + 2 * REGION_SIZE,
-		REGIONS_BASE + 3 * REGION_SIZE,
-		REGIONS_BASE + 4 * REGION_SIZE,
-		REGIONS_BASE + 5 * REGION_SIZE,
-		REGIONS_BASE + 6 * REGION_SIZE,
-		REGIONS_BASE + 7 * REGION_SIZE
-	};
+	uint64_t REGION_SIZE = 0;		// Region size (must be set externally)
+	uint64_t region_bases[16];
+}
+
+
+size_t stimul::init_test_regions(size_t region_size)
+{
+	unsigned n = sizeof(region_bases) / sizeof(region_bases[0]);
+	uint64_t region = REGIONS_BASE;
+
+	REGION_SIZE = region_size;
+
+	for(unsigned i = 0; i < n; ++i) {
+		region_bases[i] = region;
+		region += REGION_SIZE;
+	}
+
+	return REGIONS_BASE + n * REGION_SIZE + 0x1000 /* extra page */;
 }
 
 

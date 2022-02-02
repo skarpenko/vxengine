@@ -35,6 +35,13 @@
 
 namespace stimul {
 
+	/**
+	 * Initialize test memory regions
+	 * @param region_size size
+	 * @return overall memory size
+	 */
+	size_t init_test_regions(size_t region_size);
+
 	// Test base class
 	class test_base {
 		const std::string m_name;

@@ -44,10 +44,11 @@ void dump_memory(const std::vector<uint8_t>& mem);
 // MAIN
 int sc_main(int argc, char *argv[])
 {
-	constexpr unsigned SZ_MB = 1024*1024;
+	constexpr unsigned SZ_KB = 1024;
 	sc_trace_file *sys_trace = nullptr;	// trace file
 	VerilatedVcdSc *vl_trace = nullptr;	// Verilator SC trace
-	unsigned ram_size = 4*SZ_MB;
+	size_t ram_size = 0;
+	size_t region_size = 8*SZ_KB;	// Two pages by default
 	bool do_trace = false;
 	bool do_vtrace = false;
 	bool do_memdump = false;
@@ -63,7 +64,8 @@ int sc_main(int argc, char *argv[])
 				<< "\t-h                   - this help screen;" << std::endl
 				<< "\t-trace               - dump trace;" << std::endl
 				<< "\t-vtrace              - dump Verilator trace;" << std::endl
-				<< "\t-memdump             - dump memory contents." << std::endl
+				<< "\t-memdump             - dump memory contents;" << std::endl
+				<< "\t-regsz <size KB>     - test region size (default: 8KB)." << std::endl
 				<< std::endl;
 			return 0;
 		} else if(!strcmp(argv[i], "-trace")) {
@@ -72,10 +74,29 @@ int sc_main(int argc, char *argv[])
 			do_vtrace = true;
 		} else if(!strcmp(argv[i], "-memdump")) {
 			do_memdump = true;
+		} else if(!strcmp(argv[i], "-regsz")) {
+			++i;
+			if(i<argc) {
+				unsigned size = 0;
+				try {
+					size = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+				size *= SZ_KB;
+				region_size = size ? size : region_size;
+			} else {
+				std::cerr << "-regsz: missing size." << std::endl;
+			}
 		} else {
 			std::cerr << "Unknown argument: " << argv[i] << std::endl;
 		}
 	}
+
+	// Setup tests memory map
+	ram_size = stimul::init_test_regions(region_size);
 
 	// Print simulation summary
 	std::cout << std::endl;
@@ -84,6 +105,8 @@ int sc_main(int argc, char *argv[])
 	std::cout << "> Tracing          : " << (do_trace ? "ON" : "OFF") << std::endl;
 	std::cout << "> Verilator Tracing: " << (do_vtrace ? "ON" : "OFF") << std::endl;
 	std::cout << "> Memory dump      : " << (do_memdump ? "ON" : "OFF") << std::endl;
+	std::cout << "> Region size      : " << region_size << std::endl;
+	std::cout << "> RAM size         : " << ram_size << std::endl;
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 
 	// System clock and reset
