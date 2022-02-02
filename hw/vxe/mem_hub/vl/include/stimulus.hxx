@@ -107,6 +107,8 @@ SC_MODULE(stimulus) {
 		, i_vpu1_rsd_vld("i_vpu1_rsd_vld"), i_vpu1_rsd("i_vpu1_rsd"), o_vpu1_rsd_rd("o_vpu1_rsd_rd")
 		, cu("cu", stimul::mhc::CU), vpu0("vpu0", stimul::mhc::VPU0), vpu1("vpu1", stimul::mhc::VPU1)
 	{
+		m_failed = false;
+
 		SC_THREAD(test_issue_thread)
 			sensitive << clk.pos();
 
@@ -162,6 +164,11 @@ SC_MODULE(stimulus) {
 		m_tests.push_back(t);
 	}
 
+	bool get_failed() const
+	{
+		return m_failed;
+	}
+
 private:
 	[[noreturn]] void test_issue_thread()
 	{
@@ -186,7 +193,17 @@ private:
 			while(!(*it)->done())
 				wait();
 
-			wait();
+			wait();	// sync threads before continue
+
+			// Update tests status
+			if((*it)->has_cu_trace())
+				m_failed = m_failed || (*it)->get_cu_trace()->get_failed();
+
+			if((*it)->has_vpu0_trace())
+				m_failed = m_failed || (*it)->get_vpu0_trace()->get_failed();
+
+			if((*it)->has_vpu1_trace())
+				m_failed = m_failed || (*it)->get_vpu1_trace()->get_failed();
 
 			++it;
 		}
@@ -194,4 +211,5 @@ private:
 
 private:
 	std::list<std::shared_ptr<stimul::test_base>> m_tests;	// Tests list
+	bool m_failed;	// Tests failed flag
 };

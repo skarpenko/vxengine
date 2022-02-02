@@ -89,8 +89,9 @@ namespace stimul {
 	// Trace generator base class
 	class trace_gen_base {
 		const std::string m_name;
+		bool m_failed;
 	public:
-		explicit trace_gen_base(const std::string& name) : m_name(name) {}
+		explicit trace_gen_base(const std::string& name) : m_name(name), m_failed(false) {}
 		virtual ~trace_gen_base() = default;
 
 		// Trace name
@@ -98,6 +99,12 @@ namespace stimul {
 
 		// Trace generation finished
 		virtual bool done() const = 0;
+
+		// Set failed trace flag
+		void set_failed(bool v) { m_failed = v; }
+
+		// Get failed trace flag
+		bool get_failed() const { return m_failed; }
 
 		// Get next request
 		virtual trace_req* next_req() = 0;

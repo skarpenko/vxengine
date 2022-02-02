@@ -209,6 +209,7 @@ private:
 				if(rs != *ref_rs) {
 					std::cout << "\tMismatch(" << name()
 						<< "): [" << rs << "] != [" << *ref_rs << "]" << std::endl;
+					m_trace->set_failed(true);
 				}
 			}
 

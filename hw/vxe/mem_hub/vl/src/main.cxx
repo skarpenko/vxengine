@@ -255,7 +255,8 @@ int sc_main(int argc, char *argv[])
 	if(do_memdump)
 		dump_memory(top.memory.mem);
 
-	return 0;
+	// Return error code if some tests failed
+	return top.stimul.get_failed() ? -1 : 0;
 }
 
 void setup_tests(tb_top& top)
