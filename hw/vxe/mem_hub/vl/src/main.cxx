@@ -300,12 +300,13 @@ void dump_memory(const std::vector<uint8_t>& mem)
 	std::ofstream of("memdump.txt");
 
 	bool print = true;
-	uint64_t addr = 0;
+	uint64_t paddr, addr = 0;
 	const uint64_t *data;
 	unsigned len = mem.size() / sizeof(uint64_t);
 
 	for(unsigned i = 0; i < len; ++i) {
 		data = reinterpret_cast<const uint64_t*>(&mem[addr]);
+		paddr = addr;
 		addr += sizeof(uint64_t);
 
 		if(*data == 0 && print) {
@@ -317,7 +318,7 @@ void dump_memory(const std::vector<uint8_t>& mem)
 
 		print = true;
 
-		of << std::setw(16) << std::setfill('0') << std::hex << addr << ": "
+		of << std::setw(16) << std::setfill('0') << std::hex << paddr << ": "
 			<< std::setw(16) << std::setfill('0') << std::hex << *data << std::endl;
 	}
 }
