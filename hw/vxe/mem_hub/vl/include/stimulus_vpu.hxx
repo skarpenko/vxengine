@@ -190,6 +190,8 @@ private:
 					rqd.data = rq->data;
 					fifo_rqd.write(rqd);
 				}
+
+				m_trace->req_sent(rq);
 			}
 
 			wait();
@@ -228,6 +230,8 @@ private:
 						<< "): [" << rs << "] != [" << *ref_rs << "]" << std::endl;
 					m_trace->set_failed(true);
 				}
+
+				m_trace->res_vrfd(ref_rs);
 			}
 
 			wait();

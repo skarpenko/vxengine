@@ -107,86 +107,100 @@ std::ostream& stimul::operator<<(std::ostream& os, const trace_res& a)
 stimul::linear_rd_trace::linear_rd_trace(const std::string& name, uint64_t start_addr, uint64_t len8,
 	uint64_t initial_data, uint64_t data_inc, uint8_t tid, bool arg)
 	: trace_gen_base(name), m_addr_gen(start_addr), m_data_gen(initial_data, data_inc)
-	, m_num_addr(len8), m_num_data(len8), m_tid(tid), m_arg(arg)
+	, m_num_addr(len8), m_num_data(len8), m_num_verif(len8), m_tid(tid), m_arg(arg)
 {
 }
 
 stimul::trace_req* stimul::linear_rd_trace::next_req()
 {
-	static trace_req req;
-
 	if(m_num_addr == 0)
 		return nullptr;
 
 	--m_num_addr;
 
-	req.rnw = true;
-	req.tid = m_tid;
-	req.arg = m_arg;
-	req.addr = m_addr_gen.next_addr();
-	req.data = 0; // not used
-	req.ben = 0xff;
+	m_req.rnw = true;
+	m_req.tid = m_tid;
+	m_req.arg = m_arg;
+	m_req.addr = m_addr_gen.next_addr();
+	m_req.data = 0; // not used
+	m_req.ben = 0xff;
 
-	return &req;
+	return &m_req;
 }
+
+void stimul::linear_rd_trace::req_sent(trace_req *rq)
+{}
 
 stimul::trace_res* stimul::linear_rd_trace::next_res()
 {
-	static trace_res res;
-
 	if(m_num_data == 0)
 		return nullptr;
 
 	--m_num_data;
 
-	res.rnw = true;
-	res.err = 0;
-	res.data = m_data_gen.next_data();
+	m_res.rnw = true;
+	m_res.tid = m_tid;
+	m_res.arg = m_arg;
+	m_res.err = 0;
+	m_res.data = m_data_gen.next_data();
 
-	return &res;
+	return &m_res;
+}
+
+void stimul::linear_rd_trace::res_vrfd(trace_res *r)
+{
+	if(m_num_verif == 0)
+		return;
+	--m_num_verif;
 }
 
 
 stimul::linear_wr_trace::linear_wr_trace(const std::string& name, uint64_t start_addr, uint64_t len8,
 	uint64_t initial_data, uint64_t data_inc, uint8_t ben, uint8_t tid, bool arg)
 	: trace_gen_base(name), m_addr_gen(start_addr), m_data_gen(initial_data, data_inc)
-	, m_ben(ben), m_num_addr(len8), m_num_resp(len8), m_tid(tid), m_arg(arg)
+	, m_ben(ben), m_num_addr(len8), m_num_resp(len8), m_num_verif(len8), m_tid(tid), m_arg(arg)
 {
 }
 
 stimul::trace_req* stimul::linear_wr_trace::linear_wr_trace::next_req()
 {
-	static trace_req req;
-
 	if(m_num_addr == 0)
 		return nullptr;
 
 	--m_num_addr;
 
-	req.rnw = false;
-	req.tid = m_tid;
-	req.arg = m_arg;
-	req.addr = m_addr_gen.next_addr();
-	req.data = m_data_gen.next_data();
-	req.ben = m_ben;
+	m_req.rnw = false;
+	m_req.tid = m_tid;
+	m_req.arg = m_arg;
+	m_req.addr = m_addr_gen.next_addr();
+	m_req.data = m_data_gen.next_data();
+	m_req.ben = m_ben;
 
-	return &req;
+	return &m_req;
 }
+
+void stimul::linear_wr_trace::req_sent(trace_req *rq)
+{}
 
 stimul::trace_res* stimul::linear_wr_trace::linear_wr_trace::next_res()
 {
-	static trace_res res;
-
 	if(m_num_resp == 0)
 		return nullptr;
 
 	--m_num_resp;
 
-	res.rnw = false;
-	res.tid = m_tid;
-	res.arg = m_arg;
-	res.err = 0;
-	res.data = 0;
+	m_res.rnw = false;
+	m_res.tid = m_tid;
+	m_res.arg = m_arg;
+	m_res.err = 0;
+	m_res.data = 0;
 
-	return &res;
+	return &m_res;
+}
+
+void stimul::linear_wr_trace::res_vrfd(trace_res *r)
+{
+	if(m_num_verif == 0)
+		return;
+	--m_num_verif;
 }

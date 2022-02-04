@@ -108,8 +108,12 @@ namespace stimul {
 
 		// Get next request
 		virtual trace_req* next_req() = 0;
+		// Mark a request as sent
+		virtual void req_sent(trace_req *rq) = 0;
 		// Get next reference response
 		virtual trace_res* next_res() = 0;
+		// Mark a response as verified
+		virtual void res_vrfd(trace_res *r) = 0;
 	};
 
 	// Linear read trace generator
@@ -118,8 +122,11 @@ namespace stimul {
 		patgen::inc_data_gen m_data_gen;
 		uint64_t m_num_addr;
 		uint64_t m_num_data;
+		uint64_t m_num_verif;
 		uint8_t m_tid;
 		bool m_arg;
+		trace_req m_req;
+		trace_res m_res;
 	public:
 		/**
 		 * Read memory trace
@@ -134,10 +141,12 @@ namespace stimul {
 		linear_rd_trace(const std::string& name, uint64_t start_addr, uint64_t len8, uint64_t initial_data,
 				uint64_t data_inc = 1, uint8_t tid = 0, bool arg = false);
 
-		bool done() const override { return (m_num_addr == 0) && (m_num_data == 0); }
+		bool done() const override { return m_num_verif == 0; }
 
 		trace_req* next_req() override;
+		void req_sent(trace_req *rq) override;
 		trace_res* next_res() override;
+		void res_vrfd(trace_res *r) override;
 	};
 
 	// Linear write trace generator
@@ -147,8 +156,11 @@ namespace stimul {
 		uint8_t m_ben;
 		uint64_t m_num_addr;
 		uint64_t m_num_resp;
+		uint64_t m_num_verif;
 		uint8_t m_tid;
 		bool m_arg;
+		trace_req m_req;
+		trace_res m_res;
 	public:
 		/**
 		 * Write memory trace
@@ -164,10 +176,12 @@ namespace stimul {
 		linear_wr_trace(const std::string& name, uint64_t start_addr, uint64_t len8, uint64_t initial_data,
 				uint64_t data_inc = 1, uint8_t ben = 0xff, uint8_t tid = 0, bool arg = false);
 
-		bool done() const override { return (m_num_addr == 0) && (m_num_resp == 0); }
+		bool done() const override { return m_num_verif == 0; }
 
 		trace_req* next_req() override;
+		void req_sent(trace_req *rq) override;
 		trace_res* next_res() override;
+		void res_vrfd(trace_res *r) override;
 	};
 
 } // namespace stimul
