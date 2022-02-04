@@ -90,7 +90,7 @@ private:
 		while(!nrst) wait();
 
 		while(true) {
-			if(fifo_rqa.num_available() && i_vpu_rqa_rdy.read()) {
+			if(fifo_rqa.num_available()) {
 				stimul::req_addr rqa = fifo_rqa.read();
 				o_vpu_rqa_wr.write(true);
 				o_vpu_rqa.write(rqa.pack());
@@ -99,6 +99,9 @@ private:
 					o_vpu_rqd_wr.write(true);
 					o_vpu_rqd.write(rqd.pack());
 				}
+				// Wait for destination is ready to accept on the next cycle
+				do { wait(); } while(!i_vpu_rqa_rdy.read());
+				continue;
 			} else {
 				o_vpu_rqa_wr.write(false);
 				o_vpu_rqd_wr.write(false);
@@ -141,14 +144,14 @@ private:
 			wait();
 
 			// Status
-			if(rds) {
+			if(rds && i_vpu_rss_vld) {
 				stimul::res_stat rss;
 				rss.unpack(i_vpu_rss.read());
 				fifo_rss.write(rss);
 			}
 
 			// Data
-			if(rdd) {
+			if(rdd && i_vpu_rsd_vld) {
 				stimul::res_data rsd;
 				rsd.unpack(i_vpu_rsd.read());
 				fifo_rsd.write(rsd);

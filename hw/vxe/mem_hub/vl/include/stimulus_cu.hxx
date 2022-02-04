@@ -89,10 +89,13 @@ private:
 		while(!nrst) wait();
 
 		while(true) {
-			if(fifo_rqa.num_available() && i_cu_rqa_rdy.read()) {
+			if(fifo_rqa.num_available()) {
 				stimul::req_addr rqa = fifo_rqa.read();
 				o_cu_rqa_wr.write(true);
 				o_cu_rqa.write(rqa.pack());
+				// Wait for destination is ready to accept on the next cycle
+				do { wait(); } while(!i_cu_rqa_rdy.read());
+				continue;
 			} else {
 				o_cu_rqa_wr.write(false);
 			}
@@ -134,14 +137,14 @@ private:
 			wait();
 
 			// Status
-			if(rds) {
+			if(rds && i_cu_rss_vld) {
 				stimul::res_stat rss;
 				rss.unpack(i_cu_rss.read());
 				fifo_rss.write(rss);
 			}
 
 			// Data
-			if(rdd) {
+			if(rdd && i_cu_rsd_vld) {
 				stimul::res_data rsd;
 				rsd.unpack(i_cu_rsd.read());
 				fifo_rsd.write(rsd);
