@@ -85,3 +85,67 @@ stimul::test_write_region::test_write_region(const std::string& name, unsigned r
 	else
 		m_vpu1_trace = wr_trace;
 }
+
+stimul::test_read_regions::test_read_regions(const std::string& name, bool use_cu, bool cu_m_sel, unsigned cu_region_no,
+	uint64_t cu_pattern, bool cu_inc, bool use_vpu0, bool vpu0_arg, unsigned vpu0_region_no, uint64_t vpu0_pattern,
+	bool vpu0_inc, bool use_vpu1, bool vpu1_arg, unsigned vpu1_region_no, uint64_t vpu1_pattern, bool vpu1_inc)
+	: test_base(name)
+{
+	if(cu_region_no >= (sizeof(region_bases) / sizeof(region_bases[0])))
+		throw std::runtime_error(name + ": CU Region No. is out of range.");
+	if(vpu0_region_no >= (sizeof(region_bases) / sizeof(region_bases[0])))
+		throw std::runtime_error(name + ": VPU0 Region No. is out of range.");
+	if(vpu1_region_no >= (sizeof(region_bases) / sizeof(region_bases[0])))
+		throw std::runtime_error(name + ": VPU1 Region No. is out of range.");
+
+	if(use_cu) {
+		m_cu_trace = std::make_shared<linear_rd_trace>("cu_read", region_bases[cu_region_no],
+				REGION_SIZE / sizeof(uint64_t), cu_pattern, cu_inc);
+		m_cu_mas = cu_m_sel ? 1 : 0;
+	}
+
+	if(use_vpu0) {
+		m_vpu0_trace = std::make_shared<linear_rd_trace>("vpu0_read", region_bases[vpu0_region_no],
+				REGION_SIZE / sizeof(uint64_t), vpu0_pattern, vpu0_inc,0, vpu0_arg);
+	}
+
+	if(use_vpu1) {
+		m_vpu1_trace = std::make_shared<linear_rd_trace>("vpu1_read", region_bases[vpu1_region_no],
+				REGION_SIZE / sizeof(uint64_t), vpu1_pattern, vpu1_inc,0, vpu1_arg);
+	}
+}
+
+stimul::test_rdwr_regions::test_rdwr_regions(const std::string& name, bool cu_m_sel, unsigned cu_region_no, uint64_t cu_pattern,
+	bool rnw_vpu0, bool vpu0_arg, unsigned vpu0_region_no, uint64_t vpu0_pattern, uint8_t vpu0_ben, bool vpu0_inc,
+	bool rnw_vpu1, bool vpu1_arg, unsigned vpu1_region_no, uint64_t vpu1_pattern, uint8_t vpu1_ben, bool vpu1_inc)
+	: test_base(name)
+{
+	if(cu_region_no >= (sizeof(region_bases) / sizeof(region_bases[0])))
+		throw std::runtime_error(name + ": CU Region No. is out of range.");
+	if(vpu0_region_no >= (sizeof(region_bases) / sizeof(region_bases[0])))
+		throw std::runtime_error(name + ": VPU0 Region No. is out of range.");
+	if(vpu1_region_no >= (sizeof(region_bases) / sizeof(region_bases[0])))
+		throw std::runtime_error(name + ": VPU1 Region No. is out of range.");
+
+	m_cu_trace = std::make_shared<linear_rd_trace>("cu_read", region_bases[cu_region_no],
+			REGION_SIZE / sizeof(uint64_t), cu_pattern, 1);
+	m_cu_mas = cu_m_sel ? 1 : 0;
+
+	if(rnw_vpu0) {
+		m_vpu0_trace = std::make_shared<linear_rd_trace>("vpu0_read", region_bases[vpu0_region_no],
+				REGION_SIZE / sizeof(uint64_t), vpu0_pattern, vpu0_inc, 0, vpu0_arg);
+	} else {
+		m_vpu0_trace = std::make_shared<linear_wr_trace>("vpu0_write", region_bases[vpu0_region_no],
+				REGION_SIZE / sizeof(uint64_t), vpu0_pattern, vpu0_inc, vpu0_ben,
+				0, vpu0_arg);
+	}
+
+	if(rnw_vpu1) {
+		m_vpu1_trace = std::make_shared<linear_rd_trace>("vpu1_read", region_bases[vpu1_region_no],
+				REGION_SIZE / sizeof(uint64_t), vpu1_pattern, vpu0_inc,0, vpu1_arg);
+	} else {
+		m_vpu1_trace = std::make_shared<linear_wr_trace>("vpu1_write", region_bases[vpu1_region_no],
+				REGION_SIZE / sizeof(uint64_t), vpu1_pattern, vpu0_inc, vpu1_ben,
+				0, vpu1_arg);
+	}
+}

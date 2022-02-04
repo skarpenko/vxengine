@@ -291,6 +291,184 @@ void setup_tests(tb_top& top)
 		0xDADABEBEAEAE0000));
 	top.stimul.add_test(std::make_shared<stimul::test_write_region>("Write: Region 2, VPU0", 2, 0,
 		0xAEAEBEBEFEFE0000));
+
+	// CU read tests
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M0",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		false, false, 0, 0, false,
+		false, false, 0, 0, false));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M1",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		false, false, 0, 0, false,
+		false, false, 0, 0, false));
+
+	// CU and VPU0 read tests
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M0 | Region 1, VPU0 Rs arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		true, false, 1, 0xDADABEBEAEAE0000, true,
+		false, false, 0, 0, false));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M0 | Region 1, VPU0 Rt arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		true, true, 1, 0xDADABEBEAEAE0000, true,
+		false, false, 0, 0, false));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M1 | Region 1, VPU0 Rt arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		true, true, 1, 0xDADABEBEAEAE0000, true,
+		false, false, 0, 0, false));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M1 | Region 1, VPU0 Rs arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		true, false, 1, 0xDADABEBEAEAE0000, true,
+		false, false, 0, 0, false));
+
+	// CU and VPU1 read tests
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M0 | Region 2, VPU1 Rs arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		false, false, 0, 0, false,
+		true, false, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M0 | Region 2, VPU1 Rt arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		false, false, 0, 0, false,
+		true, true, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M1 | Region 2, VPU1 Rt arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		false, false, 0, 0, false,
+		true, true, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>("Read: Region 0, CU M1 | Region 2, VPU1 Rs arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		false, false, 0, 0, false,
+		true, false, 2, 0xAEAEBEBEFEFE0000, true));
+
+	// CU, VPU0 and VPU1 read tests
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M0 | Region 1, VPU0 Rs arg | Region 2, VPU1 Rs arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		true, false, 1, 0xDADABEBEAEAE0000, true,
+		true, false, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M1 | Region 1, VPU0 Rs arg | Region 2, VPU1 Rs arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		true, false, 1, 0xDADABEBEAEAE0000, true,
+		true, false, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M0 | Region 1, VPU0 Rt arg | Region 2, VPU1 Rs arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		true, true, 1, 0xDADABEBEAEAE0000, true,
+		true, false, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M1 | Region 1, VPU0 Rt arg | Region 2, VPU1 Rs arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		true, true, 1, 0xDADABEBEAEAE0000, true,
+		true, false, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M0 | Region 1, VPU0 Rs arg | Region 2, VPU1 Rt arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		true, false, 1, 0xDADABEBEAEAE0000, true,
+		true, true, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M1 | Region 1, VPU0 Rs arg | Region 2, VPU1 Rt arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		true, false, 1, 0xDADABEBEAEAE0000, true,
+		true, true, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M0 | Region 1, VPU0 Rt arg | Region 2, VPU1 Rt arg",
+		true, false, 0, 0xFEFEFAFABEBE0000, true,
+		true, true, 1, 0xDADABEBEAEAE0000, true,
+		true, true, 2, 0xAEAEBEBEFEFE0000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read: Region 0, CU M1 | Region 1, VPU0 Rt arg | Region 2, VPU1 Rt arg",
+		true, true, 0, 0xFEFEFAFABEBE0000, true,
+		true, true, 1, 0xDADABEBEAEAE0000, true,
+		true, true, 2, 0xAEAEBEBEFEFE0000, true));
+
+	// CU, VPU0, VPU1 read and write tests
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M0 Rd | Region 3, VPU0 Wr | Region 2, VPU1 Rd",
+		false, 0, 0xFEFEFAFABEBE0000,
+		false, false, 3, 0x1212121212120000, 0xFF, true,
+		true, false, 2, 0xAEAEBEBEFEFE0000, 0xFF, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M1 Rd | Region 4, VPU0 Wr | Region 2, VPU1 Rd",
+		true, 0, 0xFEFEFAFABEBE0000,
+		false, false, 4, 0x2323232323230000, 0xFF, true,
+		true, false, 2, 0xAEAEBEBEFEFE0000, 0xFF, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M0 Rd | Region 1, VPU0 Rd | Region 5, VPU1 Wr",
+		false, 0, 0xFEFEFAFABEBE0000,
+		true, false, 1, 0xDADABEBEAEAE0000, 0xFF, true,
+		false, false, 5, 0x3434343434340000, 0xFF, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M1 Rd | Region 1, VPU0 Rd | Region 6, VPU1 Wr",
+		true, 0, 0xFEFEFAFABEBE0000,
+		true, false, 1, 0xDADABEBEAEAE0000, 0xFF, true,
+		false, false, 6, 0x4545454545450000, 0xFF, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M0 Rd | Region 7, VPU0 Wr | Region 8, VPU1 Wr",
+		false, 0, 0xFEFEFAFABEBE0000,
+		false, false, 7, 0x5656565656560000, 0xFF, true,
+		false, false, 8, 0x6767676767670000, 0xFF, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M1 Rd | Region 9, VPU0 Wr | Region 10, VPU1 Wr",
+		true, 0, 0xFEFEFAFABEBE0000,
+		false, false, 9, 0x7878787878780000, 0xFF, true,
+		false, false, 10, 0x8989898989890000, 0xFF, true));
+
+	// Verify written data
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read/write: Region 3, CU M0 Rd | Region 4, VPU0 Rd | Region 5, VPU1 Rd",
+		true, false, 3, 0x1212121212120000, true,
+		true, false, 4, 0x2323232323230000, true,
+		true, false, 5, 0x3434343434340000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read/write: Region 6, CU M0 Rd | Region 7, VPU0 Rd | Region 8, VPU1 Rd",
+		true, false, 6, 0x4545454545450000, true,
+		true, false, 7, 0x5656565656560000, true,
+		true, true, 8, 0x6767676767670000, true));
+
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read/write: Region 9, VPU0 Rd | Region 10, VPU1 Rd",
+		false, false, 0, 0, false,
+		true, true, 9, 0x7878787878780000, true,
+		true, false, 10, 0x8989898989890000, true));
+
+	// CU reads, VPU0, VPU1 use byte enabled writes
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M0 Rd | Region 11, VPU0 Wr(BEn=0x55) | Region 12, VPU1 Wr(BEn=0x55)",
+		false, 0, 0xFEFEFAFABEBE0000,
+		false, false, 11, 0xF7F6F5F4F3F2F1F0, 0x55, false,
+		false, false, 12, 0xE7E6E5E4E3E2E1E0, 0x55, false));
+
+	top.stimul.add_test(std::make_shared<stimul::test_rdwr_regions>(
+		"Read/write: Region 0, CU M1 Rd | Region 11, VPU0 Wr(BEn=0xAA) | Region 12, VPU1 Wr(BEn=0xAA)",
+		true, 0, 0xFEFEFAFABEBE0000,
+		false, false, 11, 0xA7A6A5A4A3A2A1A0, 0xAA, false,
+		false, false, 12, 0xB7B6B5B4B3B2B1B0, 0xAA, false));
+
+	// Verify written data
+	top.stimul.add_test(std::make_shared<stimul::test_read_regions>(
+		"Read/write: Region 11, VPU0 Rd | Region 12, VPU1 Rd",
+		false, false, 0, 0, false,
+		true, false, 11, 0xA7F6A5F4A3F2A1F0, false,
+		true, true, 12, 0xB7E6B5E4B3E2B1E0, false));
 }
 
 void dump_memory(const std::vector<uint8_t>& mem)

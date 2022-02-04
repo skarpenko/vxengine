@@ -45,8 +45,8 @@ namespace stimul {
 	// Test base class
 	class test_base {
 		const std::string m_name;
-		int m_cu_mas;
 	protected:
+		int m_cu_mas;
 		std::shared_ptr<trace_gen_base> m_cu_trace;
 		std::shared_ptr<trace_gen_base> m_vpu0_trace;
 		std::shared_ptr<trace_gen_base> m_vpu1_trace;
@@ -96,6 +96,60 @@ namespace stimul {
 		 * @param pattern Initial data pattern
 		 */
 		test_write_region(const std::string& name, unsigned region_no, unsigned vpu_no, uint64_t pattern);
+	};
+
+	// Test: read memory regions
+	class test_read_regions: public test_base {
+	public:
+		/**
+		 * Read memory regions
+		 * @param name test name
+		 * @param use_cu use CU
+		 * @param cu_m_sel CU master select
+		 * @param cu_region_no CU region number
+		 * @param cu_pattern CU pattern to read
+		 * @param cu_inc increment CU pattern
+		 * @param use_vpu0 use VPU0
+		 * @param vpu0_arg VPU0 argument type (Rs / Rt)
+		 * @param vpu0_region_no VPU0 region number
+		 * @param vpu0_pattern VPU0 pattern to read
+		 * @param vpu0_inc increment VPU0 pattern
+		 * @param use_vpu1 use VPU1
+		 * @param vpu1_arg VPU1 argument type (Rs / Rt)
+		 * @param vpu1_region_no VPU1 region number
+		 * @param vpu1_pattern VPU1 pattern to read
+		 * @param vpu1_inc increment VPU1 pattern
+		 */
+		test_read_regions(const std::string& name, bool use_cu, bool cu_m_sel, unsigned cu_region_no, uint64_t cu_pattern,
+				bool cu_inc, bool use_vpu0, bool vpu0_arg, unsigned vpu0_region_no, uint64_t vpu0_pattern, bool vpu0_inc,
+				bool use_vpu1, bool vpu1_arg, unsigned vpu1_region_no, uint64_t vpu1_pattern, bool vpu1_inc);
+	};
+
+	// Test: read/write memory regions
+	class test_rdwr_regions: public test_base {
+	public:
+		/**
+		 * Read memory regions
+		 * @param name test name
+		 * @param cu_m_sel CU master select
+		 * @param cu_region_no CU region number
+		 * @param cu_pattern CU pattern to read
+		 * @param rnw_vpu0 read or write for VPU0
+		 * @param vpu0_arg VPU0 argument type (Rs / Rt)
+		 * @param vpu0_region_no VPU0 region number
+		 * @param vpu0_pattern VPU0 pattern to read
+		 * @param vpu0_ben byte enable for VPU0 writes
+		 * @param vpu0_inc increment pattern for VPU0
+		 * @param rnw_vpu1 read or write for VPU1
+		 * @param vpu1_arg VPU1 argument type (Rs / Rt)
+		 * @param vpu1_region_no VPU1 region number
+		 * @param vpu1_pattern VPU1 pattern to read
+		 * @param vpu1_ben byte enable for VPU1 writes
+		 * @param vpu1_inc increment pattern for VPU1
+		 */
+		test_rdwr_regions(const std::string& name, bool cu_m_sel, unsigned cu_region_no, uint64_t cu_pattern,
+			bool rnw_vpu0, bool vpu0_arg, unsigned vpu0_region_no, uint64_t vpu0_pattern, uint8_t vpu0_ben, bool vpu0_inc,
+			bool rnw_vpu1, bool vpu1_arg, unsigned vpu1_region_no, uint64_t vpu1_pattern, uint8_t vpu1_ben, bool vpu1_inc);
 	};
 
 } // namespace stimul
