@@ -112,6 +112,15 @@ SC_MODULE(axi4_mem_port) {
 
 		SC_THREAD(process_rd_thread)
 			sensitive << clk.pos();
+
+		set_delays(0, 0, 0);
+	}
+
+	void set_delays(unsigned ar, unsigned aw, unsigned w)
+	{
+		m_ardelay = ar;
+		m_awdelay = aw;
+		m_wdelay = w;
 	}
 
 private:
@@ -125,6 +134,13 @@ private:
 
 		while(true) {
 			bool ready = fifo_awaddr.num_free() != 0;
+
+			// Simulate channel delay
+			if(m_awdelay) {
+				unsigned n = m_awdelay;
+				AWREADY.write(false);
+				while(n--) wait();
+			}
 
 			AWREADY.write(ready);
 			wait();
@@ -160,6 +176,13 @@ private:
 
 		while(true) {
 			bool ready = fifo_wdata.num_free() != 0;
+
+			// Simulate channel delay
+			if(m_wdelay) {
+				unsigned n = m_wdelay;
+				WREADY.write(false);
+				while(n--) wait();
+			}
 
 			WREADY.write(ready);
 			wait();
@@ -218,6 +241,13 @@ private:
 
 		while(true) {
 			bool ready = fifo_araddr.num_free() != 0;
+
+			// Simulate channel delay
+			if(m_ardelay) {
+				unsigned n = m_ardelay;
+				ARREADY.write(false);
+				while(n--) wait();
+			}
 
 			ARREADY.write(ready);
 			wait();
@@ -368,4 +398,7 @@ private:
 	sc_fifo<axi4::bresp>	fifo_bresp;	// Write Response FIFO
 	sc_fifo<axi4::araddr>	fifo_araddr;	// Read Address FIFO
 	sc_fifo<axi4::rresp>	fifo_rresp;	// Read Data FIFO
+	unsigned		m_ardelay;	// AXI AR channel delay
+	unsigned		m_awdelay;	// AXI AW channel delay
+	unsigned		m_wdelay;	// AXI W channel delay
 };

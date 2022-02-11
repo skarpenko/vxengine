@@ -52,6 +52,12 @@ int sc_main(int argc, char *argv[])
 	bool do_trace = false;
 	bool do_vtrace = false;
 	bool do_memdump = false;
+	unsigned ardelay0 = 0;
+	unsigned awdelay0 = 0;
+	unsigned wdelay0 = 0;
+	unsigned ardelay1 = 0;
+	unsigned awdelay1 = 0;
+	unsigned wdelay1 = 0;
 
 	// Hint for help
 	if(argc < 2)
@@ -65,6 +71,12 @@ int sc_main(int argc, char *argv[])
 				<< "\t-trace               - dump trace;" << std::endl
 				<< "\t-vtrace              - dump Verilator trace;" << std::endl
 				<< "\t-memdump             - dump memory contents;" << std::endl
+				<< "\t-ardelay0 <cycles>   - Delay in AXI AR channel for port 0;"
+				<< "\t-awdelay0 <cycles>   - Delay in AXI AW channel for port 0;"
+				<< "\t-wdelay0 <cycles>    - Delay in AXI W channel for port 0;"
+				<< "\t-ardelay1 <cycles>   - Delay in AXI AR channel for port 1;"
+				<< "\t-awdelay1 <cycles>   - Delay in AXI AW channel for port 1;"
+				<< "\t-wdelay1 <cycles>    - Delay in AXI W channel for port 1;"
 				<< "\t-regsz <size KB>     - test region size (default: 8KB)." << std::endl
 				<< std::endl;
 			return 0;
@@ -74,6 +86,84 @@ int sc_main(int argc, char *argv[])
 			do_vtrace = true;
 		} else if(!strcmp(argv[i], "-memdump")) {
 			do_memdump = true;
+		} else if(!strcmp(argv[i], "-ardelay0")) {
+			++i;
+			if(i<argc) {
+				try {
+					ardelay0 = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-ardelay0: missing delay." << std::endl;
+			}
+		} else if(!strcmp(argv[i], "-awdelay0")) {
+			++i;
+			if(i<argc) {
+				try {
+					awdelay0 = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-awdelay0: missing delay." << std::endl;
+			}
+		} else if(!strcmp(argv[i], "-wdelay0")) {
+			++i;
+			if(i<argc) {
+				try {
+					wdelay0 = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-wdelay0: missing delay." << std::endl;
+			}
+		} else if(!strcmp(argv[i], "-ardelay1")) {
+			++i;
+			if(i<argc) {
+				try {
+					ardelay1 = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-ardelay1: missing delay." << std::endl;
+			}
+		} else if(!strcmp(argv[i], "-awdelay1")) {
+			++i;
+			if(i<argc) {
+				try {
+					awdelay1 = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-awdelay1: missing delay." << std::endl;
+			}
+		} else if(!strcmp(argv[i], "-wdelay1")) {
+			++i;
+			if(i<argc) {
+				try {
+					wdelay1 = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-wdelay1: missing delay." << std::endl;
+			}
 		} else if(!strcmp(argv[i], "-regsz")) {
 			++i;
 			if(i<argc) {
@@ -107,6 +197,10 @@ int sc_main(int argc, char *argv[])
 	std::cout << "> Memory dump      : " << (do_memdump ? "ON" : "OFF") << std::endl;
 	std::cout << "> Region size      : " << region_size << std::endl;
 	std::cout << "> RAM size         : " << ram_size << std::endl;
+	std::cout << "> Port 0 delays    : "
+		<< "AR=" << ardelay0 << "/" << "AW=" << awdelay0 << "/" << "W=" << wdelay0 << std::endl;
+	std::cout << "> Port 1 delays    : "
+		<< "AR=" << ardelay1 << "/" << "AW=" << awdelay1 << "/" << "W=" << wdelay1 << std::endl;
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 
 	// System clock and reset
@@ -118,6 +212,9 @@ int sc_main(int argc, char *argv[])
 
 	// Set memory size
 	top.memory.mem.resize(ram_size);
+	// Set port delays
+	top.memory.S0.set_delays(ardelay0, awdelay0, wdelay0);
+	top.memory.S1.set_delays(ardelay1, awdelay1, wdelay1);
 
 	// Setup tests to run
 	setup_tests(top);
