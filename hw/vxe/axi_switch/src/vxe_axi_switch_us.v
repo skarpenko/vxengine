@@ -124,10 +124,12 @@ wire rd_addr_fifo_pre_full = (rd_addr_fifo_pre_rp[1:0] == rd_addr_fifo_wp[1:0]) 
 	(rd_addr_fifo_pre_rp[2] != rd_addr_fifo_wp[2]);
 
 
-/* Outgoing FIFOs stall */
-wire fifo_stall = wr_addr_fifo_full || wr_addr_fifo_pre_full ||
-	wr_data_fifo_full || wr_data_fifo_pre_full ||
+/* Outgoing request FIFOs stall */
+wire afifo_stall = wr_addr_fifo_full || wr_addr_fifo_pre_full ||
 	rd_addr_fifo_full || rd_addr_fifo_pre_full;
+
+/* Write data FIFO congestion */
+wire dfifo_stall = wr_data_fifo_full || wr_data_fifo_pre_full;
 
 
 /* Decoded request info */
@@ -144,26 +146,23 @@ assign biu_arvalid = !rd_addr_fifo_empty;				/* RD */
 
 /** Requests Rx FSM **/
 
-reg [1:0]	rx_state;	/* Rx FSM state */
+reg [1:0]	a_rx_state;	/* Address Rx FSM state */
 
 always @(posedge clk or negedge nrst)
 begin
 	if(!nrst)
 	begin
 		wr_addr_fifo_wp <= 3'b000;
-		wr_data_fifo_wp <= 3'b000;
 		rd_addr_fifo_wp <= 3'b000;
 		o_m_rqa_rd <= 1'b0;
-		o_m_rqd_rd <= 1'b0;
-		rx_state <= FSM_RX_IDLE;
+		a_rx_state <= FSM_RX_IDLE;
 	end
-	else if(rx_state == FSM_RX_IDLE)
+	else if(a_rx_state == FSM_RX_IDLE)
 	begin
-		rx_state <= FSM_RX_RECV;
+		a_rx_state <= FSM_RX_RECV;
 		o_m_rqa_rd <= 1'b1;
-		o_m_rqd_rd <= 1'b1;
 	end
-	else if(rx_state == FSM_RX_RECV)
+	else if(a_rx_state == FSM_RX_RECV)
 	begin
 		if(i_m_rqa_vld && rqa_rnw)
 		begin
@@ -178,6 +177,41 @@ begin
 			wr_addr_fifo_wp <= wr_addr_fifo_wp + 1'b1;
 		end
 
+		/* Check for request FIFOs stall */
+		if(afifo_stall)
+		begin
+			a_rx_state <= FSM_RX_STLL;
+			o_m_rqa_rd <= 1'b0;
+		end
+	end
+	else if(a_rx_state == FSM_RX_STLL)
+	begin
+		if(!afifo_stall)
+		begin
+			a_rx_state <= FSM_RX_RECV;
+			o_m_rqa_rd <= 1'b1;
+		end
+	end
+end
+
+
+reg [1:0]	d_rx_state;	/* Data Rx FSM state */
+
+always @(posedge clk or negedge nrst)
+begin
+	if(!nrst)
+	begin
+		wr_data_fifo_wp <= 3'b000;
+		o_m_rqd_rd <= 1'b0;
+		d_rx_state <= FSM_RX_IDLE;
+	end
+	else if(d_rx_state == FSM_RX_IDLE)
+	begin
+		d_rx_state <= FSM_RX_RECV;
+		o_m_rqd_rd <= 1'b1;
+	end
+	else if(d_rx_state == FSM_RX_RECV)
+	begin
 		if(i_m_rqd_vld)
 		begin
 			/* Write request data */
@@ -185,19 +219,18 @@ begin
 			wr_data_fifo_wp <= wr_data_fifo_wp + 1'b1;
 		end
 
-		if(fifo_stall)
+		/* Check for write data FIFO stall */
+		if(dfifo_stall)
 		begin
-			rx_state <= FSM_RX_STLL;
-			o_m_rqa_rd <= 1'b0;
+			d_rx_state <= FSM_RX_STLL;
 			o_m_rqd_rd <= 1'b0;
 		end
 	end
-	else if(rx_state == FSM_RX_STLL)
+	else if(d_rx_state == FSM_RX_STLL)
 	begin
-		if(!fifo_stall)
+		if(!dfifo_stall)
 		begin
-			rx_state <= FSM_RX_RECV;
-			o_m_rqa_rd <= 1'b1;
+			d_rx_state <= FSM_RX_RECV;
 			o_m_rqd_rd <= 1'b1;
 		end
 	end
