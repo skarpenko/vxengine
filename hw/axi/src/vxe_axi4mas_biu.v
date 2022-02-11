@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -100,6 +100,8 @@ localparam [1:0] DECERR	= 2'b11;
 localparam [2:0] FSM_IDLE = 3'b001;
 localparam [2:0] FSM_SEND = 3'b010;
 localparam [2:0] FSM_WAIT = 3'b100;
+localparam [2:0] FSM_READ = 3'b010;
+localparam [2:0] FSM_STALL = 3'b100;
 /* AXI global signals */
 input wire			M_AXI4_ACLK;
 input wire			M_AXI4_ARESETn;
@@ -194,60 +196,139 @@ assign M_AXI4_WLAST = 1'b1;			/* Always last */
 /* Write request channel FSM state */
 reg [2:0] awfsm_state;
 
-/* Request */
+reg [(CID_WIDTH+ADDR_WIDTH+DATA_WIDTH+
+	DATA_WIDTH/8)-1:0] awfifo[0:3];	/* Incoming write requests FIFO */
+reg [2:0] awrp;				/* Read pointer */
+reg [2:0] awwp;				/* Write pointer */
+wire [2:0] awrp1 = awrp - 1'b1;		/* Read pointer - 1 */
+/* FIFO states */
+wire awfull = (awrp[1:0] == awwp[1:0]) && (awrp[2] != awwp[2]);
+wire awempty = (awrp[1:0] == awwp[1:0]) && (awrp[2] == awwp[2]);
+wire awalmost_full = (awrp1[1:0] == awwp[1:0]) && (awrp1[2] != awwp[2]);
+wire awfifo_stall = awfull || awalmost_full;
+
+
+/* Receive write request into FIFO */
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
 begin
 	if(!M_AXI4_ARESETn)
 	begin
-		M_AXI4_AWVALID <= 1'b0;
-		M_AXI4_WVALID <= 1'b0;
+		awwp <= 3'b000;
 		biu_awpop <= 1'b0;
 		awfsm_state <= FSM_IDLE;
 	end
-	else if(awfsm_state == FSM_IDLE)
+	else if(awfsm_state == FSM_READ)
 	begin
 		if(biu_awvalid)
 		begin
-			biu_awpop <= 1'b1;
-			awfsm_state <= FSM_SEND;
-		end
-	end
-	else if(awfsm_state == FSM_SEND)
-	begin
-		if(biu_awvalid)
-		begin
-			M_AXI4_AWID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, biu_awcid };
-			M_AXI4_AWADDR <= biu_awaddr;
-			M_AXI4_AWVALID <= 1'b1;
-			M_AXI4_WDATA <= biu_awdata;
-			M_AXI4_WSTRB <= biu_awstrb;
-			M_AXI4_WVALID <= 1'b1;
-			if(!M_AXI4_AWREADY || !M_AXI4_WREADY)
+			awfifo[awwp[1:0]] <= { biu_awcid, biu_awaddr, biu_awdata,
+						biu_awstrb };
+			awwp <= awwp + 1'b1;
+
+			if(awfifo_stall)
 			begin
 				biu_awpop <= 1'b0;
 				awfsm_state <= FSM_WAIT;
 			end
 		end
-		else
-		begin
-			M_AXI4_AWVALID <= 1'b0;
-			M_AXI4_WVALID <= 1'b0;
-			biu_awpop <= 1'b0;
-			awfsm_state <= FSM_IDLE;
-		end
 	end
 	else if(awfsm_state == FSM_WAIT)
 	begin
-		if(M_AXI4_AWREADY)
-			M_AXI4_AWVALID <= 1'b0;
-
-		if(M_AXI4_WREADY)
-			M_AXI4_WVALID <= 1'b0;
-
-		if(M_AXI4_AWREADY && M_AXI4_WREADY)
+		if(~awfifo_stall)
 		begin
 			biu_awpop <= 1'b1;
-			awfsm_state <= FSM_SEND;
+			awfsm_state <= FSM_READ;
+		end
+	end
+	else	/* IDLE */
+	begin
+		if(biu_awvalid)
+		begin
+			biu_awpop <= 1'b1;
+			awfsm_state <= FSM_READ;
+		end
+	end
+end
+
+
+wire [CID_WIDTH-1:0]	w_awcid;
+wire [ADDR_WIDTH-1:0]	w_awaddr;
+wire [DATA_WIDTH-1:0]	w_awdata;
+wire [DATA_WIDTH/8-1:0]	w_awstrb;
+assign { w_awcid, w_awaddr, w_awdata, w_awstrb } = awfifo[awrp[1:0]];
+
+reg awsend;	/* Send to AXI */
+reg awwait;	/* Wait for slave ready */
+
+
+/* Send write request to AXI */
+always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
+begin
+	if(!M_AXI4_ARESETn)
+	begin
+		awrp <= 3'b000;
+		awsend <= 1'b0;
+		awwait <= 1'b0;
+		M_AXI4_AWVALID <= 1'b0;
+		M_AXI4_WVALID <= 1'b0;
+	end
+	else if(~awsend)
+	begin
+		if(~awempty)
+		begin
+			M_AXI4_AWID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, w_awcid };
+			M_AXI4_AWADDR <= w_awaddr;
+			M_AXI4_AWVALID <= 1'b1;
+			M_AXI4_WDATA <= w_awdata;
+			M_AXI4_WSTRB <= w_awstrb;
+			M_AXI4_WVALID <= 1'b1;
+
+			awrp <= awrp + 1'b1;
+
+			awsend <= 1'b1;
+		end
+	end
+	else if(awsend)
+	begin
+		if(M_AXI4_AWREADY && M_AXI4_WREADY && ~awwait)
+		begin
+			M_AXI4_AWID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, w_awcid };
+			M_AXI4_AWADDR <= w_awaddr;
+			M_AXI4_WDATA <= w_awdata;
+			M_AXI4_WSTRB <= w_awstrb;
+
+			if(awempty)
+			begin
+				M_AXI4_AWVALID <= 1'b0;
+				M_AXI4_WVALID <= 1'b0;
+				awsend <= 1'b0;
+			end
+			else
+				awrp <= awrp + 1'b1;
+		end
+		else
+		begin
+			awwait <= 1'b1;
+
+			if(M_AXI4_AWREADY)
+			begin
+				M_AXI4_AWVALID <= 1'b0;
+				if(~M_AXI4_WVALID)
+				begin
+					awsend <= 1'b0;
+					awwait <= 1'b0;
+				end
+			end
+
+			if(M_AXI4_WREADY)
+			begin
+				M_AXI4_WVALID <= 1'b0;
+				if(~M_AXI4_AWVALID)
+				begin
+					awsend <= 1'b0;
+					awwait <= 1'b0;
+				end
+			end
 		end
 	end
 end
@@ -322,49 +403,116 @@ assign M_AXI4_ARPROT = 3'b010;			/* Unprivileged, non-secure, data access */
 /* Read request channel FSM state */
 reg [2:0] arfsm_state;
 
-/* Request */
+reg [(CID_WIDTH+ADDR_WIDTH)-1:0] arfifo[0:3];	/* Incoming read requests FIFO */
+reg [2:0] arrp;					/* Read pointer */
+reg [2:0] arwp;					/* Write pointer */
+wire [2:0] arrp1 = arrp - 1'b1;			/* Read pointer - 1 */
+/* FIFO states */
+wire arfull = (arrp[1:0] == arwp[1:0]) && (arrp[2] != arwp[2]);
+wire arempty = (arrp[1:0] == arwp[1:0]) && (arrp[2] == arwp[2]);
+wire aralmost_full = (arrp1[1:0] == arwp[1:0]) && (arrp1[2] != arwp[2]);
+wire arfifo_stall = arfull || aralmost_full;
+
+
+/* Receive read request into FIFO */
 always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
 begin
 	if(!M_AXI4_ARESETn)
 	begin
-		M_AXI4_ARVALID <= 1'b0;
+		arwp <= 3'b000;
 		biu_arpop <= 1'b0;
 		arfsm_state <= FSM_IDLE;
 	end
-	else if(arfsm_state == FSM_IDLE)
+	else if(arfsm_state == FSM_READ)
 	begin
 		if(biu_arvalid)
 		begin
-			biu_arpop <= 1'b1;
-			arfsm_state <= FSM_SEND;
-		end
-	end
-	else if(arfsm_state == FSM_SEND)
-	begin
-		if(biu_arvalid)
-		begin
-			M_AXI4_ARID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, biu_arcid };
-			M_AXI4_ARADDR <= biu_araddr;
-			M_AXI4_ARVALID <= 1'b1;
-			if(!M_AXI4_ARREADY)
+			arfifo[arwp[1:0]] <= { biu_arcid, biu_araddr };
+			arwp <= arwp + 1'b1;
+
+			if(arfifo_stall)
 			begin
 				biu_arpop <= 1'b0;
 				arfsm_state <= FSM_WAIT;
 			end
 		end
-		else
-		begin
-			M_AXI4_ARVALID <= 1'b0;
-			biu_arpop <= 1'b0;
-			arfsm_state <= FSM_IDLE;
-		end
 	end
 	else if(arfsm_state == FSM_WAIT)
 	begin
-		if(M_AXI4_ARREADY)
+		if(~arfifo_stall)
 		begin
 			biu_arpop <= 1'b1;
-			arfsm_state <= FSM_SEND;
+			arfsm_state <= FSM_READ;
+		end
+	end
+	else	/* IDLE */
+	begin
+		if(biu_arvalid)
+		begin
+			biu_arpop <= 1'b1;
+			arfsm_state <= FSM_READ;
+		end
+	end
+end
+
+
+wire [CID_WIDTH-1:0]	w_arcid;
+wire [ADDR_WIDTH-1:0]	w_araddr;
+assign { w_arcid, w_araddr } = arfifo[arrp[1:0]];
+
+reg arsend;	/* Send to AXI */
+reg arwait;	/* Wait for slave ready */
+
+
+/* Send read request to AXI */
+always @(posedge M_AXI4_ACLK or negedge M_AXI4_ARESETn)
+begin
+	if(!M_AXI4_ARESETn)
+	begin
+		arrp <= 3'b000;
+		arsend <= 1'b0;
+		arwait <= 1'b0;
+		M_AXI4_ARVALID <= 1'b0;
+	end
+	else if(~arsend)
+	begin
+		if(~arempty)
+		begin
+			M_AXI4_ARID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, w_arcid };
+			M_AXI4_ARADDR <= w_araddr;
+			M_AXI4_ARVALID <= 1'b1;
+
+			arrp <= arrp + 1'b1;
+
+			arsend <= 1'b1;
+		end
+	end
+	else if(arsend)
+	begin
+		if(M_AXI4_ARREADY && ~arwait)
+		begin
+			M_AXI4_ARID <= { {(ID_WIDTH-CID_WIDTH){1'b0}}, w_arcid };
+			M_AXI4_ARADDR <= w_araddr;
+
+			if(arempty)
+			begin
+				M_AXI4_ARVALID <= 1'b0;
+				arsend <= 1'b0;
+			end
+			else
+				arrp <= arrp + 1'b1;
+		end
+		else
+		begin
+			arwait <= 1'b1;
+
+			if(M_AXI4_ARREADY)
+			begin
+				M_AXI4_ARVALID <= 1'b0;
+				arsend <= 1'b0;
+				arwait <= 1'b0;
+			end
+
 		end
 	end
 end
