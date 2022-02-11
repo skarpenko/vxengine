@@ -63,6 +63,9 @@ int sc_main(int argc, char *argv[])
 	if(argc < 2)
 		std::cout << std::endl << "Use -h for help." << std::endl;
 
+	// Parse Verilator command-line arguments
+	Verilated::commandArgs(argc, argv);
+
 	// Parse command-line arguments
 	for(int i=1; i<argc; ++i) {
 		if(!strcmp(argv[i], "-h")) {
@@ -180,6 +183,8 @@ int sc_main(int argc, char *argv[])
 			} else {
 				std::cerr << "-regsz: missing size." << std::endl;
 			}
+		} else if(argv[i][0] == '+') {
+			// skip Verilator arguments
 		} else {
 			std::cerr << "Unknown argument: " << argv[i] << std::endl;
 		}
