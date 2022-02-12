@@ -58,6 +58,9 @@ int sc_main(int argc, char *argv[])
 	unsigned ardelay1 = 0;
 	unsigned awdelay1 = 0;
 	unsigned wdelay1 = 0;
+	unsigned cudelay = 0;
+	unsigned vpu0delay = 0;
+	unsigned vpu1delay = 0;
 
 	// Hint for help
 	if(argc < 2)
@@ -80,6 +83,9 @@ int sc_main(int argc, char *argv[])
 				<< "\t-ardelay1 <cycles>   - Delay in AXI AR channel for port 1;"
 				<< "\t-awdelay1 <cycles>   - Delay in AXI AW channel for port 1;"
 				<< "\t-wdelay1 <cycles>    - Delay in AXI W channel for port 1;"
+				<< "\t-cudelay <cycles>    - Delay in CU response channel;"
+				<< "\t-vpu0delay <cycles>  - Delay in VPU0 response channel;"
+				<< "\t-vpu1delay <cycles>  - Delay in VPU1 response channel;"
 				<< "\t-regsz <size KB>     - test region size (default: 8KB)." << std::endl
 				<< std::endl;
 			return 0;
@@ -167,6 +173,45 @@ int sc_main(int argc, char *argv[])
 			} else {
 				std::cerr << "-wdelay1: missing delay." << std::endl;
 			}
+		} else if(!strcmp(argv[i], "-cudelay")) {
+			++i;
+			if(i<argc) {
+				try {
+					cudelay = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-cudelay: missing delay." << std::endl;
+			}
+		} else if(!strcmp(argv[i], "-vpu0delay")) {
+			++i;
+			if(i<argc) {
+				try {
+					vpu0delay = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-vpu0delay: missing delay." << std::endl;
+			}
+		} else if(!strcmp(argv[i], "-vpu1delay")) {
+			++i;
+			if(i<argc) {
+				try {
+					vpu1delay = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-vpu1delay: missing delay." << std::endl;
+			}
 		} else if(!strcmp(argv[i], "-regsz")) {
 			++i;
 			if(i<argc) {
@@ -206,6 +251,8 @@ int sc_main(int argc, char *argv[])
 		<< "AR=" << ardelay0 << "/" << "AW=" << awdelay0 << "/" << "W=" << wdelay0 << std::endl;
 	std::cout << "> Port 1 delays    : "
 		<< "AR=" << ardelay1 << "/" << "AW=" << awdelay1 << "/" << "W=" << wdelay1 << std::endl;
+	std::cout << "> Unit delays      : "
+		<< "CU=" << cudelay << "/" << "VPU0=" << vpu0delay << "/" << "VPU1=" << vpu1delay << std::endl;
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 
 	// System clock and reset
@@ -220,6 +267,10 @@ int sc_main(int argc, char *argv[])
 	// Set port delays
 	top.memory.S0.set_delays(ardelay0, awdelay0, wdelay0);
 	top.memory.S1.set_delays(ardelay1, awdelay1, wdelay1);
+	// Set unit delays
+	top.stimul.cu.set_delays(cudelay);
+	top.stimul.vpu0.set_delays(vpu0delay);
+	top.stimul.vpu1.set_delays(vpu1delay);
 
 	// Setup tests to run
 	setup_tests(top);

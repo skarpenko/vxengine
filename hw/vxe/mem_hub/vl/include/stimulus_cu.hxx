@@ -73,11 +73,18 @@ SC_MODULE(stimulus_cu) {
 
 		SC_THREAD(trace_verif_thread)
 			sensitive << clk.pos();
+
+		set_delays(0);
 	}
 
 	void assign_trace(std::shared_ptr<stimul::trace_gen_base> trace)
 	{
 		m_trace = trace;
+	}
+
+	void set_delays(unsigned rsdelay)
+	{
+		m_rsdelay = rsdelay;
 	}
 
 private:
@@ -115,6 +122,14 @@ private:
 		while(true) {
 			bool rds;	// Response status is available
 			bool rdd;	// Response data is available
+
+			// Simulate delay
+			if(m_rsdelay) {
+				unsigned n = m_rsdelay;
+				o_cu_rss_rd.write(false);
+				o_cu_rsd_rd.write(false);
+				while(n--) wait();
+			}
 
 			// Read status
 			if(fifo_rss.num_free() && i_cu_rss_vld) {
@@ -229,6 +244,7 @@ private:
 	sc_fifo<stimul::req_addr>	fifo_rqa;
 	sc_fifo<stimul::res_stat>	fifo_rss;
 	sc_fifo<stimul::res_data>	fifo_rsd;
+	unsigned			m_rsdelay;	// Response acceptance delay
 	// Test trace
 	std::shared_ptr<stimul::trace_gen_base>	m_trace;
 };
