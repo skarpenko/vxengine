@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -50,6 +50,12 @@ module vxe_axi_switch_ds(
 	o_m_rsd,
 	o_m_rsd_wr
 );
+/* FSM states */
+localparam [3:0]	FSM_IDLE = 4'b0000;	/* Idle */
+localparam [3:0]	FSM_DSRD = 4'b0001;	/* Downstream read response */
+localparam [3:0]	FSM_DSWR = 4'b0010;	/* Downstream write response */
+localparam [3:0]	FSM_STLR = 4'b0100;	/* Read resp. downstream stall */
+localparam [3:0]	FSM_STLW = 4'b1000;	/* Write resp. downstream stall */
 /* Global signals */
 input wire		clk;
 input wire		nrst;
@@ -122,8 +128,9 @@ wire [8:0]	wr_resp_stat;	/* Write response status */
 wire [8:0]	rd_resp_stat;	/* Read response status */
 wire [63:0]	rd_resp_data;	/* Read response data */
 
-wire rd_ready = i_m_rss_rdy && i_m_rsd_rdy && !rd_resp_fifo_empty;
-wire wr_ready = i_m_rss_rdy && !wr_resp_fifo_empty;
+
+/* Downstream FSM state */
+reg [3:0] ds_fsm_state;
 
 always @(posedge clk or negedge nrst)
 begin
@@ -133,25 +140,149 @@ begin
 		rd_resp_fifo_rp <= 3'b000;
 		o_m_rss_wr <= 1'b0;
 		o_m_rsd_wr <= 1'b0;
+		ds_fsm_state <= FSM_IDLE;
 	end
-	else
+	else if(ds_fsm_state == FSM_DSRD)	/* Downstream read responses */
 	begin
-		o_m_rss_wr <= 1'b0;
-		o_m_rsd_wr <= 1'b0;
+		if(i_m_rss_rdy && i_m_rsd_rdy && !wr_resp_fifo_empty)
+		begin
+			o_m_rss <= wr_resp_stat;
+			o_m_rss_wr <= 1'b1;
+			o_m_rsd_wr <= 1'b0;
+			wr_resp_fifo_rp <= wr_resp_fifo_rp + 1'b1;
+			ds_fsm_state <= FSM_DSWR;
+		end
+		else if(i_m_rss_rdy && i_m_rsd_rdy && !rd_resp_fifo_empty)
+		begin
+			o_m_rss <= rd_resp_stat;
+			o_m_rsd <= rd_resp_data;
+			rd_resp_fifo_rp <= rd_resp_fifo_rp + 1'b1;
+		end
+		else if(i_m_rss_rdy && i_m_rsd_rdy)
+		begin
+			o_m_rss_wr <= 1'b0;
+			o_m_rsd_wr <= 1'b0;
+			ds_fsm_state <= FSM_IDLE;
+		end
+		else
+		begin
+			if(i_m_rss_rdy)
+				o_m_rss_wr <= 1'b0;
 
-		if(rd_ready)
+			if(i_m_rsd_rdy)
+				o_m_rsd_wr <= 1'b0;
+
+			ds_fsm_state <= FSM_STLR;
+		end
+	end
+	else if(ds_fsm_state == FSM_DSWR)	/* Downstream write responses */
+	begin
+		if(i_m_rss_rdy && !rd_resp_fifo_empty)
 		begin
 			o_m_rss <= rd_resp_stat;
 			o_m_rsd <= rd_resp_data;
 			o_m_rss_wr <= 1'b1;
 			o_m_rsd_wr <= 1'b1;
 			rd_resp_fifo_rp <= rd_resp_fifo_rp + 1'b1;
+			ds_fsm_state <= FSM_DSRD;
 		end
-		else if(wr_ready)
+		else if(i_m_rss_rdy && !wr_resp_fifo_empty)
+		begin
+			o_m_rss <= wr_resp_stat;
+			wr_resp_fifo_rp <= wr_resp_fifo_rp + 1'b1;
+		end
+		else if(i_m_rss_rdy)
+		begin
+			o_m_rss_wr <= 1'b0;
+			ds_fsm_state <= FSM_IDLE;
+		end
+		else
+		begin
+			ds_fsm_state <= FSM_STLW;
+		end
+	end
+	else if(ds_fsm_state == FSM_STLR)	/* Read responses downstream stall */
+	begin
+		if(i_m_rss_rdy && i_m_rsd_rdy)
+		begin
+			o_m_rss_wr <= 1'b0;
+			o_m_rsd_wr <= 1'b0;
+
+			if(!wr_resp_fifo_empty)	/* Favor write responses */
+			begin
+				o_m_rss <= wr_resp_stat;
+				o_m_rss_wr <= 1'b1;
+				wr_resp_fifo_rp <= wr_resp_fifo_rp + 1'b1;
+				ds_fsm_state <= FSM_DSWR;
+			end
+			else if(!rd_resp_fifo_empty)
+			begin
+				o_m_rss <= rd_resp_stat;
+				o_m_rsd <= rd_resp_data;
+				o_m_rss_wr <= 1'b1;
+				o_m_rsd_wr <= 1'b1;
+				rd_resp_fifo_rp <= rd_resp_fifo_rp + 1'b1;
+				ds_fsm_state <= FSM_DSRD;
+			end
+			else
+			begin
+				ds_fsm_state <= FSM_IDLE;
+			end
+		end
+		else if(i_m_rss_rdy)
+		begin
+			o_m_rss_wr <= 1'b0;
+		end
+		else if(i_m_rsd_rdy)
+		begin
+			o_m_rsd_wr <= 1'b0;
+		end
+	end
+	else if(ds_fsm_state == FSM_STLW)	/* Write responses downstream stall */
+	begin
+		if(i_m_rss_rdy)
+		begin
+			o_m_rss_wr <= 1'b0;
+
+			if(!rd_resp_fifo_empty)	/* Favor read responses */
+			begin
+				o_m_rss <= rd_resp_stat;
+				o_m_rsd <= rd_resp_data;
+				o_m_rss_wr <= 1'b1;
+				o_m_rsd_wr <= 1'b1;
+				rd_resp_fifo_rp <= rd_resp_fifo_rp + 1'b1;
+				ds_fsm_state <= FSM_DSRD;
+			end
+			else if(!wr_resp_fifo_empty)
+			begin
+				o_m_rss <= wr_resp_stat;
+				o_m_rss_wr <= 1'b1;
+				wr_resp_fifo_rp <= wr_resp_fifo_rp + 1'b1;
+				ds_fsm_state <= FSM_DSWR;
+			end
+			else
+			begin
+				ds_fsm_state <= FSM_IDLE;
+			end
+		end
+	end
+	else	/* IDLE */
+	begin
+		if(!rd_resp_fifo_empty)
+		begin
+			o_m_rss <= rd_resp_stat;
+			o_m_rsd <= rd_resp_data;
+			o_m_rss_wr <= 1'b1;
+			o_m_rsd_wr <= 1'b1;
+			rd_resp_fifo_rp <= rd_resp_fifo_rp + 1'b1;
+			ds_fsm_state <= FSM_DSRD;
+		end
+		else if(!wr_resp_fifo_empty)
 		begin
 			o_m_rss <= wr_resp_stat;
 			o_m_rss_wr <= 1'b1;
 			wr_resp_fifo_rp <= wr_resp_fifo_rp + 1'b1;
+			ds_fsm_state <= FSM_DSWR;
 		end
 	end
 end
