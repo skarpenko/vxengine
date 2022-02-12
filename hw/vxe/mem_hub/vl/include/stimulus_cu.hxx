@@ -75,6 +75,8 @@ SC_MODULE(stimulus_cu) {
 			sensitive << clk.pos();
 
 		set_delays(0);
+
+		reset_stats();
 	}
 
 	void assign_trace(std::shared_ptr<stimul::trace_gen_base> trace)
@@ -86,6 +88,14 @@ SC_MODULE(stimulus_cu) {
 	{
 		m_rsdelay = rsdelay;
 	}
+
+	void reset_stats()
+	{
+		m_sent = m_recvd = 0;
+	}
+
+	uint64_t get_sent() const { return m_sent; }
+	uint64_t get_recvd() const { return m_recvd; }
 
 private:
 	[[noreturn]] void upstream_thread()
@@ -194,6 +204,8 @@ private:
 				fifo_rqa.write(rqa);
 
 				m_trace->req_sent(rq);
+
+				++m_sent;
 			}
 
 			wait();
@@ -233,6 +245,8 @@ private:
 				}
 
 				m_trace->res_vrfd(ref_rs);
+
+				++m_recvd;
 			}
 
 			wait();
@@ -247,4 +261,7 @@ private:
 	unsigned			m_rsdelay;	// Response acceptance delay
 	// Test trace
 	std::shared_ptr<stimul::trace_gen_base>	m_trace;
+	// Statistics
+	uint64_t m_sent;	// Number of sent requests
+	uint64_t m_recvd;	// Number of received responses
 };

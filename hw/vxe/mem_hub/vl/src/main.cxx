@@ -61,6 +61,7 @@ int sc_main(int argc, char *argv[])
 	unsigned cudelay = 0;
 	unsigned vpu0delay = 0;
 	unsigned vpu1delay = 0;
+	unsigned wd_timeout = 0;
 
 	// Hint for help
 	if(argc < 2)
@@ -77,16 +78,19 @@ int sc_main(int argc, char *argv[])
 				<< "\t-trace               - dump trace;" << std::endl
 				<< "\t-vtrace              - dump Verilator trace;" << std::endl
 				<< "\t-memdump             - dump memory contents;" << std::endl
-				<< "\t-ardelay0 <cycles>   - Delay in AXI AR channel for port 0;"
-				<< "\t-awdelay0 <cycles>   - Delay in AXI AW channel for port 0;"
-				<< "\t-wdelay0 <cycles>    - Delay in AXI W channel for port 0;"
-				<< "\t-ardelay1 <cycles>   - Delay in AXI AR channel for port 1;"
-				<< "\t-awdelay1 <cycles>   - Delay in AXI AW channel for port 1;"
-				<< "\t-wdelay1 <cycles>    - Delay in AXI W channel for port 1;"
-				<< "\t-cudelay <cycles>    - Delay in CU response channel;"
-				<< "\t-vpu0delay <cycles>  - Delay in VPU0 response channel;"
-				<< "\t-vpu1delay <cycles>  - Delay in VPU1 response channel;"
-				<< "\t-regsz <size KB>     - test region size (default: 8KB)." << std::endl
+				<< "\t-wdtout <cycles>     - Watchdog timeout to terminate stuck tests (Default: "
+					<< wd_timeout << (!wd_timeout ? " disabled" : "") << ");" << std::endl
+				<< "\t-ardelay0 <cycles>   - Delay in AXI AR channel for port 0;" << std::endl
+				<< "\t-awdelay0 <cycles>   - Delay in AXI AW channel for port 0;" << std::endl
+				<< "\t-wdelay0 <cycles>    - Delay in AXI W channel for port 0;" << std::endl
+				<< "\t-ardelay1 <cycles>   - Delay in AXI AR channel for port 1;" << std::endl
+				<< "\t-awdelay1 <cycles>   - Delay in AXI AW channel for port 1;" << std::endl
+				<< "\t-wdelay1 <cycles>    - Delay in AXI W channel for port 1;" << std::endl
+				<< "\t-cudelay <cycles>    - Delay in CU response channel;" << std::endl
+				<< "\t-vpu0delay <cycles>  - Delay in VPU0 response channel;" << std::endl
+				<< "\t-vpu1delay <cycles>  - Delay in VPU1 response channel;" << std::endl
+				<< "\t-regsz <size KB>     - test region size (default: " << region_size/SZ_KB
+					<< "KB)." << std::endl
 				<< std::endl;
 			return 0;
 		} else if(!strcmp(argv[i], "-trace")) {
@@ -95,6 +99,19 @@ int sc_main(int argc, char *argv[])
 			do_vtrace = true;
 		} else if(!strcmp(argv[i], "-memdump")) {
 			do_memdump = true;
+		} else if(!strcmp(argv[i], "-wdtout")) {
+			++i;
+			if(i<argc) {
+				try {
+					wd_timeout = std::stoi(argv[i]);
+				}
+				catch(const std::exception& e)
+				{
+					std::cerr << e.what() << std::endl;
+				}
+			} else {
+				std::cerr << "-wdtout: missing timeout." << std::endl;
+			}
 		} else if(!strcmp(argv[i], "-ardelay0")) {
 			++i;
 			if(i<argc) {
@@ -253,6 +270,7 @@ int sc_main(int argc, char *argv[])
 		<< "AR=" << ardelay1 << "/" << "AW=" << awdelay1 << "/" << "W=" << wdelay1 << std::endl;
 	std::cout << "> Unit delays      : "
 		<< "CU=" << cudelay << "/" << "VPU0=" << vpu0delay << "/" << "VPU1=" << vpu1delay << std::endl;
+	std::cout << "> Watchdog timeout : " << wd_timeout << (!wd_timeout ? " disabled" : "") << std::endl;
 	std::cout << std::setfill('=') << std::setw(80) << "=" << std::endl;
 
 	// System clock and reset
@@ -271,6 +289,8 @@ int sc_main(int argc, char *argv[])
 	top.stimul.cu.set_delays(cudelay);
 	top.stimul.vpu0.set_delays(vpu0delay);
 	top.stimul.vpu1.set_delays(vpu1delay);
+	// Set watchdog timeout
+	top.stimul.set_wd_timeout(wd_timeout);
 
 	// Setup tests to run
 	setup_tests(top);

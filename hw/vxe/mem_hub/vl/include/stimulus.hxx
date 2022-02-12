@@ -108,8 +108,13 @@ SC_MODULE(stimulus) {
 		, cu("cu", stimul::mhc::CU), vpu0("vpu0", stimul::mhc::VPU0), vpu1("vpu1", stimul::mhc::VPU1)
 	{
 		m_failed = false;
+		m_wd_enabled = false;
+		m_wd_timeout = 0;
 
 		SC_THREAD(test_issue_thread)
+			sensitive << clk.pos();
+
+		SC_THREAD(watchdog_thread)
 			sensitive << clk.pos();
 
 		// Connect CU signals
@@ -169,6 +174,11 @@ SC_MODULE(stimulus) {
 		return m_failed;
 	}
 
+	void set_wd_timeout(unsigned t)
+	{
+		m_wd_timeout = t;
+	}
+
 private:
 	[[noreturn]] void test_issue_thread()
 	{
@@ -190,8 +200,12 @@ private:
 
 			std::cout << "Running... " << (*it)->name() << std::endl;
 
+			m_wd_enabled = true;
+
 			while(!(*it)->done())
 				wait();
+
+			m_wd_enabled = false;
 
 			wait();	// sync threads before continue
 
@@ -209,7 +223,74 @@ private:
 		}
 	}
 
+	[[noreturn]] void watchdog_thread()
+	{
+		uint64_t cu_sent = 0;
+		uint64_t cu_recvd = 0;
+		uint64_t vpu0_sent = 0;
+		uint64_t vpu0_recvd = 0;
+		uint64_t vpu1_sent = 0;
+		uint64_t vpu1_recvd = 0;
+		unsigned tmout = m_wd_timeout;
+
+		// Wait for reset release
+		while(!nrst) wait();
+
+		while(true) {
+			if(m_wd_enabled && m_wd_timeout) {
+				uint64_t sent;
+				uint64_t recvd;
+				bool upd_tmout = false;
+
+				// Check CU stats
+				sent = cu.get_sent();
+				recvd = cu.get_recvd();
+				if(cu_sent != sent || cu_recvd != recvd) {
+					upd_tmout = true;
+					cu_sent = sent;
+					cu_recvd = recvd;
+				}
+
+				// Check VPU0 stats
+				sent = vpu0.get_sent();
+				recvd = vpu0.get_recvd();
+				if(vpu0_sent != sent || vpu0_recvd != recvd) {
+					upd_tmout = true;
+					vpu0_sent = sent;
+					vpu0_recvd = recvd;
+				}
+
+				// Check VPU1 stats
+				sent = vpu1.get_sent();
+				recvd = vpu1.get_recvd();
+				if(vpu1_sent != sent || vpu1_recvd != recvd) {
+					upd_tmout = true;
+					vpu1_sent = sent;
+					vpu1_recvd = recvd;
+				}
+
+				if(upd_tmout)
+					tmout = m_wd_timeout;
+				else
+					--tmout;
+
+				if(!tmout) {
+					m_failed = true;
+					std::cout << "\nWATCHDOG: Testbench stuck!" << std::endl;
+					sc_stop();
+					while(true) wait();
+				}
+			} else {
+				tmout = m_wd_timeout;
+			}
+
+			wait();
+		}
+	}
+
 private:
 	std::list<std::shared_ptr<stimul::test_base>> m_tests;	// Tests list
-	bool m_failed;	// Tests failed flag
+	bool m_failed;		// Tests failed flag
+	bool m_wd_enabled;	// Watchdog enabled
+	unsigned m_wd_timeout;	// Watchdog timeout
 };
