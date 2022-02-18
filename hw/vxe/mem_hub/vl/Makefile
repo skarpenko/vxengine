@@ -68,6 +68,12 @@ $(VXENGINE_HOME)/hw/vxe/mem_hub/vl/hw/obj_dir/Vvl_axi4_mem_hub.h: hw/vl_axi4_mem
 		--Wno-fatal -O3 --trace --Mdir hw/obj_dir -f hw/vl_axi4_mem_hub.lst
 
 
+# Run fuzz tests
+.PHONY: runfuzz
+runfuzz:
+	perl run_fuzz.pl
+
+
 # Do clean
 .PHONY: clean
 clean:
@@ -77,3 +83,4 @@ clean:
 	-@rm -f trace.vcd
 	-@rm -f vltrace.vcd
 	-@rm -f memdump.txt
+	-@rm -f *.tmp
