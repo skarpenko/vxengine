@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -32,3 +32,10 @@
 localparam [1:0] CLNT_CU	= 2'd0;		/* Control Unit */
 localparam [1:0] CLNT_VPU0	= 2'd1;		/* Vector Processing Unit 0 */
 localparam [1:0] CLNT_VPU1	= 2'd2;		/* Vector Processing Unit 1 */
+
+
+/* VPU static parameters */
+localparam VPUS_NR	= 2;			/* Number of VPUs */
+localparam VPU_THR_NR2	= 3;			/* Number of threads per VPU (pow2) */
+localparam VPU_THR_NR	= 2**VPU_THR_NR2;	/* Number of threads per VPU */
+localparam TOTAL_THR_NR	= VPUS_NR*VPU_THR_NR;	/* Total threads number */
