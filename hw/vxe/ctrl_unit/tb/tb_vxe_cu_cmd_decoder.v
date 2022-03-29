@@ -99,7 +99,7 @@ module tb_vxe_cu_cmd_decoder();
 		@(posedge clk)
 		begin
 			test_name <= "SETVL0 ";
-			cmd <= { 5'h09, 8'h02, 31'h0, 20'h000100 };
+			cmd <= { 5'h09, 8'h02, 31'h0, 20'h00100 };
 		end
 
 		/* SETRS */
@@ -186,7 +186,7 @@ module tb_vxe_cu_cmd_decoder();
 		@(posedge clk)
 		begin
 			test_name <= "SETVL1 ";
-			cmd <= { 5'h09, 8'h02, 31'h1, 20'h000100 };
+			cmd <= { 5'h09, 8'h02, 31'h1, 20'h00100 };
 		end
 
 		/* SETRS */
@@ -266,7 +266,7 @@ module tb_vxe_cu_cmd_decoder();
 		@(posedge clk)
 		begin
 			test_name <= "SETVL2 ";
-			cmd <= { 5'h09, 8'h10, 31'h0, 20'h000100 };
+			cmd <= { 5'h09, 8'h10, 31'h0, 20'h00100 };
 		end
 
 		/* SETRS */
