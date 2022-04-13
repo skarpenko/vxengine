@@ -4,7 +4,8 @@
 
 # Available testbenches
 TESTBENCHES := \
-	tb_vxe_cu_cmd_decoder
+	tb_vxe_cu_cmd_decoder	\
+	tb_vxe_cu_fetch_unit
 
 
 TB ?=
