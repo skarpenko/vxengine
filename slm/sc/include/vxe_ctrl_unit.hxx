@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -205,43 +205,43 @@ private:
 	}
 
 	/**
-	 * Get VPU number from tid field of the instruction
-	 * @param tid thread id
+	 * Get VPU number from dst field of the instruction
+	 * @param dst destination
 	 * @return VPU number 0 or 1
 	 */
-	unsigned vpu_number(unsigned tid)
+	unsigned vpu_number(unsigned dst)
 	{
-		return (tid & 0x8u ? 1 : 0);
+		return (dst & 0x8u ? 1 : 0);
 	}
 
 	/**
-	 * Check if VPU0 thread
-	 * @param tid thread id
-	 * @return true if thread mapped to VPU0
+	 * Check if destination is VPU0
+	 * @param dst destination
+	 * @return true if destination is VPU0
 	 */
-	bool is_vpu0_tid(unsigned tid)
+	bool is_vpu0_dst(unsigned dst)
 	{
-		return vpu_number(tid) == 0;
+		return vpu_number(dst) == 0;
 	}
 
 	/**
-	 * Check if VPU1 thread
-	 * @param tid thread id
-	 * @return true if thread mapped to VPU1
+	 * Check if destination is VPU1
+	 * @param dst destination
+	 * @return true if destination VPU1
 	 */
-	bool is_vpu1_tid(unsigned tid)
+	bool is_vpu1_dst(unsigned dst)
 	{
-		return vpu_number(tid) == 1;
+		return vpu_number(dst) == 1;
 	}
 
 	/**
-	 * Get VPU local thread id from tid field of the instruction
-	 * @param tid thread id
+	 * Get VPU local thread id from dst field of the instruction
+	 * @param dst destination
 	 * @return VPU local thread id
 	 */
-	unsigned vpu_local_tid(unsigned tid)
+	unsigned vpu_local_tid(unsigned dst)
 	{
-		return tid & 0x7u;
+		return dst & 0x7u;
 	}
 
 	/**** INSTRUCTIONS IMPLEMENTATION ****/
@@ -260,8 +260,8 @@ private:
 	void instr_setacc(const vxe::instr::setacc& setacc)
 	{
 		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_tid(setacc.tid), is_vpu1_tid(setacc.tid),
-				vxe::vpc::SETACC, vpu_local_tid(setacc.tid), setacc.acc);
+		bool err = cmd_bus_command(is_vpu0_dst(setacc.dst), is_vpu1_dst(setacc.dst),
+				vxe::vpc::SETACC, vpu_local_tid(setacc.dst), setacc.acc);
 		if(err)
 			invalid_instruction();
 	}
@@ -272,8 +272,8 @@ private:
 	void instr_setvl(const vxe::instr::setvl& setvl)
 	{
 		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_tid(setvl.tid), is_vpu1_tid(setvl.tid),
-					vxe::vpc::SETVL, vpu_local_tid(setvl.tid), setvl.len);
+		bool err = cmd_bus_command(is_vpu0_dst(setvl.dst), is_vpu1_dst(setvl.dst),
+					vxe::vpc::SETVL, vpu_local_tid(setvl.dst), setvl.len);
 		if(err)
 			invalid_instruction();
 	}
@@ -284,8 +284,8 @@ private:
 	void instr_setrs(const vxe::instr::setrs& setrs)
 	{
 		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_tid(setrs.tid), is_vpu1_tid(setrs.tid),
-					vxe::vpc::SETRS, vpu_local_tid(setrs.tid), setrs.addr);
+		bool err = cmd_bus_command(is_vpu0_dst(setrs.dst), is_vpu1_dst(setrs.dst),
+					vxe::vpc::SETRS, vpu_local_tid(setrs.dst), setrs.addr);
 		if(err)
 			invalid_instruction();
 	}
@@ -296,8 +296,8 @@ private:
 	void instr_setrt(const vxe::instr::setrt& setrt)
 	{
 		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_tid(setrt.tid), is_vpu1_tid(setrt.tid),
-					vxe::vpc::SETRT, vpu_local_tid(setrt.tid), setrt.addr);
+		bool err = cmd_bus_command(is_vpu0_dst(setrt.dst), is_vpu1_dst(setrt.dst),
+					vxe::vpc::SETRT, vpu_local_tid(setrt.dst), setrt.addr);
 		if(err)
 			invalid_instruction();
 	}
@@ -308,8 +308,8 @@ private:
 	void instr_setrd(const vxe::instr::setrd& setrd)
 	{
 		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_tid(setrd.tid), is_vpu1_tid(setrd.tid),
-					vxe::vpc::SETRD, vpu_local_tid(setrd.tid), setrd.addr);
+		bool err = cmd_bus_command(is_vpu0_dst(setrd.dst), is_vpu1_dst(setrd.dst),
+					vxe::vpc::SETRD, vpu_local_tid(setrd.dst), setrd.addr);
 		if(err)
 			invalid_instruction();
 	}
@@ -320,8 +320,8 @@ private:
 	void instr_seten(const vxe::instr::seten& seten)
 	{
 		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_tid(seten.tid), is_vpu1_tid(seten.tid),
-					vxe::vpc::SETEN, vpu_local_tid(seten.tid), seten.en);
+		bool err = cmd_bus_command(is_vpu0_dst(seten.dst), is_vpu1_dst(seten.dst),
+					vxe::vpc::SETEN, vpu_local_tid(seten.dst), seten.en);
 		if(err)
 			invalid_instruction();
 	}
