@@ -221,7 +221,9 @@ namespace vxe {
 			};
 			uint64_t u64;
 
-			explicit generic_vpu(uint64_t _u = 0) : u64(_u) {}
+			generic_vpu() : _z0(0) {}
+			explicit generic_vpu(uint64_t _u) : u64(_u) {}
+			generic_vpu(const union generic& g) : u64(g) {}
 
 			operator uint64_t() const { return u64; }
 		};
