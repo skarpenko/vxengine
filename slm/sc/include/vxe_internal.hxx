@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -43,30 +43,6 @@ namespace vxe {
 		static constexpr unsigned VPU0	= 1;	// Vector Processing Unit 0
 		static constexpr unsigned VPU1	= 2;	// Vector Processing Unit 1
 	} // namespace mhc
-
-
-	// Vector processing unit commands
-	namespace vpc {
-		static constexpr unsigned SETACC	= 0x08;	// Set accumulator
-		static constexpr unsigned SETVL		= 0x09;	// Set vector length
-		static constexpr unsigned SETRS		= 0x0a;	// Set Rs address
-		static constexpr unsigned SETRT		= 0x0b;	// Set Rt address
-		static constexpr unsigned SETRD		= 0x0c;	// Set Rd address
-		static constexpr unsigned SETEN		= 0x0d;	// Set thread enable
-		static constexpr unsigned PROD		= 0x10;	// Compute product
-		static constexpr unsigned STORE		= 0x14;	// Store result to Rd address
-		static constexpr unsigned ACTF		= 0x11;	// Run activation function
-	} // namespace vpc
-
-
-	// Activation function command data
-	union vpu_af_cmd_data {
-		struct {
-			uint64_t pl : 56;	// Optional payload
-			uint64_t af : 8;	// Activation function type
-		};
-		uint64 u64;
-	};
 
 
 	// Memory request

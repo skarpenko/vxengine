@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,6 +29,7 @@
 
 #include <iostream>
 #include <systemc.h>
+#include "vxe_common.hxx"
 #include "vxe_internal.hxx"
 #include "vxe_fifo64x32.hxx"
 #include "vxe_pipe.hxx"
@@ -49,11 +50,11 @@ SC_MODULE(vxe_vector_unit) {
 
 	// Control signals
 	sc_out<bool> o_busy;
+	sc_out<bool> o_err;
 
 	// Command bus
 	sc_in<bool> i_cmd_select;
 	sc_out<bool> o_cmd_ack;
-	sc_out<bool> o_cmd_err;
 	sc_in<uint8_t> i_cmd_op;
 	sc_in<uint8_t> i_cmd_thread;
 	sc_in<uint64_t> i_cmd_wdata;
@@ -74,8 +75,8 @@ SC_MODULE(vxe_vector_unit) {
 	vxe_vector_unit(::sc_core::sc_module_name name, unsigned client_id)
 		: ::sc_core::sc_module(name), clk("clk"), nrst("nrst")
 		, mem_fifo_in("mem_fifo_in"), mem_fifo_out("mem_fifo_out")
-		, o_busy("o_busy")
-		, i_cmd_select("i_cmd_select"), o_cmd_ack("o_cmd_ack"), o_cmd_err("o_cmd_err")
+		, o_busy("o_busy"), o_err("o_err")
+		, i_cmd_select("i_cmd_select"), o_cmd_ack("o_cmd_ack")
 		, i_cmd_op("i_cmd_op"), i_cmd_thread("i_cmd_thread"), i_cmd_wdata("i_cmd_wdata")
 		, fmac32("fmac32"), thr_id_pipe("thr_id_pipe")
 		, frelu32("frelu32")
@@ -185,14 +186,14 @@ private:
 
 		// Reset state
 		o_cmd_ack.write(false);
-		o_cmd_err.write(false);
+		o_err.write(false);
 		s_dpcmd_valid.write(false);
 
 		while(true) {
 			wait(); // Wait for positive edge
 
 			o_cmd_ack.write(false);
-			o_cmd_err.write(false);
+			o_err.write(false);
 			s_dpcmd_valid.write(false);
 
 			if(!i_cmd_select.read())
@@ -208,27 +209,27 @@ private:
 				wait();
 
 			switch(cmd_op) {
-				case vxe::vpc::SETACC:
+				case vxe::instr::setacc::OP:
 					reg_acc[cmd_thread] = cmd_wdata;
 					break;
-				case vxe::vpc::SETVL:
+				case vxe::instr::setvl::OP:
 					reg_rsl[cmd_thread] = cmd_wdata;
 					reg_rtl[cmd_thread] = cmd_wdata;
 					break;
-				case vxe::vpc::SETRS:
+				case vxe::instr::setrs::OP:
 					reg_rsa[cmd_thread] = cmd_wdata;
 					break;
-				case vxe::vpc::SETRT:
+				case vxe::instr::setrt::OP:
 					reg_rta[cmd_thread] = cmd_wdata;
 					break;
-				case vxe::vpc::SETRD:
+				case vxe::instr::setrd::OP:
 					reg_rda[cmd_thread] = cmd_wdata;
 					break;
-				case vxe::vpc::SETEN:
+				case vxe::instr::seten::OP:
 					reg_thr_en[cmd_thread] = (cmd_wdata & 1u) != 0;
 					break;
-				case vxe::vpc::PROD:
-					s_dpcmd_op.write(vxe::vpc::PROD);
+				case vxe::instr::prod::OP:
+					s_dpcmd_op.write(vxe::instr::prod::OP);
 					s_dpcmd_valid.write(true);
 					wait();
 					s_dpcmd_valid.write(false);
@@ -236,8 +237,8 @@ private:
 					while(s_load_store_busy.read() || s_exec_pipe_busy.read())
 						wait();
 					break;
-				case vxe::vpc::STORE:
-					s_dpcmd_op.write(vxe::vpc::STORE);
+				case vxe::instr::store::OP:
+					s_dpcmd_op.write(vxe::instr::store::OP);
 					s_dpcmd_valid.write(true);
 					wait();
 					s_dpcmd_valid.write(false);
@@ -245,8 +246,8 @@ private:
 					while(s_load_store_busy.read())
 						wait();
 					break;
-				case vxe::vpc::ACTF:
-					s_dpcmd_op.write(vxe::vpc::ACTF);
+				case vxe::instr::generic_af::OP:
+					s_dpcmd_op.write(vxe::instr::generic_af::OP);
 					s_dpcmd_pl.write(cmd_wdata);
 					s_dpcmd_valid.write(true);
 					wait();
@@ -256,7 +257,7 @@ private:
 						wait();
 					break;
 				default:
-					o_cmd_err.write(true);
+					o_err.write(true);
 					break;
 			}
 
@@ -430,14 +431,14 @@ private:
 			// Check for valid start condition
 			bool dpcmd_valid = s_dpcmd_valid.read();
 			uint8_t dpcmd_op = s_dpcmd_op.read();
-			if(!dpcmd_valid || (dpcmd_op != vxe::vpc::PROD && dpcmd_op != vxe::vpc::STORE))
+			if(!dpcmd_valid || (dpcmd_op != vxe::instr::prod::OP && dpcmd_op != vxe::instr::store::OP))
 				continue;
 
 			s_load_store_active.write(true);
 
-			if(dpcmd_op == vxe::vpc::PROD) {
+			if(dpcmd_op == vxe::instr::prod::OP) {
 				data_load();
-			} else if(dpcmd_op == vxe::vpc::STORE) {
+			} else if(dpcmd_op == vxe::instr::store::OP) {
 				data_store();
 			} else {
 				std::cerr << name() << ": invalid dpcmd_op for mem_req!"
@@ -582,15 +583,15 @@ private:
 			s_actf_pipe_busy.write(false);
 			wait();
 
-			// Check for atart condition
+			// Check for start condition
 			bool dpcmd_valid = s_dpcmd_valid.read();
 			uint8_t dpcmd_op = s_dpcmd_op.read();
-			if(!dpcmd_valid || dpcmd_op != vxe::vpc::ACTF)
+			if(!dpcmd_valid || dpcmd_op != vxe::instr::generic_af::OP)
 				continue;
 
 			s_actf_pipe_busy.write(true);
 
-			vxe::vpu_af_cmd_data pl;
+			vxe::instr::generic_af pl;
 			pl.u64 = s_dpcmd_pl.read();
 
 			// Check that correct activation function code passed

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -156,6 +156,8 @@ SC_MODULE(vxe_top) {
 		cu.o_busy(s_cu_busy_in);
 		cu.i_vpu0_busy(s_vpu0_busy);
 		cu.i_vpu1_busy(s_vpu1_busy);
+		cu.i_vpu0_err(s_vpu0_err);
+		cu.i_vpu1_err(s_vpu1_err);
 		// Setup vector processing units connections
 		vpu0.clk(clk);
 		vpu0.nrst(nrst);
@@ -167,28 +169,29 @@ SC_MODULE(vxe_top) {
 		vpu1.mem_fifo_in(vpu1_fifo_ds);
 		vpu1.mem_fifo_out(vpu1_fifo_us);
 		vpu1.o_busy(s_vpu1_busy);
-		// Setup command bus connections
+		// Setup VPUs command buses connections
 		cu.o_cmd_select_vpu0(s_cmd_select_vpu0);
-		cu.o_cmd_select_vpu1(s_cmd_select_vpu1);
 		cu.i_cmd_ack_vpu0(s_cmd_ack_vpu0);
+		cu.o_cmd_op_vpu0(s_cmd_op_vpu0);
+		cu.o_cmd_thread_vpu0(s_cmd_thread_vpu0);
+		cu.o_cmd_wdata_vpu0(s_cmd_wdata_vpu0);
+		cu.o_cmd_select_vpu1(s_cmd_select_vpu1);
 		cu.i_cmd_ack_vpu1(s_cmd_ack_vpu1);
-		cu.i_cmd_err_vpu0(s_cmd_err_vpu0);
-		cu.i_cmd_err_vpu1(s_cmd_err_vpu1);
-		cu.o_cmd_op(s_cmd_op);
-		cu.o_cmd_thread(s_cmd_thread);
-		cu.o_cmd_wdata(s_cmd_wdata);
+		cu.o_cmd_op_vpu1(s_cmd_op_vpu1);
+		cu.o_cmd_thread_vpu1(s_cmd_thread_vpu1);
+		cu.o_cmd_wdata_vpu1(s_cmd_wdata_vpu1);
 		vpu0.i_cmd_select(s_cmd_select_vpu0);
 		vpu0.o_cmd_ack(s_cmd_ack_vpu0);
-		vpu0.o_cmd_err(s_cmd_err_vpu0);
-		vpu0.i_cmd_op(s_cmd_op);
-		vpu0.i_cmd_thread(s_cmd_thread);
-		vpu0.i_cmd_wdata(s_cmd_wdata);
+		vpu0.o_err(s_vpu0_err);
+		vpu0.i_cmd_op(s_cmd_op_vpu0);
+		vpu0.i_cmd_thread(s_cmd_thread_vpu0);
+		vpu0.i_cmd_wdata(s_cmd_wdata_vpu0);
 		vpu1.i_cmd_select(s_cmd_select_vpu1);
 		vpu1.o_cmd_ack(s_cmd_ack_vpu1);
-		vpu1.o_cmd_err(s_cmd_err_vpu1);
-		vpu1.i_cmd_op(s_cmd_op);
-		vpu1.i_cmd_thread(s_cmd_thread);
-		vpu1.i_cmd_wdata(s_cmd_wdata);
+		vpu1.o_err(s_vpu1_err);
+		vpu1.i_cmd_op(s_cmd_op_vpu1);
+		vpu1.i_cmd_thread(s_cmd_thread_vpu1);
+		vpu1.i_cmd_wdata(s_cmd_wdata_vpu1);
 	}
 
 private:
@@ -422,14 +425,17 @@ private:
 	sc_signal<bool> s_cu_busy_in;
 	sc_signal<bool> s_vpu0_busy;
 	sc_signal<bool> s_vpu1_busy;
-	// Command bus
+	sc_signal<bool> s_vpu0_err;
+	sc_signal<bool> s_vpu1_err;
+	// VPUs command busses
 	sc_signal<bool> s_cmd_select_vpu0;
-	sc_signal<bool> s_cmd_select_vpu1;
 	sc_signal<bool> s_cmd_ack_vpu0;
+	sc_signal<uint8_t> s_cmd_op_vpu0;
+	sc_signal<uint8_t> s_cmd_thread_vpu0;
+	sc_signal<uint64_t> s_cmd_wdata_vpu0;
+	sc_signal<bool> s_cmd_select_vpu1;
 	sc_signal<bool> s_cmd_ack_vpu1;
-	sc_signal<bool> s_cmd_err_vpu0;
-	sc_signal<bool> s_cmd_err_vpu1;
-	sc_signal<uint8_t> s_cmd_op;
-	sc_signal<uint8_t> s_cmd_thread;
-	sc_signal<uint64_t> s_cmd_wdata;
+	sc_signal<uint8_t> s_cmd_op_vpu1;
+	sc_signal<uint8_t> s_cmd_thread_vpu1;
+	sc_signal<uint64_t> s_cmd_wdata_vpu1;
 };

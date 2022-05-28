@@ -50,18 +50,21 @@ SC_MODULE(vxe_ctrl_unit) {
 	// Interrupt request signal
 	sc_out<bool> o_intr;
 
-	// VPUs controls and command bus
+	// VPUs status and command buses signals
 	sc_in<bool> i_vpu0_busy;
 	sc_in<bool> i_vpu1_busy;
+	sc_in<bool> i_vpu0_err;
+	sc_in<bool> i_vpu1_err;
 	sc_out<bool> o_cmd_select_vpu0;
-	sc_out<bool> o_cmd_select_vpu1;
 	sc_in<bool> i_cmd_ack_vpu0;
+	sc_out<uint8_t> o_cmd_op_vpu0;
+	sc_out<uint8_t> o_cmd_thread_vpu0;
+	sc_out<uint64_t> o_cmd_wdata_vpu0;
+	sc_out<bool> o_cmd_select_vpu1;
 	sc_in<bool> i_cmd_ack_vpu1;
-	sc_in<bool> i_cmd_err_vpu0;
-	sc_in<bool> i_cmd_err_vpu1;
-	sc_out<uint8_t> o_cmd_op;
-	sc_out<uint8_t> o_cmd_thread;
-	sc_out<uint64_t> o_cmd_wdata;
+	sc_out<uint8_t> o_cmd_op_vpu1;
+	sc_out<uint8_t> o_cmd_thread_vpu1;
+	sc_out<uint64_t> o_cmd_wdata_vpu1;
 
 	SC_HAS_PROCESS(vxe_ctrl_unit);
 
@@ -71,10 +74,12 @@ SC_MODULE(vxe_ctrl_unit) {
 		, i_start("i_start"), o_busy("o_busy")
 		, o_intr("o_intr")
 		, i_vpu0_busy("i_vpu0_busy"), i_vpu1_busy("i_vpu1_busy")
-		, o_cmd_select_vpu0("o_cmd_select_vpu0"), o_cmd_select_vpu1("o_cmd_select_vpu1")
-		, i_cmd_ack_vpu0("i_cmd_ack_vpu0"), i_cmd_ack_vpu1("i_cmd_ack_vpu1")
-		, i_cmd_err_vpu0("i_cmd_err_vpu0"), i_cmd_err_vpu1("i_cmd_err_vpu1")
-		, o_cmd_op("o_cmd_op"), o_cmd_thread("o_cmd_thread"), o_cmd_wdata("o_cmd_wdata")
+		, i_vpu0_err("i_vpu0_err"), i_vpu1_err("i_vpu1_err")
+		, o_cmd_select_vpu0("o_cmd_select_vpu0"), i_cmd_ack_vpu0("i_cmd_ack_vpu0")
+		, o_cmd_op_vpu0("o_cmd_op_vpu0"), o_cmd_thread_vpu0("o_cmd_thread_vpu0")
+		, o_cmd_wdata_vpu0("o_cmd_wdata_vpu0"), o_cmd_select_vpu1("o_cmd_select_vpu1")
+		, i_cmd_ack_vpu1("i_cmd_ack_vpu1"), o_cmd_op_vpu1("o_cmd_op_vpu1")
+		, o_cmd_thread_vpu1("o_cmd_thread_vpu1"), o_cmd_wdata_vpu1("o_cmd_wdata_vpu1")
 		, m_client_id(client_id), m_regs(regs)
 	{
 		SC_THREAD(instr_fetch_thread);
@@ -83,7 +88,16 @@ SC_MODULE(vxe_ctrl_unit) {
 		SC_THREAD(instr_exec_thread);
 			sensitive << clk.pos();
 
+		SC_THREAD(vpu0_exec_thread);
+			sensitive << clk.pos();
+
+		SC_THREAD(vpu1_exec_thread);
+			sensitive << clk.pos();
+
 		SC_THREAD(intr_thread);
+			sensitive << clk.pos();
+
+		SC_THREAD(vpu_error_thread);
 			sensitive << clk.pos();
 
 		SC_METHOD(busy_logic_method);
@@ -163,36 +177,57 @@ private:
 	}
 
 	/**
-	 * Issue command on command bus
+	 * Send an instruction to VPU
 	 */
-	bool cmd_bus_command(bool vpu0, bool vpu1, uint8_t cmd, uint8_t thread, uint64_t wdata)
+	bool send_vpu_instr(unsigned vpu_no, uint8_t cmd, uint8_t thread, uint64_t wdata)
 	{
-		// Send command
-		o_cmd_select_vpu0.write(vpu0);
-		o_cmd_select_vpu1.write(vpu1);
-		o_cmd_op.write(cmd);
-		o_cmd_thread.write(thread);
-		o_cmd_wdata.write(wdata);
-		wait();	// Wait for next positive edge
+		if(vpu_no == 0) {
+			// Send to VPU0
+			o_cmd_select_vpu0.write(true);
+			o_cmd_op_vpu0.write(cmd);
+			o_cmd_thread_vpu0.write(thread);
+			o_cmd_wdata_vpu0.write(wdata);
+			wait();	// Wait for next positive edge
 
-		// De-assert select signals
-		o_cmd_select_vpu0.write(false);
-		o_cmd_select_vpu1.write(false);
+			// De-assert select signals
+			o_cmd_select_vpu0.write(false);
 
-		// Wait for acknowledgement from VPUs
-		bool ack0 = false;
-		bool ack1 = false;
-		bool err0 = false;
-		bool err1 = false;
-		while(!ack0 || !ack1) {
-			ack0 = ack0 || (i_cmd_ack_vpu0.read() || !vpu0);
-			ack1 = ack1 || (i_cmd_ack_vpu1.read() || !vpu1);
-			err0 = err0 || i_cmd_err_vpu0.read();
-			err1 = err1 || i_cmd_err_vpu1.read();
-			wait();
+			// Wait for acknowledgement from VPU
+			bool ack = false;
+			bool err = false;
+			while(!ack) {
+				ack = i_cmd_ack_vpu0.read();
+				err = i_vpu0_err.read();
+				wait();
+			}
+
+			return err;
+		} else if(vpu_no == 1) {
+			// Send to VPU1
+			o_cmd_select_vpu1.write(true);
+			o_cmd_op_vpu1.write(cmd);
+			o_cmd_thread_vpu1.write(thread);
+			o_cmd_wdata_vpu1.write(wdata);
+			wait();	// Wait for next positive edge
+
+			// De-assert select signals
+			o_cmd_select_vpu1.write(false);
+
+			// Wait for acknowledgement from VPU
+			bool ack = false;
+			bool err = false;
+			while(!ack) {
+				ack = i_cmd_ack_vpu1.read();
+				err = i_vpu1_err.read();
+				wait();
+			}
+
+			return err;
+		} else {
+			std::cerr << name() << ": invalid vpu_no for send_vpu_instr!"
+				<< std::endl;
+			return true;
 		}
-
-		return err0 || err1;
 	}
 
 	/**
@@ -200,7 +235,8 @@ private:
 	 */
 	void wait_for_vpus()
 	{
-		while(i_vpu0_busy.read() && i_vpu1_busy.read())
+		while((i_vpu0_busy.read() || vpu0_instr_fifo.num_available() != 0)
+			|| (i_vpu1_busy.read() || vpu1_instr_fifo.num_available() != 0))
 			wait();
 	}
 
@@ -244,114 +280,31 @@ private:
 		return dst & 0x7u;
 	}
 
-	/**** INSTRUCTIONS IMPLEMENTATION ****/
+	/**
+	 * Check if instruction broadcasts
+	 * (for broadcast sub-class of instructions)
+	 * @param dst destination field
+	 * @return true if broadcast otherwise destination is a single VPU
+	 */
+	bool is_vpu_broadcast(unsigned dst)
+	{
+		return (dst & 0x1) == 0;
+	}
+
+	/**** CU INSTRUCTIONS IMPLEMENTATION ****/
 
 	/**
 	 * NOP - No Operation
 	 */
-	void instr_nop(const vxe::instr::nop& nop)
+	void cu_instr_nop(const vxe::instr::nop& nop)
 	{
 		wait();
 	}
 
 	/**
-	 * SETACC - Set Accumulator
-	 */
-	void instr_setacc(const vxe::instr::setacc& setacc)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_dst(setacc.dst), is_vpu1_dst(setacc.dst),
-				vxe::vpc::SETACC, vpu_local_tid(setacc.dst), setacc.acc);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
-	 * SETVL - Set Vector Length
-	 */
-	void instr_setvl(const vxe::instr::setvl& setvl)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_dst(setvl.dst), is_vpu1_dst(setvl.dst),
-					vxe::vpc::SETVL, vpu_local_tid(setvl.dst), setvl.len);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
-	 * SETRS - Set First Operand
-	 */
-	void instr_setrs(const vxe::instr::setrs& setrs)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_dst(setrs.dst), is_vpu1_dst(setrs.dst),
-					vxe::vpc::SETRS, vpu_local_tid(setrs.dst), setrs.addr);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
-	 * SETRT - Set Second Operand
-	 */
-	void instr_setrt(const vxe::instr::setrt& setrt)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_dst(setrt.dst), is_vpu1_dst(setrt.dst),
-					vxe::vpc::SETRT, vpu_local_tid(setrt.dst), setrt.addr);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
-	 * SETRD - Set Destination
-	 */
-	void instr_setrd(const vxe::instr::setrd& setrd)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_dst(setrd.dst), is_vpu1_dst(setrd.dst),
-					vxe::vpc::SETRD, vpu_local_tid(setrd.dst), setrd.addr);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
-	 * SETEN - Set Thread Enable
-	 */
-	void instr_seten(const vxe::instr::seten& seten)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(is_vpu0_dst(seten.dst), is_vpu1_dst(seten.dst),
-					vxe::vpc::SETEN, vpu_local_tid(seten.dst), seten.en);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
-	 * PROD - Vector Product
-	 */
-	void instr_prod(const vxe::instr::prod& prod)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(true, true, vxe::vpc::PROD, 0, 0);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
-	 * STORE - Store Result
-	 */
-	void instr_store(const vxe::instr::store& store)
-	{
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(true, true, vxe::vpc::STORE, 0, 0);
-		if(err)
-			invalid_instruction();
-	}
-
-	/**
 	 * SYNC - Synchronize
 	 */
-	void instr_sync(const vxe::instr::sync& sync)
+	void cu_instr_sync(const vxe::instr::sync& sync)
 	{
 		/* Wait if VPUs are busy */
 		wait_for_vpus();
@@ -367,19 +320,49 @@ private:
 			s_sync_intr.write(true);
 	}
 
-	/**
-	 * Activation function instruction
-	 */
-	void instr_actf(const vxe::instr::generic_af& actf)
-	{
-		vxe::vpu_af_cmd_data afdata;
-		afdata.af = actf.af;
-		afdata.pl = actf.pl;
+	/****************************************/
 
-		/* Send a command to VPUs */
-		bool err = cmd_bus_command(true, true, vxe::vpc::ACTF, 0, afdata.u64);
-		if (err)
-			invalid_instruction();
+	/**
+	 * Forward an instruction to a designated VPU or VPUs
+	 */
+	void fwd_vpu_instr(const vxe::instr::generic_vpu& vpug)
+	{
+		bool vpu0 = false;
+		bool vpu1 = false;
+
+		// Route instruction
+		switch(vpug.op) {
+			// Never broadcast subclass of instructions
+			case vxe::instr::setacc::OP:
+			case vxe::instr::setvl::OP:
+			case vxe::instr::setrs::OP:
+			case vxe::instr::setrt::OP:
+			case vxe::instr::setrd::OP:
+			case vxe::instr::seten::OP:
+				vpu0 = is_vpu0_dst(vpug.dst);
+				vpu1 = is_vpu1_dst(vpug.dst);
+				break;
+			// Can broadcast subclass of instructions
+			case vxe::instr::prod::OP:
+			case vxe::instr::store::OP:
+			case vxe::instr::generic_af::OP:
+				if(!is_vpu_broadcast(vpug.dst)) {
+					vpu0 = is_vpu0_dst(vpug.dst);
+					vpu1 = is_vpu1_dst(vpug.dst);
+				} else {
+					vpu0 = vpu1 = true;
+				}
+				break;
+			default:
+				invalid_instruction();
+				break;
+		}
+
+		if(vpu0)
+			vpu0_instr_fifo.write(vpug);
+
+		if(vpu1)
+			vpu1_instr_fifo.write(vpug);
 	}
 
 	/**
@@ -421,11 +404,17 @@ private:
 				s_iexec_busy.write(true);
 
 				// Check for error response
-				if(rq.res != vxe::vxe_mem_rq::rstype::RES_OK)
-				{
+				if(rq.res != vxe::vxe_mem_rq::rstype::RES_OK) {
 					s_ifetch_stop.write(true);
 					drain_instr_fifo();
 					s_err_fetch_intr.write(true);
+					wait();
+					continue;
+				}
+
+				// Check for VPU errors
+				if(s_vpu_err.read()) {
+					invalid_instruction();
 					wait();
 					continue;
 				}
@@ -435,38 +424,24 @@ private:
 
 				// Decode and execute
 				switch(g.op) {
+					// CU instructions
 					case vxe::instr::nop::OP:
-						instr_nop(g);
-						break;
-					case vxe::instr::setacc::OP:
-						instr_setacc(g);
-						break;
-					case vxe::instr::setvl::OP:
-						instr_setvl(g);
-						break;
-					case vxe::instr::setrs::OP:
-						instr_setrs(g);
-						break;
-					case vxe::instr::setrt::OP:
-						instr_setrt(g);
-						break;
-					case vxe::instr::setrd::OP:
-						instr_setrd(g);
-						break;
-					case vxe::instr::seten::OP:
-						instr_seten(g);
-						break;
-					case vxe::instr::prod::OP:
-						instr_prod(g);
-						break;
-					case vxe::instr::store::OP:
-						instr_store(g);
+						cu_instr_nop(g);
 						break;
 					case vxe::instr::sync::OP:
-						instr_sync(g);
+						cu_instr_sync(g);
 						break;
+					// VPU instructions
+					case vxe::instr::setacc::OP:
+					case vxe::instr::setvl::OP:
+					case vxe::instr::setrs::OP:
+					case vxe::instr::setrt::OP:
+					case vxe::instr::setrd::OP:
+					case vxe::instr::seten::OP:
+					case vxe::instr::prod::OP:
+					case vxe::instr::store::OP:
 					case vxe::instr::generic_af::OP:
-						instr_actf(g);
+						fwd_vpu_instr(g);
 						break;
 					default:
 						invalid_instruction();
@@ -475,6 +450,32 @@ private:
 
 				wait();	// Wait for positive edge before returning to idle state
 			}
+		}
+	}
+
+	/**
+	 * VPU0 instructions execution thread
+	 * Receives instruction stream from an internal FIFO
+	 */
+	[[noreturn]] void vpu0_exec_thread()
+	{
+		while(true) {
+			vxe::instr::generic_vpu vpug = vpu0_instr_fifo.read();
+			if(!s_vpu_err.read())
+				send_vpu_instr(0, vpug.op, vpu_local_tid(vpug.dst), vpug.pl);
+		}
+	}
+
+	/**
+	 * VPU1 instructions execution thread
+	 * Receives instruction stream from an internal FIFO
+	 */
+	[[noreturn]] void vpu1_exec_thread()
+	{
+		while(true) {
+			vxe::instr::generic_vpu vpug = vpu1_instr_fifo.read();
+			if(!s_vpu_err.read())
+				send_vpu_instr(1, vpug.op, vpu_local_tid(vpug.dst), vpug.pl);
 		}
 	}
 
@@ -493,7 +494,7 @@ private:
 			// Read interrupt condition signals
 			bool sync = s_sync_intr.read();
 			bool err_fetch = s_err_fetch_intr.read();
-			bool err_instr = s_err_instr_intr.read();
+			bool err_instr = s_err_instr_intr.read() || i_vpu0_err.read() || i_vpu1_err.read();
 
 			// Form raw interrupts register value
 			new_ints = vxe::setbits(new_ints, (sync ? 1u : 0u),
@@ -520,13 +521,33 @@ private:
 	}
 
 	/**
+	 * VPUs errors tracking thread
+	 */
+	[[noreturn]] void vpu_error_thread()
+	{
+		while(true) {
+			s_vpu_err.write(false);
+
+			if(i_vpu0_err.read() || i_vpu1_err.read()) {
+				s_vpu_err.write(true);
+				do {
+					wait();
+				} while(o_busy.read());
+			} else
+				wait();
+		}
+	}
+
+	/**
 	 * Busy state logic for VxEngine
 	 */
 	void busy_logic_method()
 	{
 		bool busy;
+		bool vpus_busy = (i_vpu0_busy.read() || vpu0_instr_fifo.num_available() != 0)
+			|| (i_vpu1_busy.read() || vpu1_instr_fifo.num_available() != 0);
 
-		if(s_ifetch_busy.read())
+		if(s_ifetch_busy.read() || vpus_busy)
 			busy = true;
 		else
 			busy = false;
@@ -552,8 +573,11 @@ private:
 	sc_signal<bool> s_sync_intr;
 	sc_signal<bool> s_err_fetch_intr;
 	sc_signal<bool> s_err_instr_intr;
+	sc_signal<bool> s_vpu_err;
 	// Internal control FIFOs
 	sc_fifo<bool> out_rqs_fifo;
+	sc_fifo<vxe::instr::generic_vpu> vpu0_instr_fifo;
+	sc_fifo<vxe::instr::generic_vpu> vpu1_instr_fifo;
 	// Internal registers
 	uint64_t m_pgm_counter;
 };
