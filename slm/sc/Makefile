@@ -83,11 +83,25 @@ MLP_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 MLP_TEST_LDFLAGS := --shared -fPIC
 
 
+# Unicast test build options
+UNICAST_TEST_TARGET := libunicast_test.so
+UNICAST_TEST_CXX_FILES :=	\
+	src/so/unicast_test/unicast_test.cxx
+UNICAST_TEST_HXX_FILES :=	\
+	include/simple_cpu_if.h	\
+	include/vxe_common.hxx
+UNICAST_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-I$(VXENGINE_HOME)/alg					\
+	-I$(VXENGINE_HOME)/slm/sc/src/so/include
+UNICAST_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(SYSMODEL_TARGET)
 TARGETS += $(SIMPLE_TEST_TARGET)
 TARGETS += $(RELU_TEST_TARGET)
 TARGETS += $(MLP_TEST_TARGET)
+TARGETS += $(UNICAST_TEST_TARGET)
 
 
 # Main goal
@@ -146,6 +160,13 @@ $(MLP_TEST_TARGET): $(MLP_TEST_CXX_FILES) $(MLP_TEST_HXX_FILES)
 	@echo "Building [$(MLP_TEST_TARGET)]"
 	@g++ $(MLP_TEST_CFLAGS) -o $(MLP_TEST_TARGET)	\
 		$(MLP_TEST_CXX_FILES) $(MLP_TEST_LDFLAGS)
+
+
+# Unicast test build target
+$(UNICAST_TEST_TARGET): $(UNICAST_TEST_CXX_FILES) $(UNICAST_TEST_HXX_FILES)
+	@echo "Building [$(UNICAST_TEST_TARGET)]"
+	@g++ $(UNICAST_TEST_CFLAGS) -o $(UNICAST_TEST_TARGET)	\
+		$(UNICAST_TEST_CXX_FILES) $(UNICAST_TEST_LDFLAGS)
 
 
 # Do clean
