@@ -34,124 +34,180 @@ module vxe_cu_cmd_decoder(
 	i_cmd,
 	/* Decode error */
 	o_dec_err,
-	/* Decoded command data */
-	o_op,
-	o_fun,
-	o_pl
+	/* Decoded command control signals */
+	o_cu_cmd,
+	o_cu_nop,
+	o_cu_sync,
+	o_cu_sync_stop,
+	o_cu_sync_intr,
+	o_vpu_cmd,
+	o_vpu_mask,
+	o_vpu_op,
+	o_vpu_th,
+	o_vpu_pl
 );
-`include "vxe_client_params.vh"
+parameter VPUS_NR = 2;		/* Number of VPUs*/
+parameter VERIFY_FMT = 1;	/* Verify commands format */
 `include "vxe_ctrl_unit_cmds.vh"
 /* Command word */
-input wire [63:0]	i_cmd;
+input wire [63:0]		i_cmd;
 /* Decode error */
-output wire		o_dec_err;
-/* Decoded command data */
-output wire [4:0]	o_op;
-output wire [7:0]	o_fun;
-output wire [37:0]	o_pl;
+output wire			o_dec_err;
+/* Decoded command control signals */
+output reg			o_cu_cmd;
+output reg			o_cu_nop;
+output reg			o_cu_sync;
+output reg			o_cu_sync_stop;
+output reg			o_cu_sync_intr;
+output reg			o_vpu_cmd;
+output reg [VPUS_NR-1:0]	o_vpu_mask;
+output reg [4:0]		o_vpu_op;
+output reg [2:0]		o_vpu_th;
+output reg [47:0]		o_vpu_pl;
 
 
-assign o_op = i_cmd[63:59];	/* Opcode */
-assign o_fun = i_cmd[58:51];	/* Function */
-assign o_pl = i_cmd[37:0];	/* Payload */
+/* Generic command fields */
+wire [4:0] op = i_cmd[63:59];	/* Opcode */
+wire [7:0] dst = i_cmd[58:51];	/* Destination */
+wire [2:0] zero = i_cmd[50:48];	/* Always zero */
+wire [47:0] pl = i_cmd[47:0];	/* Payload */
 
-/* Decode error */
-assign o_dec_err = err_op || err_nop || err_setacc || err_setvl || err_setrs
-		|| err_setrt || err_setrd || err_seten || err_prod
-		|| err_store || err_sync || err_relu;
+/* Command class */
+wire cu_cmd = ~|op[4:2];
+wire vpu_cmd = |op[4:2];
+
+/* VPU command attributes */
+wire vpu_bcast = op[4];			/* Broadcast sub-class */
+wire vpu_bcast_en = ~dst[0];		/* Broadcast enabled */
+wire [4:0] vpu_no = dst[7:3];		/* Destination VPU number */
+wire [2:0] vpu_th = dst[2:0];		/* VPU thread number */
+wire vpu_vld = (vpu_no < VPUS_NR);	/* Destination VPU is valid */
+
+/* Payload pre-decoding */
+wire [5:0] vpu_actf = pl[47:42];	/* Activation function type */
 
 
 /** Decode error cases **/
 
 /* Opcode error */
 wire err_op =
-	(o_op != CU_CMD_NOP) &&
-	(o_op != CU_CMD_SETACC) &&
-	(o_op != CU_CMD_SETVL) &&
-	(o_op != CU_CMD_SETRS) &&
-	(o_op != CU_CMD_SETRT) &&
-	(o_op != CU_CMD_SETRD) &&
-	(o_op != CU_CMD_SETEN) &&
-	(o_op != CU_CMD_PROD) &&
-	(o_op != CU_CMD_STORE) &&
-	(o_op != CU_CMD_SYNC) &&
-	(o_op != CU_CMD_RELU);
+	(op != CU_CMD_NOP) &&
+	(op != CU_CMD_SETACC) &&
+	(op != CU_CMD_SETVL) &&
+	(op != CU_CMD_SETRS) &&
+	(op != CU_CMD_SETRT) &&
+	(op != CU_CMD_SETRD) &&
+	(op != CU_CMD_SETEN) &&
+	(op != CU_CMD_PROD) &&
+	(op != CU_CMD_STORE) &&
+	(op != CU_CMD_SYNC) &&
+	(op != CU_CMD_ACTF);
 
 
-/* NOP instruction format error */
-wire err_nop = (o_op == CU_CMD_NOP ? err_nop_rsvd : 1'b0);
-
-/* SETACC instruction format error */
-wire err_setacc = (o_op == CU_CMD_SETACC ? err_setacc_rsvd || err_thr_id : 1'b0);
-
-/* SETVL instruction format error */
-wire err_setvl = (o_op == CU_CMD_SETVL ? err_setvl_rsvd || err_thr_id : 1'b0);
-
-/* SETRS instruction format error */
-wire err_setrs = (o_op == CU_CMD_SETRS ? err_setrs_rsvd || err_thr_id : 1'b0);
-
-/* SETRT instruction format error */
-wire err_setrt = (o_op == CU_CMD_SETRT ? err_setrt_rsvd || err_thr_id : 1'b0);
-
-/* SETRD instruction format error */
-wire err_setrd = (o_op == CU_CMD_SETRD ? err_setrd_rsvd || err_thr_id : 1'b0);
-
-/* SETEN instruction format error */
-wire err_seten = (o_op == CU_CMD_SETEN ? err_seten_rsvd || err_thr_id : 1'b0);
-
-/* PROD instruction format error */
-wire err_prod = (o_op == CU_CMD_PROD ? err_prod_rsvd : 1'b0);
-
-/* STORE instruction format error */
-wire err_store = (o_op == CU_CMD_STORE ? err_store_rsvd : 1'b0);
-
-/* SYNC instruction format error */
-wire err_sync = (o_op == CU_CMD_SYNC ? err_sync_rsvd : 1'b0);
-
-/* RELU instruction format error */
-wire err_relu = (o_op == CU_CMD_RELU ? err_relu_rsvd || err_relu_func : 1'b0);
+/* Activation function error */
+reg err_actf;
+always @(*)
+begin
+	if(op == CU_CMD_ACTF)
+	begin
+		case(vpu_actf)
+		CU_CMD_ACTF_RELU, CU_CMD_ACTF_LRELU: err_actf = 1'b0;
+		default: err_actf = 1'b1;
+		endcase
+	end
+	else
+		err_actf = 1'b0;
+end
 
 
-/* NOP reserved fields violation */
-wire err_nop_rsvd = |i_cmd[58:0];
+/* Format violation */
+wire err_fmt = (VERIFY_FMT != 0 ? err_fmt_q : 1'b0);
+reg err_fmt_q;
+wire inv_zero = |zero;	/* Zero field is non-zero */
 
-/* SETACC reserved fields violation */
-wire err_setacc_rsvd = |i_cmd[50:32];
+always @(*)
+begin
+	err_fmt_q = 1'b0;
 
-/* SETVL reserved fields violation */
-wire err_setvl_rsvd = |i_cmd[50:20];
-
-/* SETRS reserved fields violation */
-wire err_setrs_rsvd = |i_cmd[50:38];
-
-/* SETRT reserved fields violation */
-wire err_setrt_rsvd = |i_cmd[50:38];
-
-/* SETRD reserved fields violation */
-wire err_setrd_rsvd = |i_cmd[50:38];
-
-/* SETEN reserved fields violation */
-wire err_seten_rsvd = |i_cmd[50:1];
-
-/* PROD reserved fields violation */
-wire err_prod_rsvd = |i_cmd[58:0];
-
-/* STORE reserved fields violation */
-wire err_store_rsvd = |i_cmd[58:0];
-
-/* SYNC reserved fields violation */
-wire err_sync_rsvd = |i_cmd[58:2];
-
-/* RELU reserved fields violation */
-wire err_relu_rsvd = |i_cmd[50:7];
+	if(VERIFY_FMT != 0)
+	begin
+		case(op)
+		CU_CMD_NOP,
+		CU_CMD_SYNC:	err_fmt_q = |dst || inv_zero;
+		CU_CMD_SETACC,
+		CU_CMD_SETVL,
+		CU_CMD_SETRS,
+		CU_CMD_SETRT,
+		CU_CMD_SETRD,
+		CU_CMD_SETEN:	err_fmt_q = inv_zero;
+		CU_CMD_PROD,
+		CU_CMD_STORE,
+		CU_CMD_ACTF:	err_fmt_q = (vpu_bcast_en ? |dst : |dst[2:1])
+					|| inv_zero;
+		default: err_fmt_q = 1'b0;
+		endcase
+	end
+end
 
 
-/* RELU function error */
-wire err_relu_func = (o_fun != CU_CMD_RELU_RELU) && (o_fun != CU_CMD_RELU_LRELU);
+/* Payload format violation */
+wire err_pl_fmt = (VERIFY_FMT != 0 ? err_pl_fmt_q : 1'b0);
+reg err_pl_fmt_q;
+
+always @(*)
+begin
+	err_pl_fmt_q = 1'b0;
+
+	if(VERIFY_FMT != 0)
+	begin
+		case(op)
+		CU_CMD_NOP,
+		CU_CMD_PROD,
+		CU_CMD_STORE:	err_pl_fmt_q = |pl[47:0];
+		CU_CMD_SYNC:	err_pl_fmt_q = |pl[47:2];
+		CU_CMD_SETACC:	err_pl_fmt_q = |pl[47:32];
+		CU_CMD_SETVL:	err_pl_fmt_q = |pl[47:20];
+		CU_CMD_SETRS,
+		CU_CMD_SETRT,
+		CU_CMD_SETRD:	err_pl_fmt_q = |pl[47:38];
+		CU_CMD_SETEN:	err_pl_fmt_q = |pl[47:1];
+		CU_CMD_ACTF: begin
+			case(vpu_actf)
+			CU_CMD_ACTF_RELU:	err_pl_fmt_q = |pl[41:0];
+			CU_CMD_ACTF_LRELU:	err_pl_fmt_q = |pl[41:7];
+			default:		err_pl_fmt_q = 1'b1;
+			endcase
+		end
+		default: err_pl_fmt_q = 1'b0;
+		endcase
+	end
+end
 
 
-/* Thread Id error */
-wire err_thr_id = (o_fun >= TOTAL_THR_NR);
+/* Decode error */
+assign o_dec_err = err_op || err_actf || err_fmt || err_pl_fmt || ~vpu_vld;
+
+
+/* Outputs */
+always @(*)
+begin
+	o_cu_cmd = cu_cmd;
+	o_cu_nop = ~op[0];
+	o_cu_sync = op[0];
+	o_cu_sync_stop = pl[0];
+	o_cu_sync_intr = pl[1];
+
+	o_vpu_cmd = vpu_cmd;
+	o_vpu_op = op;
+	o_vpu_th = vpu_th;
+	o_vpu_pl = pl;
+
+	o_vpu_mask = {(VPUS_NR){1'b0}};
+	if(vpu_bcast && vpu_bcast_en)
+		o_vpu_mask = {(VPUS_NR){1'b1}};
+	else if(vpu_vld)
+		o_vpu_mask[vpu_no[$clog2(VPUS_NR)-1:0]] = 1'b1;
+end
 
 
 endmodule /* vxe_cu_cmd_decoder */
