@@ -125,7 +125,7 @@ wire err_fmt = (VERIFY_FMT != 0 ? err_fmt_q : 1'b0);
 reg err_fmt_q;
 wire inv_zero = |zero;	/* Zero field is non-zero */
 
-always @(*)
+always @(op or dst or inv_zero or vpu_bcast_en)
 begin
 	err_fmt_q = 1'b0;
 
@@ -154,7 +154,7 @@ end
 wire err_pl_fmt = (VERIFY_FMT != 0 ? err_pl_fmt_q : 1'b0);
 reg err_pl_fmt_q;
 
-always @(*)
+always @(op or pl or vpu_actf)
 begin
 	err_pl_fmt_q = 1'b0;
 
