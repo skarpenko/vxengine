@@ -185,7 +185,8 @@ end
 
 
 /* Decode error */
-assign o_dec_err = err_op || err_actf || err_fmt || err_pl_fmt || ~vpu_vld;
+assign o_dec_err = err_op || err_actf || err_fmt || err_pl_fmt
+	|| (vpu_cmd && ~vpu_vld);
 
 
 /* Outputs */
@@ -205,7 +206,7 @@ begin
 	o_vpu_mask = {(VPUS_NR){1'b0}};
 	if(vpu_bcast && vpu_bcast_en)
 		o_vpu_mask = {(VPUS_NR){1'b1}};
-	else if(vpu_vld)
+	else
 		o_vpu_mask[vpu_no[$clog2(VPUS_NR)-1:0]] = 1'b1;
 end
 
