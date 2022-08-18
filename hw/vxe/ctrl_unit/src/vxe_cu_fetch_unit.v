@@ -124,6 +124,10 @@ wire		f_rs_rdy;
 wire		f_rs_vld;
 
 
+/* Fetched command data valid */
+wire fetch_vld = f_rq_vld && f_rs_vld;
+
+
 /* Fetch unit busy condition */
 assign o_busy = i_start || i_stop_drain ||
 	(rq_fsm != FSM_RQ_IDLE) ||
@@ -135,10 +139,10 @@ assign o_busy = i_start || i_stop_drain ||
 /* Internal FIFO interface */
 assign o_fetch_addr = f_rq_out;
 assign o_fetch_data = f_rs_out[63:0];
-assign o_fetch_vld = f_rq_vld && f_rs_vld;
+assign o_fetch_vld = fetch_vld && ~drain;
 assign o_fetch_err = f_rs_out[64];
-assign f_rq_rd = (i_fetch_rd || drain) && o_fetch_vld;
-assign f_rs_rd = (i_fetch_rd || drain) && o_fetch_vld;
+assign f_rq_rd = (i_fetch_rd || drain) && fetch_vld;
+assign f_rs_rd = (i_fetch_rd || drain) && fetch_vld;
 
 
 /* Requests stall condition */
