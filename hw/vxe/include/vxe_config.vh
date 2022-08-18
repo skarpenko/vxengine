@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,6 +30,8 @@
 `ifndef _VXE_CONFIG_VH_
 `define _VXE_CONFIG_VH_
 
+
+`define VXE_CU_STRICT_CMDFMT	1	/* Strict commands format verification */
 
 
 `endif /* _VXE_CONFIG_VH_ */
