@@ -51,6 +51,7 @@ module vxe_cu_dispatch_unit(
 	o_ctl_sync,
 	o_ctl_sync_stop,
 	o_ctl_sync_intr,
+	i_ctl_halt,
 	i_ctl_unhalt,
 	o_ctl_pipes_active,
 	/* VPU0 forwarding interface */
@@ -98,6 +99,7 @@ output reg		o_ctl_nop;
 output reg		o_ctl_sync;
 output reg		o_ctl_sync_stop;
 output reg		o_ctl_sync_intr;
+input wire		i_ctl_halt;
 input wire		i_ctl_unhalt;
 output wire		o_ctl_pipes_active;
 /* VPU0 forwarding interface */
@@ -175,8 +177,8 @@ begin
 			cmd_rx_fsm <= FSM_RX_STLL;
 		end
 
-		/* Switch to halt state on decode error or stop request */
-		if(o_flt_decode || (o_ctl_sync && o_ctl_sync_stop))
+		/* Switch to halt state on decode error or stop/halt requests */
+		if(o_flt_decode || (o_ctl_sync && o_ctl_sync_stop) || i_ctl_halt)
 		begin
 			o_fetch_rd <= 1'b0;
 			cmd_rx_fsm <= FSM_RX_HALT;
@@ -192,8 +194,8 @@ begin
 			cmd_rx_fsm <= FSM_RX_READ;
 		end
 
-		/* Switch to halt state on decode error or stop request */
-		if(o_flt_decode || (o_ctl_sync && o_ctl_sync_stop))
+		/* Switch to halt state on decode error or stop/halt requests */
+		if(o_flt_decode || (o_ctl_sync && o_ctl_sync_stop) || i_ctl_halt)
 		begin
 			o_fetch_rd <= 1'b0;
 			cmd_rx_fsm <= FSM_RX_HALT;
@@ -274,6 +276,10 @@ wire cvpu_fwd_stall = (cvpu0_fifo_stall && cdec_vpu_mask[0]) ||
 		(cvpu1_fifo_stall && cdec_vpu_mask[1]);
 
 
+/* Halt request active */
+reg ctl_halt_act;
+
+
 /** Commands decode and dispatch FSM **/
 
 reg [2:0]	cmd_dp_fsm;	/* FSM state */
@@ -288,13 +294,19 @@ begin
 		o_ctl_sync <= 1'b0;
 		o_ctl_sync_stop <= 1'b0;
 		o_ctl_sync_intr <= 1'b0;
+		ctl_halt_act <= 1'b0;
 		cmd_fifo_rp <= 3'b000;
 		cvpu0_fifo_wp <= 3'b000;
 		cvpu1_fifo_wp <= 3'b000;
 	end
 	else if(cmd_dp_fsm == FSM_DP_DECD && !cmd_fifo_empty)
 	begin
-		if(cdec_err)	/* Decode error */
+		if(i_ctl_halt)
+		begin
+			ctl_halt_act <= 1'b1;
+			cmd_dp_fsm <= FSM_DP_HALT;
+		end
+		else if(cdec_err)	/* Decode error */
 		begin
 			o_flt_decode <= 1'b1;
 			o_flt_decode_addr <= cmd_addr_fifo[cmd_fifo_rp[1:0]];
@@ -336,10 +348,11 @@ begin
 		o_ctl_nop <= 1'b0;
 		o_ctl_sync <= 1'b0;
 		o_flt_decode <= 1'b0;
+		ctl_halt_act <= 1'b0;
 
-		/* Clear FIFO on decode error or stop request */
-		cmd_fifo_rp <= o_flt_decode || (o_ctl_sync && o_ctl_sync_stop) ?
-			cmd_fifo_wp : cmd_fifo_rp;
+		/* Clear FIFO on decode error or stop/halt requests */
+		cmd_fifo_rp <= o_flt_decode || (o_ctl_sync && o_ctl_sync_stop)
+			|| ctl_halt_act ? cmd_fifo_wp : cmd_fifo_rp;
 
 		if(i_ctl_unhalt)
 		begin

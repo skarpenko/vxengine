@@ -83,6 +83,7 @@ module tb_vxe_cu_dispatch_unit();
 	wire		ctl_sync;
 	wire		ctl_sync_stop;
 	wire		ctl_sync_intr;
+	reg		ctl_halt;
 	reg		ctl_unhalt;
 	wire		ctl_pipes_active;
 	/* Dispatch unit VPU0 forwarding interface */
@@ -172,6 +173,7 @@ module tb_vxe_cu_dispatch_unit();
 		fetch_start_addr = 0;
 		fwd_vpu0_rdy = 1;
 		fwd_vpu1_rdy = 1;
+		ctl_halt = 0;
 
 		srst = 0;
 
@@ -314,6 +316,29 @@ module tb_vxe_cu_dispatch_unit();
 		wait_pos_clk4();
 
 
+		/* Test 7 - Halt switch test */
+		$readmemh("hex/dispatchu_t6_cmd.hex", cmdmem);
+		$readmemh("hex/dispatchu_t6_rss.hex", cmdrss);
+
+		@(posedge clk)
+		begin
+			test_name <= "Test 7 ";
+			fetch_start_addr <= 37'h1;	/* Set fetch address */
+		end
+		@(posedge clk) fetch_start <= 1'b1;	/* Start fetch */
+		@(posedge clk) fetch_start <= 1'b0;
+
+		wait_pos_clk64();
+		@(posedge clk) ctl_halt <= 1'b1;	/* Trigger halt */
+		@(posedge clk) ctl_halt <= 1'b0;
+		wait_pos_clk64();
+
+		@(posedge clk) srst <= 1'b1;	/* Reset traffic and ctl logic */
+		@(posedge clk) srst <= 1'b0;
+
+		wait_pos_clk4();
+
+
 		#500 $finish;
 	end
 
@@ -337,6 +362,7 @@ module tb_vxe_cu_dispatch_unit();
 		.o_ctl_sync_stop(ctl_sync_stop),
 		.o_ctl_sync_intr(ctl_sync_intr),
 		.o_ctl_pipes_active(ctl_pipes_active),
+		.i_ctl_halt(ctl_halt),
 		.i_ctl_unhalt(ctl_unhalt),
 		.i_fwd_vpu0_rdy(fwd_vpu0_rdy),
 		.o_fwd_vpu0_op(fwd_vpu0_op),
@@ -591,7 +617,8 @@ module tb_vxe_cu_dispatch_unit();
 		end
 		else /* FSM_CTL_IDLE */
 		begin
-			if((ctl_sync && ctl_sync_stop) || flt_fetch || flt_decode)
+			if((ctl_sync && ctl_sync_stop) || ctl_halt || flt_fetch
+				|| flt_decode)
 			begin
 				fetch_stop_drain <= 1'b1;
 				ctl_fsm <= FSM_CTL_WAIT;
