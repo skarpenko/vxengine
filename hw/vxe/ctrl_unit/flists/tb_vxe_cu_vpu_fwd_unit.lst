@@ -1,0 +1,7 @@
+# VxE VPU forwarding unit testbench
+
+
++define+TRACE_FILE="tb_vxe_cu_vpu_fwd_unit.vcd"
++timescale+1us/100ns
+src/vxe_cu_vpu_fwd_unit.v
+tb/tb_vxe_cu_vpu_fwd_unit.v
