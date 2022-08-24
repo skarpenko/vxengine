@@ -453,7 +453,6 @@ end
 vxe_cu_cmd_decoder #(
 	.VPUS_NR(2),
 	.VERIFY_FMT(`VXE_CU_STRICT_CMDFMT)
-
 ) cmd_decode (
 	.i_cmd(cmd_data_fifo[cmd_fifo_rp[1:0]]),
 	.o_dec_err(cdec_err),
