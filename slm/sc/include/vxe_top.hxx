@@ -99,6 +99,7 @@ SC_MODULE(vxe_top) {
 		m_regs.set_reg(vxe::regi::REG_FAULT_INSTR_ADDR_HI, 0);
 		m_regs.set_reg(vxe::regi::REG_FAULT_INSTR_LO, 0);
 		m_regs.set_reg(vxe::regi::REG_FAULT_INSTR_HI, 0);
+		m_regs.set_reg(vxe::regi::REG_FAULT_VPU_MASK0, 0);
 
 		// Set slave port handler
 		m_io_slave.set_handler(
@@ -285,6 +286,10 @@ private:
 			case vxe::regi::REG_FAULT_INSTR_HI:
 				if(trans.is_read())
 					v = m_regs.get_reg(vxe::regi::REG_FAULT_INSTR_HI);
+				break;
+			case vxe::regi::REG_FAULT_VPU_MASK0:
+				if(trans.is_read())
+					v = m_regs.get_reg(vxe::regi::REG_FAULT_VPU_MASK0);
 				break;
 			default:
 				break;

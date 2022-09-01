@@ -51,7 +51,8 @@ namespace vxe {
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= 10;	// Faulted instr. address /high/ (r/o)
 		static constexpr unsigned REG_FAULT_INSTR_LO		= 11;	// Faulted instruction /low/ (r/o)
 		static constexpr unsigned REG_FAULT_INSTR_HI		= 12;	// Faulted instruction /high/ (r/o)
-		static constexpr unsigned REGS_NUMBER			= 13;	// Registers number
+		static constexpr unsigned REG_FAULT_VPU_MASK0		= 13;	// Faulted VPUs mask (r/o)
+		static constexpr unsigned REGS_NUMBER			= 14;	// Registers number
 	} // namespace regi
 
 	// Register offsets
@@ -69,6 +70,7 @@ namespace vxe {
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= regi::REG_FAULT_INSTR_ADDR_HI << 2u;
 		static constexpr unsigned REG_FAULT_INSTR_LO		= regi::REG_FAULT_INSTR_LO << 2u;
 		static constexpr unsigned REG_FAULT_INSTR_HI		= regi::REG_FAULT_INSTR_HI << 2u;
+		static constexpr unsigned REG_FAULT_VPU_MASK0		= regi::REG_FAULT_VPU_MASK0 << 2u;
 		static constexpr unsigned REGS_NUMBER			= regi::REGS_NUMBER;
 	} // namespace rego
 
@@ -87,6 +89,7 @@ namespace vxe {
 		static constexpr unsigned REG_FAULT_INSTR_ADDR_HI	= 0x000000FF;
 		static constexpr unsigned REG_FAULT_INSTR_LO		= 0xFFFFFFFF;
 		static constexpr unsigned REG_FAULT_INSTR_HI		= 0x000000FF;
+		static constexpr unsigned REG_FAULT_VPU_MASK0		= 0x00000003;
 		static constexpr unsigned REGS_NUMBER			= regi::REGS_NUMBER;
 	} // namespace regm
 
@@ -140,6 +143,14 @@ namespace vxe {
 			static constexpr unsigned ERR_DATA_MASK		= 0x00000008;
 			static constexpr unsigned ERR_DATA_SHIFT	= 0x00000003;
 		} // namespace REG_INTR_RAW
+
+		// Faulted VPUs mask
+		namespace REG_FAULT_VPU_MASK0 {
+			static constexpr unsigned FAULTED_VPU0_MASK	= 0x00000001;
+			static constexpr unsigned FAULTED_VPU0_SHIFT	= 0x00000000;
+			static constexpr unsigned FAULTED_VPU1_MASK	= 0x00000002;
+			static constexpr unsigned FAULTED_VPU1_SHIFT	= 0x00000001;
+		} // namespace REG_FAULT_VPU_MASK0
 
 	} // namespace bits
 
