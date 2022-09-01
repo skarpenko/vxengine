@@ -46,7 +46,7 @@ module vxe_cu_cmd_decoder(
 	o_vpu_th,
 	o_vpu_pl
 );
-parameter VPUS_NR = 2;		/* Number of VPUs*/
+parameter VPUS_NR = 2;		/* Number of VPUs */
 parameter VERIFY_FMT = 1;	/* Verify commands format */
 `include "vxe_ctrl_unit_cmds.vh"
 /* Command word */
