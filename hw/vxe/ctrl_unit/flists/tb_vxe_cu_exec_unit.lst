@@ -1,0 +1,7 @@
+# VxE execute unit testbench
+
+
++define+TRACE_FILE="tb_vxe_cu_exec_unit.vcd"
++timescale+1us/100ns
+src/vxe_cu_exec_unit.v
+tb/tb_vxe_cu_exec_unit.v

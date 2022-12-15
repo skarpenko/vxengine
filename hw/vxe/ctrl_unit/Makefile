@@ -8,7 +8,8 @@ TESTBENCHES := \
 	tb_vxe_cu_fetch_unit	\
 	tb_vxe_cu_dispatch_unit	\
 	tb_vxe_cu_vpu_fwd_unit	\
-	tb_vxe_cu_intr_flt_unit
+	tb_vxe_cu_intr_flt_unit	\
+	tb_vxe_cu_exec_unit
 
 
 TB ?=
