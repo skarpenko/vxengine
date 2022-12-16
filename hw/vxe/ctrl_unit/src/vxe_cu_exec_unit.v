@@ -56,38 +56,37 @@ module vxe_cu_exec_unit(
 	i_flt_decode,
 	i_vpus_err
 );
-parameter VPUS_NR = 2;		/* Number of VPUs */
 /* Control FSM states */
-localparam [1:0]		FSM_CTL_IDLE = 2'b00;	/* Idle */
-localparam [1:0]		FSM_CTL_EXEC = 2'b01;	/* Execute state */
-localparam [1:0]		FSM_CTL_SYNC = 2'b10;	/* Sync VPUs state */
-localparam [1:0]		FSM_CTL_WAIT = 2'b11;	/* Wait for completion */
+localparam [1:0]	FSM_CTL_IDLE = 2'b00;	/* Idle */
+localparam [1:0]	FSM_CTL_EXEC = 2'b01;	/* Execute state */
+localparam [1:0]	FSM_CTL_SYNC = 2'b10;	/* Sync VPUs state */
+localparam [1:0]	FSM_CTL_WAIT = 2'b11;	/* Wait for completion */
 /* Global signals */
-input wire			clk;
-input wire			nrst;
+input wire		clk;
+input wire		nrst;
 /* External CU interface */
-input wire			i_start;
-output wire			o_glb_busy;
+input wire		i_start;
+output wire		o_glb_busy;
 /* Internal control interface */
-output wire			o_halt;
-output reg			o_unhalt;
-output wire			o_stop_drain;
-output reg			o_send_intr;
-output reg			o_complete;
+output wire		o_halt;
+output reg		o_unhalt;
+output wire		o_stop_drain;
+output reg		o_send_intr;
+output reg		o_complete;
 /* Command state interface */
-input wire			i_cmd_nop;
-input wire			i_cmd_sync;
-input wire			i_cmd_sync_stop;
-input wire			i_cmd_sync_intr;
+input wire		i_cmd_nop;
+input wire		i_cmd_sync;
+input wire		i_cmd_sync_stop;
+input wire		i_cmd_sync_intr;
 /* Internal busy signals */
-input wire			i_fetch_busy;
-input wire			i_dis_pipes_active;
-input wire			i_fwd_pipes_active;
-input wire [VPUS_NR-1:0]	i_vpus_busy;
+input wire		i_fetch_busy;
+input wire		i_dis_pipes_active;
+input wire		i_fwd_pipes_active;
+input wire		i_vpus_busy;
 /* Internal fault signals */
-input wire			i_flt_fetch;
-input wire			i_flt_decode;
-input wire [VPUS_NR-1:0]	i_vpus_err;
+input wire		i_flt_fetch;
+input wire		i_flt_decode;
+input wire		i_vpus_err;
 
 
 /* Global busy state condition */
@@ -100,16 +99,16 @@ assign o_halt = 1'b0;	/* Not used */
 
 /* Processing units are busy */
 wire units_busy = i_fetch_busy | i_dis_pipes_active | i_fwd_pipes_active |
-	|i_vpus_busy;
+	i_vpus_busy;
 
 /* Synchronize VPUs */
-wire sync_wait = i_fwd_pipes_active | |i_vpus_busy;
+wire sync_wait = i_fwd_pipes_active | i_vpus_busy;
 
 /* Stop processing */
 wire stop_cond = i_cmd_sync && i_cmd_sync_stop;
 
 /* Fault */
-wire fault_cond = i_flt_fetch | i_flt_decode | |i_vpus_err;
+wire fault_cond = i_flt_fetch | i_flt_decode | i_vpus_err;
 
 
 

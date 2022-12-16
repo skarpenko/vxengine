@@ -59,11 +59,11 @@ module tb_vxe_cu_exec_unit();
 	reg		fetch_busy;
 	reg		dis_pipes_active;
 	reg		fwd_pipes_active;
-	reg [1:0]	vpus_busy;
+	reg		vpus_busy;
 	/* Internal fault signals */
 	reg		flt_fetch;
 	reg		flt_decode;
-	reg [1:0]	vpus_err;
+	reg		vpus_err;
 
 	reg [0:55]	test_name;
 
@@ -103,10 +103,10 @@ module tb_vxe_cu_exec_unit();
 		fetch_busy = 1'b0;
 		dis_pipes_active = 1'b0;
 		fwd_pipes_active = 1'b0;
-		vpus_busy = 2'b00;
+		vpus_busy = 1'b0;
 		flt_fetch = 1'b0;
 		flt_decode = 1'b0;
-		vpus_err = 2'b00;
+		vpus_err = 1'b0;
 
 		wait_pos_clk();
 		wait_pos_clk();
@@ -129,7 +129,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b1;
 			dis_pipes_active <= 1'b1;
 			fwd_pipes_active <= 1'b1;
-			vpus_busy <= 2'b11;
+			vpus_busy <= 1'b1;
 		end
 		@(posedge clk)
 		begin
@@ -156,7 +156,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b0;
 			dis_pipes_active <= 1'b0;
 			fwd_pipes_active <= 1'b0;
-			vpus_busy <= 2'b00;
+			vpus_busy <= 1'b0;
 		end
 
 		wait_pos_clk4();
@@ -170,7 +170,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b1;
 			dis_pipes_active <= 1'b1;
 			fwd_pipes_active <= 1'b1;
-			vpus_busy <= 2'b11;
+			vpus_busy <= 1'b1;
 		end
 		@(posedge clk)
 		begin
@@ -193,7 +193,7 @@ module tb_vxe_cu_exec_unit();
 		@(posedge clk)
 		begin
 			fwd_pipes_active <= 1'b0;
-			vpus_busy <= 2'b00;
+			vpus_busy <= 1'b0;
 		end
 
 		wait_pos_clk4();
@@ -230,7 +230,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b1;
 			dis_pipes_active <= 1'b1;
 			fwd_pipes_active <= 1'b1;
-			vpus_busy <= 2'b11;
+			vpus_busy <= 1'b1;
 		end
 		@(posedge clk)
 		begin
@@ -243,13 +243,13 @@ module tb_vxe_cu_exec_unit();
 		begin
 			flt_fetch <= 1'b1;
 			flt_decode <= 1'b1;
-			vpus_err <= 2'b11;
+			vpus_err <= 1'b1;
 		end
 		@(posedge clk)
 		begin
 			flt_fetch <= 1'b0;
 			flt_decode <= 1'b0;
-			vpus_err <= 2'b00;
+			vpus_err <= 1'b0;
 		end
 
 		wait_pos_clk4();
@@ -259,7 +259,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b0;
 			dis_pipes_active <= 1'b0;
 			fwd_pipes_active <= 1'b0;
-			vpus_busy <= 2'b00;
+			vpus_busy <= 1'b0;
 		end
 
 		wait_pos_clk4();
@@ -273,7 +273,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b1;
 			dis_pipes_active <= 1'b1;
 			fwd_pipes_active <= 1'b1;
-			vpus_busy <= 2'b11;
+			vpus_busy <= 1'b1;
 		end
 		@(posedge clk)
 		begin
@@ -312,7 +312,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b0;
 			dis_pipes_active <= 1'b0;
 			fwd_pipes_active <= 1'b0;
-			vpus_busy <= 2'b00;
+			vpus_busy <= 1'b0;
 		end
 
 		wait_pos_clk4();
@@ -326,7 +326,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b1;
 			dis_pipes_active <= 1'b1;
 			fwd_pipes_active <= 1'b1;
-			vpus_busy <= 2'b11;
+			vpus_busy <= 1'b1;
 		end
 		@(posedge clk)
 		begin
@@ -366,7 +366,7 @@ module tb_vxe_cu_exec_unit();
 			fetch_busy <= 1'b0;
 			dis_pipes_active <= 1'b0;
 			fwd_pipes_active <= 1'b0;
-			vpus_busy <= 2'b00;
+			vpus_busy <= 1'b0;
 		end
 
 		wait_pos_clk4();
@@ -377,9 +377,7 @@ module tb_vxe_cu_exec_unit();
 
 
 	/* Execute unit */
-	vxe_cu_exec_unit #(
-		.VPUS_NR(2)
-	) exec_unit(
+	vxe_cu_exec_unit exec_unit(
 		.clk(clk),
 		.nrst(nrst),
 		.i_start(start),
