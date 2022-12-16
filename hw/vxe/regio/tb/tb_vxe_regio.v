@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -54,6 +54,7 @@ module tb_vxe_regio();
 	reg 		i_cu_busy;
 	reg [36:0]	i_cu_last_instr_addr;
 	reg [63:0]	i_cu_last_instr_data;
+	reg [1:0]	i_vpu_fault;
 	wire [36:0]	o_cu_pgm_addr;
 	wire		o_cu_start;
 	reg [3:0]	i_intu_raw;
@@ -87,6 +88,7 @@ module tb_vxe_regio();
 		i_cu_busy = 1'b1;
 		i_cu_last_instr_addr = 37'h1f_0102_0304;
 		i_cu_last_instr_data = 64'hbeef_deaf_cafe_feed;
+		i_vpu_fault = 2'b11;
 		i_intu_raw = 4'hf;
 		i_intu_act = 4'h7;
 
@@ -230,6 +232,16 @@ module tb_vxe_regio();
 		wait_pos_clk();
 		wait_pos_clk();
 
+		@(posedge clk)
+		begin
+			i_rreg_idx <= REG_FAULT_VPU_MASK0;
+			i_renable <= 1'b1;
+		end
+		@(posedge clk) i_renable <= 1'b0;
+
+		wait_pos_clk();
+		wait_pos_clk();
+
 		/* Register write tests */
 
 		@(posedge clk)
@@ -333,6 +345,7 @@ module tb_vxe_regio();
 		.i_cu_busy(i_cu_busy),
 		.i_cu_last_instr_addr(i_cu_last_instr_addr),
 		.i_cu_last_instr_data(i_cu_last_instr_data),
+		.i_vpu_fault(i_vpu_fault),
 		.o_cu_pgm_addr(o_cu_pgm_addr),
 		.o_cu_start(o_cu_start),
 		.i_intu_raw(i_intu_raw),

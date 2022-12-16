@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -46,3 +46,4 @@ localparam [9:0] REG_FAULT_INSTR_ADDR_LO	= 9;	/* Faulted instr. address /low/ (r
 localparam [9:0] REG_FAULT_INSTR_ADDR_HI	= 10;	/* Faulted instr. address /high/ (r/o) */
 localparam [9:0] REG_FAULT_INSTR_LO		= 11;	/* Faulted instruction /low/ (r/o) */
 localparam [9:0] REG_FAULT_INSTR_HI		= 12;	/* Faulted instruction /high/ (r/o) */
+localparam [9:0] REG_FAULT_VPU_MASK0		= 13;	/* Faulted VPUs mask (r/o) */

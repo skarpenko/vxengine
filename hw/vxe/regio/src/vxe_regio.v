@@ -47,6 +47,7 @@ module vxe_regio(
 	i_cu_busy,
 	i_cu_last_instr_addr,
 	i_cu_last_instr_data,
+	i_vpu_fault,
 	o_cu_pgm_addr,
 	o_cu_start,
 	/* Interrupt unit interface signals */
@@ -77,6 +78,7 @@ output wire		o_rerror;
 input wire 		i_cu_busy;
 input wire [36:0]	i_cu_last_instr_addr;
 input wire [63:0]	i_cu_last_instr_data;
+input wire [1:0]	i_vpu_fault;
 output wire [36:0]	o_cu_pgm_addr;
 output reg		o_cu_start;
 /* Interrupt unit interface */
@@ -160,6 +162,7 @@ begin
 		REG_FAULT_INSTR_ADDR_HI:	o_rdata = { 24'h0, i_cu_last_instr_addr[36:29] };
 		REG_FAULT_INSTR_LO:		o_rdata = i_cu_last_instr_data[31:0];
 		REG_FAULT_INSTR_HI:		o_rdata = i_cu_last_instr_data[63:32];
+		REG_FAULT_VPU_MASK0:		o_rdata = { 30'h0, i_vpu_fault };
 		default:			o_rdata = 32'hdead_beef;
 		endcase;
 	end
