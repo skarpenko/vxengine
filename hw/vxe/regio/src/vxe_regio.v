@@ -136,7 +136,7 @@ begin
 			REG_PGM_ADDR_HI:	reg_pgm_addr[36:29] <= i_wdata[7:0];
 			REG_START:		o_cu_start <= ~i_cu_busy;
 			default: ;
-		endcase;
+			endcase;
 		end
 	end
 end
