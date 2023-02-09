@@ -235,7 +235,7 @@ wire rss_fifo_pre_full = (rss_fifo_pre_rp[1:0] == rss_fifo_wp[1:0]) &&
 	(rss_fifo_pre_rp[2] != rss_fifo_wp[2]);
 
 
-/* Response data intermediated FIFO */
+/* Response data intermediate FIFO */
 reg [63:0]	rsd_fifo[0:3];	/* Incoming response data FIFO */
 reg [2:0]	rsd_fifo_rp;	/* Read pointer */
 reg [2:0]	rsd_fifo_wp;	/* Write pointer */
