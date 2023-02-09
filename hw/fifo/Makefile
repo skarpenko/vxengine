@@ -4,7 +4,8 @@
 
 # Available testbenches
 TESTBENCHES := \
-	tb_vxe_fifo
+	tb_vxe_fifo	\
+	tb_vxe_fifo_2
 
 
 TB ?=

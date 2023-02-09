@@ -1,0 +1,6 @@
+# FIFOv2 testbench
+
++define+TRACE_FILE="tb_vxe_fifo_2.vcd"
++timescale+1us/100ns
+src/vxe_fifo_2.v
+tb/tb_vxe_fifo_2.v
