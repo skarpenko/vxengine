@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2023 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -34,6 +34,7 @@
 
 
 module tb_vxe_ctrl_unit();
+`include "vxe_client_params.vh"
 	localparam HCLK = 5;
 	localparam PCLK = 2*HCLK;	/* Clock period */
 	localparam MEMSZ = 256;		/* Command memory size */
@@ -325,7 +326,9 @@ module tb_vxe_ctrl_unit();
 
 
 	/* Control unit instance */
-	vxe_ctrl_unit ctrl_unit(
+	vxe_ctrl_unit #(
+		.CLIENT_ID(CLNT_CU)
+	) ctrl_unit(
 		.clk(clk),
 		.nrst(nrst),
 		.i_rqa_rdy(fifo_rqa_rdy),

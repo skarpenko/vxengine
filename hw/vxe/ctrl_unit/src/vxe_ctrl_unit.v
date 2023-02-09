@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2023 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -29,7 +29,10 @@
 
 
 /* Control unit */
-module vxe_ctrl_unit(
+module vxe_ctrl_unit #(
+	parameter [1:0] CLIENT_ID = 0	/* Client Id */
+)
+(
 	clk,
 	nrst,
 	/* Memory request channel */
@@ -70,7 +73,6 @@ module vxe_ctrl_unit(
 	o_vpu1_cmd_th,
 	o_vpu1_cmd_pl
 );
-`include "vxe_client_params.vh"
 /* Global signals */
 input wire		clk;
 input wire		nrst;
@@ -142,7 +144,7 @@ wire		fetch_rd;
 
 
 vxe_cu_fetch_unit #(
-	.CLIENT_ID(CLNT_CU),
+	.CLIENT_ID(CLIENT_ID),
 	.FETCH_DEPTH_POW2(4)
 ) fetch_unit (
 	.clk(clk),
