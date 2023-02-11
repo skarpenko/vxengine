@@ -1,0 +1,8 @@
+# VxE command queue testbench
+
+
++define+TRACE_FILE="tb_vxe_vpu_cmd_queue.vcd"
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/fifo/src/vxe_fifo_2.v
+src/vxe_vpu_cmd_queue.v
+tb/tb_vxe_vpu_cmd_queue.v
