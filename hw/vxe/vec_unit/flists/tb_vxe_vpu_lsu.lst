@@ -1,0 +1,16 @@
+# VxE LSU testbench
+
+
++define+TRACE_FILE="tb_vxe_vpu_lsu.vcd"
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/vxe/txnid_codec/src/vxe_txnid_coder.v
+${VXENGINE_HOME}/hw/vxe/txnid_codec/src/vxe_txnid_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqa_coder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreqa_decoder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnreq_coder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnress_coder.v
+${VXENGINE_HOME}/hw/vxe/txn_codec/src/vxe_txnress_decoder.v
+${VXENGINE_HOME}/hw/fifo/src/vxe_fifo_2.v
+${VXENGINE_HOME}/hw/fifo/src/vxe_fifo.v
+src/vxe_vpu_lsu.v
+tb/tb_vxe_vpu_lsu.v
