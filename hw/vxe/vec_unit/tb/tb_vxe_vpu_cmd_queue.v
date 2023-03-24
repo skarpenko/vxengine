@@ -98,8 +98,8 @@ module tb_vxe_vpu_cmd_queue();
 		@(posedge clk)
 		begin
 			cmd_sel <= 1'b1;
-			cmd_op <= 5'h0f;
-			cmd_th <= 3'h02;
+			cmd_op <= 5'h1f;
+			cmd_th <= 3'h2;
 			cmd_pl <= 48'h0febe;
 		end
 		
@@ -119,8 +119,8 @@ module tb_vxe_vpu_cmd_queue();
 		begin
 			en <= 1'b0;
 			cmd_sel <= 1'b1;
-			cmd_op <= 5'hf0;
-			cmd_th <= 3'h03;
+			cmd_op <= 5'h1e;
+			cmd_th <= 3'h3;
 			cmd_pl <= 48'h0fa00;
 		end
 
@@ -146,8 +146,8 @@ module tb_vxe_vpu_cmd_queue();
 		@(posedge clk)
 		begin
 			cmd_sel <= 1'b1;
-			cmd_op <= 5'hfa;
-			cmd_th <= 3'h01;
+			cmd_op <= 5'h1d;
+			cmd_th <= 3'h1;
 			cmd_pl <= 48'h0be00;
 		end
 
@@ -164,8 +164,8 @@ module tb_vxe_vpu_cmd_queue();
 		@(posedge clk)
 		begin
 			cmd_sel <= 1'b1;
-			cmd_op <= 5'hbe;
-			cmd_th <= 3'h07;
+			cmd_op <= 5'h1c;
+			cmd_th <= 3'h7;
 			cmd_pl <= 48'h0ae00;
 		end
 
