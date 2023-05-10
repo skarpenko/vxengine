@@ -4,9 +4,10 @@
 
 # Available testbenches
 TESTBENCHES := \
-	tb_vxe_vpu_cmd_queue	\
-	tb_vxe_vpu_lsu		\
-	tb_vxe_vpu_thread_rf
+	tb_vxe_vpu_cmd_queue		\
+	tb_vxe_vpu_lsu			\
+	tb_vxe_vpu_thread_rf		\
+	tb_vxe_vpu_cmd_dispatch
 
 
 TB ?=
