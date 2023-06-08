@@ -8,7 +8,8 @@ TESTBENCHES := \
 	tb_vxe_vpu_lsu			\
 	tb_vxe_vpu_thread_rf		\
 	tb_vxe_vpu_cmd_dispatch		\
-	tb_vxe_vpu_rf
+	tb_vxe_vpu_rf			\
+	tb_vxe_vpu_regu_ecu
 
 
 TB ?=

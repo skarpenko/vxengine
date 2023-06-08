@@ -1,0 +1,12 @@
+# VxE register update execution unit testbench
+
+
++define+TRACE_FILE="tb_vxe_vpu_regu_ecu.vcd"
++incdir+${VXENGINE_HOME}/hw/vxe/include
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/reg/src/vxe_reg.v
+${VXENGINE_HOME}/hw/reg/src/vxe_reg_rst.v
+src/vxe_vpu_thread_rf.v
+src/vxe_vpu_rf.v
+src/vxe_vpu_regu_ecu.v
+tb/tb_vxe_vpu_regu_ecu.v
