@@ -1,0 +1,8 @@
+# VxE activation function execution control unit testbench
+
+
++define+TRACE_FILE="tb_vxe_vpu_actf_ecu.vcd"
++incdir+${VXENGINE_HOME}/hw/vxe/include
++timescale+1us/100ns
+src/vxe_vpu_actf_ecu.v
+tb/tb_vxe_vpu_actf_ecu.v
