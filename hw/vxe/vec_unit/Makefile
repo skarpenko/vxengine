@@ -10,7 +10,8 @@ TESTBENCHES := \
 	tb_vxe_vpu_cmd_dispatch		\
 	tb_vxe_vpu_rf			\
 	tb_vxe_vpu_regu_ecu		\
-	tb_vxe_vpu_actf_ecu
+	tb_vxe_vpu_actf_ecu		\
+	tb_vxe_vpu_actf_eu
 
 
 TB ?=
