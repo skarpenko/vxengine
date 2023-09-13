@@ -12,7 +12,8 @@ TESTBENCHES := \
 	tb_vxe_vpu_regu_ecu		\
 	tb_vxe_vpu_actf_ecu		\
 	tb_vxe_vpu_actf_eu		\
-	tb_vxe_vpu_stor_ecu
+	tb_vxe_vpu_stor_ecu		\
+	tb_vxe_vpu_stor_eu
 
 
 TB ?=
