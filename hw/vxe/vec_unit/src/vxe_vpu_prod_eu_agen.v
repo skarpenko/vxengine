@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2024 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -97,11 +97,6 @@ begin
 		q_vlen <= i_vlen;
 	end
 end
-
-/* Debug */
-always @(posedge clk)
-	if(i_incr && !c_valid)
-		$display("vxe_vpu_prod_eu_agen: read of non-valid!");
 
 
 assign o_valid = c_valid;

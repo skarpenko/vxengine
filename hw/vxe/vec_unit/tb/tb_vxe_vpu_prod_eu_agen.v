@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2024 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -60,11 +60,30 @@ module tb_vxe_vpu_prod_eu_agen();
 
 	/* Wait for "posedge clk" */
 	task wait_pos_clk;
-	input integer j;	/* Number of cycles*/
+	input integer j;	/* Number of cycles */
 	integer i;
 	begin
 		for(i=0; i<j; i++)
 			@(posedge clk);
+	end
+	endtask
+
+
+	/* Read addresses while valid */
+	task read_valid_addr;
+	input integer j;	/* Number of seq. read cycles */
+	integer i;
+	begin
+		@(posedge clk) incr <= 1'b1;
+		for(i=0; i<j; i++)
+		begin
+			@(posedge clk)
+			begin
+				if(!valid)
+					incr <= 1'b0;
+			end
+		end
+		@(posedge clk) incr <= 1'b0;
 	end
 	endtask
 
@@ -98,8 +117,7 @@ module tb_vxe_vpu_prod_eu_agen();
 		@(posedge clk) latch <= 1'b0;
 
 		/* Get value once */
-		@(posedge clk) incr <= 1'b1;
-		@(posedge clk) incr <= 1'b0;
+		read_valid_addr(0);
 
 		wait_pos_clk(5);
 
@@ -116,8 +134,7 @@ module tb_vxe_vpu_prod_eu_agen();
 		@(posedge clk) latch <= 1'b0;
 
 		/* Get value once */
-		@(posedge clk) incr <= 1'b1;
-		@(posedge clk) incr <= 1'b0;
+		read_valid_addr(0);
 
 		wait_pos_clk(5);
 
@@ -134,15 +151,10 @@ module tb_vxe_vpu_prod_eu_agen();
 		@(posedge clk) latch <= 1'b0;
 
 		/* Get value once */
-		@(posedge clk) incr <= 1'b1;
-		@(posedge clk) incr <= 1'b0;
+		read_valid_addr(0);
 
 		/* Sequential read */
-		@(posedge clk) incr <= 1'b1;
-		@(posedge clk);
-		@(posedge clk);
-/*		@(posedge clk);*/
-		@(posedge clk) incr <= 1'b0;
+		read_valid_addr(6);
 
 		wait_pos_clk(5);
 
@@ -159,11 +171,7 @@ module tb_vxe_vpu_prod_eu_agen();
 		@(posedge clk) latch <= 1'b0;
 
 		/* Sequential read */
-		@(posedge clk) incr <= 1'b1;
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk) incr <= 1'b0;
+		read_valid_addr(6);
 
 		wait_pos_clk(5);
 
@@ -180,12 +188,7 @@ module tb_vxe_vpu_prod_eu_agen();
 		@(posedge clk) latch <= 1'b0;
 
 		/* Sequential read */
-		@(posedge clk) incr <= 1'b1;
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk) incr <= 1'b0;
+		read_valid_addr(6);
 
 		wait_pos_clk(5);
 
@@ -202,12 +205,7 @@ module tb_vxe_vpu_prod_eu_agen();
 		@(posedge clk) latch <= 1'b0;
 
 		/* Sequential read */
-		@(posedge clk) incr <= 1'b1;
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk);
-		@(posedge clk) incr <= 1'b0;
+		read_valid_addr(6);
 
 		wait_pos_clk(5);
 
