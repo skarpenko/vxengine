@@ -1,0 +1,9 @@
+# VxE VPU responses distributor unit
+
+
++define+TRACE_FILE="tb_vxe_vpu_prod_eu_rs_dist.vcd"
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/fifo/src/vxe_fifo.v
+${VXENGINE_HOME}/hw/fifo2wxw/src/vxe_fifo2wxw.v
+src/vxe_vpu_prod_eu_rs_dist.v
+tb/tb_vxe_vpu_prod_eu_rs_dist.v
