@@ -1,0 +1,19 @@
+# VxE VPU FMAC scheduler unit
+
+
++define+TRACE_FILE="tb_vxe_vpu_prod_eu_fmac.vcd"
++incdir+${VXENGINE_HOME}/hw/vxe/include
++timescale+1us/100ns
+${VXENGINE_HOME}/hw/pipe/src/vxe_pipe_2.v
+${VXENGINE_HOME}/hw/flp/src/flp32_mac_5stg.v
+${VXENGINE_HOME}/hw/flp/src/flp_iadd.v
+${VXENGINE_HOME}/hw/flp/src/flp_imult_stage.v
+${VXENGINE_HOME}/hw/flp/src/flp_pack.v
+${VXENGINE_HOME}/hw/flp/src/flp_unpack.v
+${VXENGINE_HOME}/hw/flp/src/flp_round.v
+${VXENGINE_HOME}/hw/flp/src/flp_norm.v
+${VXENGINE_HOME}/hw/flp/src/flp_alignr.v
+${VXENGINE_HOME}/hw/flp/src/flp_shrjam.v
+${VXENGINE_HOME}/hw/flp/src/flp_shlpad.v
+src/vxe_vpu_prod_eu_fmac.v
+tb/tb_vxe_vpu_prod_eu_fmac.v
