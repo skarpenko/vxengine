@@ -61,7 +61,7 @@ output wire			o_valid;
 
 
 /* FP32 5-stage mac  */
-flp32_mac_5stg fpl32_mac0(
+flp32_mac_5stg flp32_mac0(
 	.clk(clk),
 	.nrst(nrst),
 	.i_a(i_a),

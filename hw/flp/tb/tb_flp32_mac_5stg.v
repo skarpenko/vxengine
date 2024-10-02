@@ -125,7 +125,7 @@ module tb_flp32_mac_5stg();
 
 
 	/* FP32 5-stage mac  */
-	flp32_mac_5stg fpl32_mac0(
+	flp32_mac_5stg flp32_mac0(
 		.clk(clk),
 		.nrst(nrst),
 		.i_a(f_a),
