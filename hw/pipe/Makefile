@@ -4,7 +4,8 @@
 
 # Available testbenches
 TESTBENCHES := \
-	tb_vxe_pipe
+	tb_vxe_pipe	\
+	tb_vxe_pipe_2
 
 
 TB ?=
