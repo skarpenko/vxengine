@@ -18,7 +18,8 @@ TESTBENCHES := \
 	tb_vxe_vpu_prod_eu_agen		\
 	tb_vxe_vpu_prod_eu_rq_disp	\
 	tb_vxe_vpu_prod_eu_rs_dist	\
-	tb_vxe_vpu_prod_eu_fmac
+	tb_vxe_vpu_prod_eu_fmac		\
+	tb_vxe_vpu_prod_eu
 
 
 TB ?=
