@@ -30,7 +30,7 @@
 
 /* FMAC scheduler unit */
 module vxe_vpu_prod_eu_fmac #(
-	parameter IN_OP_DEPTH_POW2 = 2	/* Incoming opreand FIFOs depth (2^IN_OP_DEPTH_POW2) */
+	parameter IN_OP_DEPTH_POW2 = 2	/* Incoming operand FIFOs depth (2^IN_OP_DEPTH_POW2) */
 )
 (
 	clk,
