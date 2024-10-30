@@ -38,6 +38,7 @@
 `define TESTS_RT_FIRST		/* Rs arrives first */
 `define TESTS_RSRT_BOTH		/* Rs and Rt arrive at the same time */
 `define TESTS_ALL_THREADS	/* Rs and Rt arrive at the same time for all threads */
+`define TESTS_ERR_FLUSH		/* FLUSH on error */
 
 
 module tb_vxe_vpu_prod_eu_fmac();
@@ -47,6 +48,7 @@ module tb_vxe_vpu_prod_eu_fmac();
 	reg		clk;
 	reg		nrst;
 	/* Control interface */
+	reg		err_flush;
 	wire		busy;
 	/* Operand FIFO interface */
 	reg [31:0]	rs0_opd_data;
@@ -303,6 +305,8 @@ module tb_vxe_vpu_prod_eu_fmac();
 		clk = 1'b1;
 		nrst = 1'b0;
 
+		err_flush = 1'b0;
+
 		rs0_opd_vld = 1'b0;
 		rs0_opd_data = 32'h00000000;
 		rt0_opd_vld = 1'b0;
@@ -516,6 +520,57 @@ module tb_vxe_vpu_prod_eu_fmac();
 `endif
 
 
+`ifdef TESTS_ERR_FLUSH
+		/*** Test 04 - flush on error ****/
+		test("Test_04", 0);
+		/* Thread 0 - Rs */
+		set_rs_value(8'b0000_0001, 32'h4000_1000);
+		/* Thread 1 - Rs */
+		set_rs_value(8'b0000_0010, 32'h4000_1100);
+		/* Thread 2 - Rs */
+		set_rs_value(8'b0000_0100, 32'h4000_1200);
+		/* Thread 3 - Rs */
+		set_rs_value(8'b0000_1000, 32'h4000_1300);
+		/* Thread 4 - Rs */
+		set_rs_value(8'b0001_0000, 32'h4000_1400);
+		/* Thread 5 - Rs */
+		set_rs_value(8'b0010_0000, 32'h4000_1500);
+		/* Thread 6 - Rs */
+		set_rs_value(8'b0100_0000, 32'h4000_1600);
+		/* Thread 7 - Rs */
+		set_rs_value(8'b1000_0000, 32'h4000_1700);
+
+		wait_pos_clk(16);
+		@(posedge clk) err_flush <= 1'b1;
+		@(posedge clk) err_flush <= 1'b0;
+		wait_pos_clk(16);
+
+		/* Thread 1 - Rt */
+		set_rt_value(8'b0000_0001, 32'h4000_2000);
+		/* Thread 2 - Rt */
+		set_rt_value(8'b0000_0010, 32'h4000_2100);
+		/* Thread 3 - Rt */
+		set_rt_value(8'b0000_0100, 32'h4000_2200);
+		/* Thread 4 - Rt */
+		set_rt_value(8'b0000_1000, 32'h4000_2300);
+		/* Thread 5 - Rt */
+		set_rt_value(8'b0001_0000, 32'h4000_2400);
+		/* Thread 6 - Rt */
+		set_rt_value(8'b0010_0000, 32'h4000_2500);
+		/* Thread 7 - Rt */
+		set_rt_value(8'b0100_0000, 32'h4000_2600);
+		/* Thread 8 - Rt */
+		set_rt_value(8'b1000_0000, 32'h4000_2700);
+
+		wait_pos_clk(16);
+		@(posedge clk) err_flush <= 1'b1;
+		@(posedge clk) err_flush <= 1'b0;
+		wait_pos_clk(16);
+
+		test("Done_04", 8);
+`endif
+
+
 		#500 $finish;
 	end
 
@@ -527,6 +582,7 @@ module tb_vxe_vpu_prod_eu_fmac();
 	) fmac_sched (
 		.clk(clk),
 		.nrst(nrst),
+		.i_err_flush(err_flush),
 		.o_busy(busy),
 		.i_rs0_opd_data(rs0_opd_data),
 		.o_rs0_opd_rd(rs0_opd_rd),

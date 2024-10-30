@@ -36,6 +36,7 @@ module vxe_vpu_prod_eu_fmac #(
 	clk,
 	nrst,
 	/* Control interface */
+	i_err_flush,
 	o_busy,
 	/* Operand FIFO interface */
 	i_rs0_opd_data,
@@ -107,19 +108,21 @@ localparam [1:0]	FSM_OP_IDLE = 2'b00;	/* Idle */
 localparam [1:0]	FSM_OP_RECV = 2'b01;	/* Receive operand data */
 localparam [1:0]	FSM_OP_STLL = 2'b10;	/* Stall */
 /* FMAC dispatch FSM states */
-localparam [7:0]	FSM_FMACD_IDLE = 8'b0000_0000;	/* Idle */
-localparam [7:0]	FSM_FMACD_THR0 = 8'b0000_0001;	/* Thread 0 */
-localparam [7:0]	FSM_FMACD_THR1 = 8'b0000_0010;	/* Thread 1 */
-localparam [7:0]	FSM_FMACD_THR2 = 8'b0000_0100;	/* Thread 2 */
-localparam [7:0]	FSM_FMACD_THR3 = 8'b0000_1000;	/* Thread 3 */
-localparam [7:0]	FSM_FMACD_THR4 = 8'b0001_0000;	/* Thread 4 */
-localparam [7:0]	FSM_FMACD_THR5 = 8'b0010_0000;	/* Thread 5 */
-localparam [7:0]	FSM_FMACD_THR6 = 8'b0100_0000;	/* Thread 6 */
-localparam [7:0]	FSM_FMACD_THR7 = 8'b1000_0000;	/* Thread 7 */
+localparam [4:0]	FSM_FMACD_IDLE = 5'b00000;	/* Idle */
+localparam [4:0]	FSM_FMACD_THR0 = 5'b00001;	/* Thread 0 */
+localparam [4:0]	FSM_FMACD_THR1 = 5'b00011;	/* Thread 1 */
+localparam [4:0]	FSM_FMACD_THR2 = 5'b00010;	/* Thread 2 */
+localparam [4:0]	FSM_FMACD_THR3 = 5'b00110;	/* Thread 3 */
+localparam [4:0]	FSM_FMACD_THR4 = 5'b00100;	/* Thread 4 */
+localparam [4:0]	FSM_FMACD_THR5 = 5'b01100;	/* Thread 5 */
+localparam [4:0]	FSM_FMACD_THR6 = 5'b01000;	/* Thread 6 */
+localparam [4:0]	FSM_FMACD_THR7 = 5'b11000;	/* Thread 7 */
+localparam [4:0]	FSM_FMACD_ERRF = 5'b10000;	/* Flush on error */
 /* Global signals */
 input wire		clk;
 input wire		nrst;
 /* Control interface */
+input wire		i_err_flush;
 output wire		o_busy;
 /* Operand FIFO interface */
 input wire [31:0]	i_rs0_opd_data;
@@ -424,22 +427,22 @@ always @(posedge clk or negedge nrst)
 begin
 	if(!nrst)
 	begin
-		t[0].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[0].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[1].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[1].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[2].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[2].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[3].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[3].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[4].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[4].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[5].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[5].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[6].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[6].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[7].r[0].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
-		t[7].r[1].op_fifo_rp <=  {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[0].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[0].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[1].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[1].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[2].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[2].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[3].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[3].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[4].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[4].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[5].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[5].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[6].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[6].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[7].r[0].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
+		t[7].r[1].op_fifo_rp <= {(IN_OP_DEPTH_POW2+1){1'b0}};
 
 		fsm_fmacd <= FSM_FMACD_IDLE;
 		fmac_op_vld <= 1'b0;
@@ -563,11 +566,36 @@ begin
 			end
 			fsm_fmacd <= work_rdy ? FSM_FMACD_THR0 : FSM_FMACD_IDLE;
 		end
+		FSM_FMACD_ERRF: begin
+			t[0].r[0].op_fifo_rp <= t[0].r[0].op_fifo_wp;
+			t[0].r[1].op_fifo_rp <= t[0].r[1].op_fifo_wp;
+			t[1].r[0].op_fifo_rp <= t[1].r[0].op_fifo_wp;
+			t[1].r[1].op_fifo_rp <= t[1].r[1].op_fifo_wp;
+			t[2].r[0].op_fifo_rp <= t[2].r[0].op_fifo_wp;
+			t[2].r[1].op_fifo_rp <= t[2].r[1].op_fifo_wp;
+			t[3].r[0].op_fifo_rp <= t[3].r[0].op_fifo_wp;
+			t[3].r[1].op_fifo_rp <= t[3].r[1].op_fifo_wp;
+			t[4].r[0].op_fifo_rp <= t[4].r[0].op_fifo_wp;
+			t[4].r[1].op_fifo_rp <= t[4].r[1].op_fifo_wp;
+			t[5].r[0].op_fifo_rp <= t[5].r[0].op_fifo_wp;
+			t[5].r[1].op_fifo_rp <= t[5].r[1].op_fifo_wp;
+			t[6].r[0].op_fifo_rp <= t[6].r[0].op_fifo_wp;
+			t[6].r[1].op_fifo_rp <= t[6].r[1].op_fifo_wp;
+			t[7].r[0].op_fifo_rp <= t[7].r[0].op_fifo_wp;
+			t[7].r[1].op_fifo_rp <= t[7].r[1].op_fifo_wp;
+
+			if(!in_op_fsm_busy)
+				fsm_fmacd <= FSM_FMACD_IDLE;
+		end
 		default: begin
 			if(work_rdy)
 				fsm_fmacd <= FSM_FMACD_THR0;
 		end
 		endcase
+
+		/* Check if error occurred */
+		if(i_err_flush)
+			fsm_fmacd <= FSM_FMACD_ERRF;
 	end
 end
 
