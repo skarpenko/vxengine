@@ -38,6 +38,7 @@ module vxe_vpu_prod_eu_rs_dist #(
 	clk,
 	nrst,
 	/* Control interface */
+	i_err_flush,
 	o_busy,
 	/* LSU interface */
 	i_rrs_vld,
@@ -156,6 +157,7 @@ localparam [1:0]	FSM_WE_STLL = 2'b10;	/* Stall */
 input wire		clk;
 input wire		nrst;
 /* Control interface */
+input wire		i_err_flush;
 output wire		o_busy;
 /* LSU interface */
 input wire		i_rrs_vld;
@@ -556,11 +558,13 @@ end
 
 /********************** Operands distribution logic ***************************/
 
+reg q_err_flush;	/* Drop incoming data on error state */
 
 always @(posedge clk or negedge nrst)
 begin
 	if(!nrst)
 	begin
+		q_err_flush <= 1'b0;
 		rs_fifo_rp <= {(IN_RS_DEPTH_POW2+1){1'b0}};
 		t_we[0].r[0].we_fifo_rp <= {(IN_WE_DEPTH_POW2+1){1'b0}};
 		t_we[0].r[1].we_fifo_rp <= {(IN_WE_DEPTH_POW2+1){1'b0}};
@@ -594,6 +598,32 @@ begin
 		t_op[6].r[1].op_fifo_wp <= {(OUT_OP_DEPTH_POW2+1){1'b0}};
 		t_op[7].r[0].op_fifo_wp <= {(OUT_OP_DEPTH_POW2+1){1'b0}};
 		t_op[7].r[1].op_fifo_wp <= {(OUT_OP_DEPTH_POW2+1){1'b0}};
+	end
+	else if(i_err_flush || q_err_flush)
+	begin
+		/* Flush incoming response and WE data on error */
+		q_err_flush <= i_err_flush | q_err_flush;
+
+		rs_fifo_rp <= rs_fifo_wp;
+		t_we[0].r[0].we_fifo_rp <= t_we[0].r[0].we_fifo_wp;
+		t_we[0].r[1].we_fifo_rp <= t_we[0].r[1].we_fifo_wp;
+		t_we[1].r[0].we_fifo_rp <= t_we[1].r[0].we_fifo_wp;
+		t_we[1].r[1].we_fifo_rp <= t_we[1].r[1].we_fifo_wp;
+		t_we[2].r[0].we_fifo_rp <= t_we[2].r[0].we_fifo_wp;
+		t_we[2].r[1].we_fifo_rp <= t_we[2].r[1].we_fifo_wp;
+		t_we[3].r[0].we_fifo_rp <= t_we[3].r[0].we_fifo_wp;
+		t_we[3].r[1].we_fifo_rp <= t_we[3].r[1].we_fifo_wp;
+		t_we[4].r[0].we_fifo_rp <= t_we[4].r[0].we_fifo_wp;
+		t_we[4].r[1].we_fifo_rp <= t_we[4].r[1].we_fifo_wp;
+		t_we[5].r[0].we_fifo_rp <= t_we[5].r[0].we_fifo_wp;
+		t_we[5].r[1].we_fifo_rp <= t_we[5].r[1].we_fifo_wp;
+		t_we[6].r[0].we_fifo_rp <= t_we[6].r[0].we_fifo_wp;
+		t_we[6].r[1].we_fifo_rp <= t_we[6].r[1].we_fifo_wp;
+		t_we[7].r[0].we_fifo_rp <= t_we[7].r[0].we_fifo_wp;
+		t_we[7].r[1].we_fifo_rp <= t_we[7].r[1].we_fifo_wp;
+
+		if(!(in_we_fifo_busy || in_we_fsm_busy || !rs_fifo_empty || fsm_rs_busy))
+			q_err_flush <= 1'b0;
 	end
 	else
 	case({ rs_fifo_empty, rs_th_fifo[rs_fifo_rp[IN_RS_DEPTH_POW2-1:0]],

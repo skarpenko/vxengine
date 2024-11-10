@@ -38,6 +38,7 @@
 `define TESTS_CLOGGED_PATH	/* Receive path clogged */
 `define TESTS_LOWORD_RESP	/* Low word valid response */
 `define TESTS_HIWORD_RESP	/* High word valid response */
+`define TESTS_ERR_FLUSH		/* FLUSH on error */
 
 
 
@@ -50,6 +51,7 @@ module tb_vxe_vpu_prod_eu_rs_dist();
 	reg		clk;
 	reg		nrst;
 	/* Control interface */
+	reg		err_flush;
 	wire		busy;
 	/* LSU interface */
 	reg		rrs_vld;
@@ -493,6 +495,15 @@ module tb_vxe_vpu_prod_eu_rs_dist();
 	endtask
 
 
+	/* Trigger error */
+	task trig_err;
+	begin
+		@(posedge clk) err_flush <= 1'b1;
+		@(posedge clk) err_flush <= 1'b0;
+	end
+	endtask
+
+
 	initial
 	begin
 		/* Set tracing */
@@ -501,6 +512,8 @@ module tb_vxe_vpu_prod_eu_rs_dist();
 
 		clk = 1'b1;
 		nrst = 1'b0;
+
+		err_flush = 1'b0;
 
 		rrs_vld = 1'b0;
 
@@ -1352,6 +1365,368 @@ module tb_vxe_vpu_prod_eu_rs_dist();
 `endif
 
 
+`ifdef TESTS_ERR_FLUSH
+		/*** Test 64 - LSU received error response (Thread 0, arg Rs) ****/
+		test("Test_64", 0);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0001_d100_0000, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0003_d100_0002, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0005_d100_0004, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0007_d100_0006, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0009_d100_0008, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0011_d100_0010, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0013_d100_0012, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0015_d100_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd0, 1'b0, 64'hd200_0017_d100_0016, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0019_d100_0018, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0021_d100_0020, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0023_d100_0022, 2'b11);
+		set_resp_we(3'd0, 1'b0, 64'hd200_0025_d100_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_00_00_00_01);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_64", 4);
+
+		/*** Test 65 - LSU received error response (Thread 0, arg Rt) ****/
+		test("Test_65", 0);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0001_d101_0000, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0003_d101_0002, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0005_d101_0004, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0007_d101_0006, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0009_d101_0008, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0011_d101_0010, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0013_d101_0012, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0015_d101_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd0, 1'b1, 64'hd201_0017_d101_0016, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0019_d101_0018, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0021_d101_0020, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0023_d101_0022, 2'b11);
+		set_resp_we(3'd0, 1'b1, 64'hd201_0025_d101_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_00_00_00_10);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_65", 4);
+
+
+		/*** Test 66 - LSU received error response (Thread 1, arg Rs) ****/
+		test("Test_66", 0);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0001_d110_0000, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0003_d110_0002, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0005_d110_0004, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0007_d110_0006, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0009_d110_0008, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0011_d110_0010, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0013_d110_0012, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0015_d110_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd1, 1'b0, 64'hd210_0017_d110_0016, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0019_d110_0018, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0021_d110_0020, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0023_d110_0022, 2'b11);
+		set_resp_we(3'd1, 1'b0, 64'hd210_0025_d110_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_00_00_01_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_66", 4);
+
+		/*** Test 67 - LSU received error response (Thread 1, arg Rt) ****/
+		test("Test_67", 0);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0001_d111_0000, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0003_d111_0002, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0005_d111_0004, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0007_d111_0006, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0009_d111_0008, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0011_d111_0010, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0013_d111_0012, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0015_d111_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd1, 1'b1, 64'hd211_0017_d111_0016, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0019_d111_0018, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0021_d111_0020, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0023_d111_0022, 2'b11);
+		set_resp_we(3'd1, 1'b1, 64'hd211_0025_d111_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_00_00_10_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_67", 4);
+
+
+		/*** Test 68 - LSU received error response (Thread 2, arg Rs) ****/
+		test("Test_68", 0);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0001_d120_0000, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0003_d120_0002, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0005_d120_0004, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0007_d120_0006, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0009_d120_0008, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0011_d120_0010, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0013_d120_0012, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0015_d120_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd2, 1'b0, 64'hd220_0017_d120_0016, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0019_d120_0018, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0021_d120_0020, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0023_d120_0022, 2'b11);
+		set_resp_we(3'd2, 1'b0, 64'hd220_0025_d120_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_00_01_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_68", 4);
+
+		/*** Test 69 - LSU received error response (Thread 2, arg Rt) ****/
+		test("Test_69", 0);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0001_d121_0000, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0003_d121_0002, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0005_d121_0004, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0007_d121_0006, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0009_d121_0008, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0011_d121_0010, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0013_d121_0012, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0015_d121_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd2, 1'b1, 64'hd221_0017_d121_0016, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0019_d121_0018, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0021_d121_0020, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0023_d121_0022, 2'b11);
+		set_resp_we(3'd2, 1'b1, 64'hd221_0025_d121_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_00_10_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_69", 4);
+
+
+		/*** Test 70 - LSU received error response (Thread 3, arg Rs) ****/
+		test("Test_70", 0);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0001_d130_0000, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0003_d130_0002, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0005_d130_0004, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0007_d130_0006, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0009_d130_0008, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0011_d130_0010, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0013_d130_0012, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0015_d130_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd3, 1'b0, 64'hd230_0017_d130_0016, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0019_d130_0018, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0021_d130_0020, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0023_d130_0022, 2'b11);
+		set_resp_we(3'd3, 1'b0, 64'hd230_0025_d130_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_01_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_70", 4);
+
+		/*** Test 71 - LSU received error response (Thread 3, arg Rt) ****/
+		test("Test_71", 0);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0001_d131_0000, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0003_d131_0002, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0005_d131_0004, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0007_d131_0006, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0009_d131_0008, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0011_d131_0010, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0013_d131_0012, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0015_d131_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd3, 1'b1, 64'hd231_0017_d131_0016, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0019_d131_0018, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0021_d131_0020, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0023_d131_0022, 2'b11);
+		set_resp_we(3'd3, 1'b1, 64'hd231_0025_d131_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_00_10_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_71", 4);
+
+
+		/*** Test 72 - LSU received error response (Thread 4, arg Rs) ****/
+		test("Test_72", 0);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0001_d140_0000, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0003_d140_0002, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0005_d140_0004, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0007_d140_0006, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0009_d140_0008, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0011_d140_0010, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0013_d140_0012, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0015_d140_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd4, 1'b0, 64'hd240_0017_d140_0016, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0019_d140_0018, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0021_d140_0020, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0023_d140_0022, 2'b11);
+		set_resp_we(3'd4, 1'b0, 64'hd240_0025_d140_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_01_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_72", 4);
+
+		/*** Test 73 - LSU received error response (Thread 4, arg Rt) ****/
+		test("Test_73", 0);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0001_d141_0000, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0003_d141_0002, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0005_d141_0004, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0007_d141_0006, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0009_d141_0008, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0011_d141_0010, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0013_d141_0012, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0015_d141_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd4, 1'b1, 64'hd241_0017_d141_0016, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0019_d141_0018, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0021_d141_0020, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0023_d141_0022, 2'b11);
+		set_resp_we(3'd4, 1'b1, 64'hd241_0025_d141_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_00_10_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_73", 4);
+
+
+		/*** Test 74 - LSU received error response (Thread 5, arg Rs) ****/
+		test("Test_74", 0);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0001_d150_0000, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0003_d150_0002, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0005_d150_0004, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0007_d150_0006, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0009_d150_0008, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0011_d150_0010, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0013_d150_0012, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0015_d150_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd5, 1'b0, 64'hd250_0017_d150_0016, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0019_d150_0018, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0021_d150_0020, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0023_d150_0022, 2'b11);
+		set_resp_we(3'd5, 1'b0, 64'hd250_0025_d150_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_01_00_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_74", 4);
+
+		/*** Test 75 - LSU received error response (Thread 5, arg Rt) ****/
+		test("Test_75", 0);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0001_d151_0000, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0003_d151_0002, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0005_d151_0004, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0007_d151_0006, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0009_d151_0008, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0011_d151_0010, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0013_d151_0012, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0015_d151_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd5, 1'b1, 64'hd251_0017_d151_0016, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0019_d151_0018, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0021_d151_0020, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0023_d151_0022, 2'b11);
+		set_resp_we(3'd5, 1'b1, 64'hd251_0025_d151_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_00_10_00_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_75", 4);
+
+
+		/*** Test 76 - LSU received error response (Thread 6, arg Rs) ****/
+		test("Test_76", 0);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0001_d160_0000, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0003_d160_0002, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0005_d160_0004, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0007_d160_0006, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0009_d160_0008, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0011_d160_0010, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0013_d160_0012, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0015_d160_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd6, 1'b0, 64'hd260_0017_d160_0016, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0019_d160_0018, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0021_d160_0020, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0023_d160_0022, 2'b11);
+		set_resp_we(3'd6, 1'b0, 64'hd260_0025_d160_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_01_00_00_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_76", 4);
+
+		/*** Test 77 - LSU received error response (Thread 6, arg Rt) ****/
+		test("Test_77", 0);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0001_d161_0000, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0003_d161_0002, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0005_d161_0004, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0007_d161_0006, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0009_d161_0008, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0011_d161_0010, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0013_d161_0012, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0015_d161_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd6, 1'b1, 64'hd261_0017_d161_0016, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0019_d161_0018, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0021_d161_0020, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0023_d161_0022, 2'b11);
+		set_resp_we(3'd6, 1'b1, 64'hd261_0025_d161_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b00_10_00_00_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_77", 4);
+
+
+		/*** Test 78 - LSU received error response (Thread 7, arg Rs) ****/
+		test("Test_78", 0);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0001_d170_0000, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0003_d170_0002, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0005_d170_0004, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0007_d170_0006, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0009_d170_0008, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0011_d170_0010, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0013_d170_0012, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0015_d170_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd7, 1'b0, 64'hd270_0017_d170_0016, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0019_d170_0018, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0021_d170_0020, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0023_d170_0022, 2'b11);
+		set_resp_we(3'd7, 1'b0, 64'hd270_0025_d170_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b01_00_00_00_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_78", 4);
+
+		/*** Test 79 - LSU received error response (Thread 7, arg Rt) ****/
+		test("Test_79", 0);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0001_d171_0000, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0003_d171_0002, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0005_d171_0004, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0007_d171_0006, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0009_d171_0008, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0011_d171_0010, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0013_d171_0012, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0015_d171_0014, 2'b11); /* All dropped after this */
+		set_resp_we(3'd7, 1'b1, 64'hd271_0017_d171_0016, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0019_d171_0018, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0021_d171_0020, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0023_d171_0022, 2'b11);
+		set_resp_we(3'd7, 1'b1, 64'hd271_0025_d171_0024, 2'b11);
+		trig_err();	/* Error response received by LSU */
+		wait_pos_clk(8);
+		set_op_read(16'b10_00_00_00_00_00_00_00);
+		wait_pos_clk(32);
+		set_op_read(16'b00_00_00_00_00_00_00_00);
+		test("Done_79", 4);
+`endif
+
+
 		#500 $finish;
 	end
 
@@ -1365,6 +1740,7 @@ module tb_vxe_vpu_prod_eu_rs_dist();
 	) rs_dist (
 		.clk(clk),
 		.nrst(nrst),
+		.i_err_flush(err_flush),
 		.o_busy(busy),
 		.i_rrs_vld(rrs_vld),
 		.o_rrs_rd(rrs_rd),

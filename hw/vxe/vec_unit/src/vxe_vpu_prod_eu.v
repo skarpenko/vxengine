@@ -509,6 +509,7 @@ vxe_vpu_prod_eu_rs_dist #(
 ) rs_dist (
 	.clk(clk),
 	.nrst(nrst),
+	.i_err_flush(i_lsu_err),
 	.o_busy(rsd_busy),
 	.i_rrs_vld(i_lsu_rrs_vld),
 	.o_rrs_rd(o_lsu_rrs_rd),
