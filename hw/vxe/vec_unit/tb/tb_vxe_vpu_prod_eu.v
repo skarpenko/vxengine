@@ -384,6 +384,14 @@ module tb_vxe_vpu_prod_eu();
 		set_error();
 		wait_pos_clk(128);
 		test("Done_09", 4);
+
+		/*** Test 10 - Thread 0 - Normal case ***/
+		test("Test_10", 0);
+		set_threads(8'b0000_0001, 32'h4000_0000, 20'h04, 38'h0_0000, 38'h0_1000);
+		set_threads_en(8'b0000_0001);
+		set_start();
+		wait_pos_clk(48);
+		test("Done_10", 4);
 `endif
 
 
