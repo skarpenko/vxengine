@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -40,7 +40,7 @@ module tb_vxe_intr_unit();
 	reg		clk;
 	reg		nrst;
 	/* CU interface */
-	reg		i_cu_busy;
+	reg		i_cu_intr_vld;
 	reg [3:0]	i_cu_intr;
 	/* RegIO interface */
 	reg [3:0]	i_rio_mask;
@@ -70,7 +70,7 @@ module tb_vxe_intr_unit();
 		clk = 1;
 		nrst = 0;
 
-		i_cu_busy = 1'b0;
+		i_cu_intr_vld = 1'b0;
 		i_cu_intr = 4'b000;
 		i_rio_mask = 4'b000;
 		i_rio_ack_en = 1'b0;
@@ -85,12 +85,12 @@ module tb_vxe_intr_unit();
 		wait_pos_clk();
 
 		@(posedge clk)
-			i_cu_busy <= 1'b1;
-		@(posedge clk)
 		begin
-			i_cu_busy <= 1'b0;
+			i_cu_intr_vld <= 1'b1;
 			i_cu_intr <= 4'b1010;
 		end
+		@(posedge clk)
+			i_cu_intr_vld <= 1'b0;
 
 		wait_pos_clk();
 
@@ -137,7 +137,7 @@ module tb_vxe_intr_unit();
 	) intr_unit (
 		.clk(clk),
 		.nrst(nrst),
-		.i_cu_busy(i_cu_busy),
+		.i_cu_intr_vld(i_cu_intr_vld),
 		.i_cu_intr(i_cu_intr),
 		.i_rio_mask(i_rio_mask),
 		.o_rio_raw(o_rio_raw),

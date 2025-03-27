@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -36,7 +36,7 @@ module vxe_intr_unit #(
 	clk,
 	nrst,
 	/* CU interface signals */
-	i_cu_busy,
+	i_cu_intr_vld,
 	i_cu_intr,
 	/* RegIO interface signals */
 	i_rio_mask,
@@ -47,14 +47,11 @@ module vxe_intr_unit #(
 	/* Interrupt line */
 	o_intr
 );
-/* FSM states */
-localparam FSM_IDLE	= 1'b0;	/* Idle */
-localparam FSM_WAIT	= 1'b1;	/* Wait for CU completion */
 /* Global signals */
 input wire			clk;
 input wire			nrst;
 /* CU interface signals */
-input wire			i_cu_busy;
+input wire			i_cu_intr_vld;
 input wire [NR_INT-1:0]		i_cu_intr;
 /* RegIO interface signals */
 input wire [NR_INT-1:0]		i_rio_mask;
@@ -72,32 +69,21 @@ assign o_rio_active = raw_q & ~i_rio_mask;
 
 
 reg [NR_INT-1:0]	raw_q;	/* Registered interrupts */
-reg			state;	/* FSM state */
 
 always @(posedge clk or negedge nrst)
 begin
 	if(!nrst)
 	begin
 		raw_q <= {NR_INT{1'b0}};
-		state <= FSM_IDLE;
-	end
-	else if(state == FSM_IDLE)
-	begin
-		if(i_rio_ack_en)
-			raw_q <= raw_q & ~i_rio_ack;
-		if(i_cu_busy)
-			state <= FSM_WAIT;
 	end
 	else
 	begin
-		if(!i_cu_busy)
-			state <= FSM_IDLE;
-		if(!i_cu_busy && i_rio_ack_en)
+		if(i_rio_ack_en && i_cu_intr_vld)
 			raw_q <= (raw_q & ~i_rio_ack) | i_cu_intr;
-		else if(i_cu_busy && i_rio_ack_en)
-			raw_q <= raw_q & ~i_rio_ack;
-		else if(!i_cu_busy)
+		else if(i_cu_intr_vld)
 			raw_q <= raw_q | i_cu_intr;
+		else if(i_rio_ack_en)
+			raw_q <= raw_q & ~i_rio_ack;
 	end
 end
 
