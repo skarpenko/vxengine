@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2021 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -149,6 +149,7 @@ module vxe_top #(
 	M1_AXI4_RVALID,
 	M1_AXI4_RREADY
 );
+`include "vxe_client_params.vh"
 /* Global signals */
 input wire			clk;
 input wire			nrst;
@@ -380,9 +381,11 @@ wire		rio_mh_cu_mas_sel;
 
 /* Status */
 wire		cu_busy;
+wire		cu_intr_vld;
 wire [3:0]	cu_intr;
 wire [36:0]	cu_last_instr_addr;
 wire [63:0]	cu_last_instr_data;
+wire [1:0]	cu_vpu_fault;
 /* Request channel */
 wire		cu_mh_rqa_rdy;
 wire [43:0]	cu_mh_rqa;
@@ -394,6 +397,22 @@ wire		cu_mh_rss_rd;
 wire		cu_mh_rsd_vld;
 wire [63:0]	cu_mh_rsd;
 wire		cu_mh_rsd_rd;
+/* CU-VPU0 interface */
+wire		cu_vpu0_busy;
+wire		cu_vpu0_err;
+wire		cu_vpu0_cmd_sel;
+wire		cu_vpu0_cmd_ack;
+wire [4:0]	cu_vpu0_cmd_op;
+wire [2:0]	cu_vpu0_cmd_th;
+wire [47:0]	cu_vpu0_cmd_pl;
+/* CU-VPU1 interface */
+wire		cu_vpu1_busy;
+wire		cu_vpu1_err;
+wire		cu_vpu1_cmd_sel;
+wire		cu_vpu1_cmd_ack;
+wire [4:0]	cu_vpu1_cmd_op;
+wire [2:0]	cu_vpu1_cmd_th;
+wire [47:0]	cu_vpu1_cmd_pl;
 
 
 /*** VPU0 interface signals ***/
@@ -809,6 +828,7 @@ vxe_regio regio(
 	.i_cu_busy(cu_busy),
 	.i_cu_last_instr_addr(cu_last_instr_addr),
 	.i_cu_last_instr_data(cu_last_instr_data),
+	.i_vpu_fault(cu_vpu_fault),
 	.o_cu_pgm_addr(rio_cu_pgm_addr),
 	.o_cu_start(rio_cu_start),
 	/* Interrupt unit interface signals */
@@ -917,7 +937,7 @@ vxe_intr_unit #(
 	.clk(clk),
 	.nrst(nrst),
 	/* CU interface signals */
-	.i_cu_busy(cu_busy),
+	.i_cu_intr_vld(cu_intr_vld),
 	.i_cu_intr(cu_intr),
 	/* RegIO interface signals */
 	.i_rio_mask(rio_intu_msk),
@@ -927,6 +947,118 @@ vxe_intr_unit #(
 	.i_rio_ack(rio_intu_ack),
 	/* Interrupt line */
 	.o_intr(o_intr)
+);
+
+
+/* Control unit */
+vxe_ctrl_unit #(
+	.CLIENT_ID(CLNT_CU)
+) ctrl_unit(
+	.clk(clk),
+	.nrst(nrst),
+	/* Memory request channel */
+	.i_rqa_rdy(cu_mh_rqa_rdy),
+	.o_rqa(cu_mh_rqa),
+	.o_rqa_wr(cu_mh_rqa_wr),
+	/* Memory response channel */
+	.i_rss_vld(cu_mh_rss_vld),
+	.i_rss(cu_mh_rss),
+	.o_rss_rd(cu_mh_rss_rd),
+	.i_rsd_vld(cu_mh_rsd_vld),
+	.i_rsd(cu_mh_rsd),
+	.o_rsd_rd(cu_mh_rsd_rd),
+	/* Control signals */
+	.i_start(rio_cu_start),
+	.o_busy(cu_busy),
+	.i_pgm_addr(rio_cu_pgm_addr),
+	/* Interrupts and faults state */
+	.o_intr_vld(cu_intr_vld),
+	.o_intr(cu_intr),
+	.o_last_instr_addr(cu_last_instr_addr),
+	.o_last_instr_data(cu_last_instr_data),
+	.o_vpu_fault(cu_vpu_fault),
+	/* VPU0 interface */
+	.i_vpu0_busy(cu_vpu0_busy),
+	.i_vpu0_err(cu_vpu0_err),
+	.o_vpu0_cmd_sel(cu_vpu0_cmd_sel),
+	.i_vpu0_cmd_ack(cu_vpu0_cmd_ack),
+	.o_vpu0_cmd_op(cu_vpu0_cmd_op),
+	.o_vpu0_cmd_th(cu_vpu0_cmd_th),
+	.o_vpu0_cmd_pl(cu_vpu0_cmd_pl),
+	/* VPU1 interface */
+	.i_vpu1_busy(cu_vpu1_busy),
+	.i_vpu1_err(cu_vpu1_err),
+	.o_vpu1_cmd_sel(cu_vpu1_cmd_sel),
+	.i_vpu1_cmd_ack(cu_vpu1_cmd_ack),
+	.o_vpu1_cmd_op(cu_vpu1_cmd_op),
+	.o_vpu1_cmd_th(cu_vpu1_cmd_th),
+	.o_vpu1_cmd_pl(cu_vpu1_cmd_pl)
+);
+
+
+/* Vector unit 0 */
+vxe_vec_unit #(
+	.CLIENT_ID(CLNT_VPU0)
+) vec_unit0(
+	.clk(clk),
+	.nrst(nrst),
+	/* Memory request channel */
+	.i_rqa_rdy(vpu0_mh_rqa_rdy),
+	.o_rqa(vpu0_mh_rqa),
+	.o_rqa_wr(vpu0_mh_rqa_wr),
+	.i_rqd_rdy(vpu0_mh_rqd_rdy),
+	.o_rqd(vpu0_mh_rqd),
+	.o_rqd_wr(vpu0_mh_rqd_wr),
+	/* Memory response channel */
+	.i_rss_vld(vpu0_mh_rss_vld),
+	.i_rss(vpu0_mh_rss),
+	.o_rss_rd(vpu0_mh_rss_rd),
+	.i_rsd_vld(vpu0_mh_rsd_vld),
+	.i_rsd(vpu0_mh_rsd),
+	.o_rsd_rd(vpu0_mh_rsd_rd),
+	/* Control interface */
+	.i_start(rio_cu_start),
+	.o_busy(cu_vpu0_busy),
+	.o_err(cu_vpu0_err),
+	/* Command interface */
+	.i_cmd_sel(cu_vpu0_cmd_sel),
+	.o_cmd_ack(cu_vpu0_cmd_ack),
+	.i_cmd_op(cu_vpu0_cmd_op),
+	.i_cmd_th(cu_vpu0_cmd_th),
+	.i_cmd_pl(cu_vpu0_cmd_pl)
+);
+
+
+/* Vector unit 1 */
+vxe_vec_unit #(
+	.CLIENT_ID(CLNT_VPU1)
+) vec_unit1(
+	.clk(clk),
+	.nrst(nrst),
+	/* Memory request channel */
+	.i_rqa_rdy(vpu1_mh_rqa_rdy),
+	.o_rqa(vpu1_mh_rqa),
+	.o_rqa_wr(vpu1_mh_rqa_wr),
+	.i_rqd_rdy(vpu1_mh_rqd_rdy),
+	.o_rqd(vpu1_mh_rqd),
+	.o_rqd_wr(vpu1_mh_rqd_wr),
+	/* Memory response channel */
+	.i_rss_vld(vpu1_mh_rss_vld),
+	.i_rss(vpu1_mh_rss),
+	.o_rss_rd(vpu1_mh_rss_rd),
+	.i_rsd_vld(vpu1_mh_rsd_vld),
+	.i_rsd(vpu1_mh_rsd),
+	.o_rsd_rd(vpu1_mh_rsd_rd),
+	/* Control interface */
+	.i_start(rio_cu_start),
+	.o_busy(cu_vpu1_busy),
+	.o_err(cu_vpu1_err),
+	/* Command interface */
+	.i_cmd_sel(cu_vpu1_cmd_sel),
+	.o_cmd_ack(cu_vpu1_cmd_ack),
+	.i_cmd_op(cu_vpu1_cmd_op),
+	.i_cmd_th(cu_vpu1_cmd_th),
+	.i_cmd_pl(cu_vpu1_cmd_pl)
 );
 
 
