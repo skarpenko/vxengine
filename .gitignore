@@ -9,7 +9,6 @@
 *.dump
 *.elf
 *.gz
-*.hex
 *.lz4
 *.lzma
 *.lzo
