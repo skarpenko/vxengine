@@ -63,3 +63,5 @@ const std::string TH4 = "th4";
 const std::string TH5 = "th5";
 const std::string TH6 = "th6";
 const std::string TH7 = "th7";
+// Directives
+const std::string QUAD = ".quad";

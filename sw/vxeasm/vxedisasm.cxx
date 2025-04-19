@@ -124,6 +124,18 @@ size_t ident(const std::string& inst)
 }
 
 
+void disasm_unkn(uint64_t inst, std::ostream& os)
+{
+	std::stringstream ss;
+	std::string istr = QUAD;
+
+	ss << istr << std::string(ident(istr), ' ')
+		<< "0x" << std::hex << inst;
+
+	finalize(inst, ss.str(), os);
+}
+
+
 void disasm_relu(uint64_t inst, std::ostream& os)
 {
 	std::stringstream ss;
@@ -171,7 +183,7 @@ void disasm_af(uint64_t inst, std::ostream& os)
 	else if(iw.af == lrelu::AF)
 		disasm_lrelu(inst, os);
 	else
-		finalize(inst, "<unknown af code>", os);
+		disasm_unkn(inst, os);
 }
 
 
@@ -349,12 +361,6 @@ void disasm_sync(uint64_t inst, std::ostream& os)
 		<< (iw.intr ? INT : NOINT);
 
 	finalize(inst, ss.str(), os);
-}
-
-
-void disasm_unkn(uint64_t inst, std::ostream& os)
-{
-	finalize(inst, "<unknown code>", os);
 }
 
 

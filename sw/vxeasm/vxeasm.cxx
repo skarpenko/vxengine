@@ -252,7 +252,7 @@ size_t parse_command(int line_no, const std::string& line, token& tok)
 
 	// Look for opcode start
 	for(; i < line.size(); ++i) {
-		if(isalnum(line[i])) {
+		if(isalnum(line[i]) || line[i] == '.') {
 			start = i;
 			break;
 		} else if(!isspace(line[i])) {
@@ -275,6 +275,8 @@ size_t parse_command(int line_no, const std::string& line, token& tok)
 			end = i - 1;
 			break;
 		} else if(!isalnum(line[i])) {
+			if(line[i] == '.')
+				continue;
 			if(line[i] == ';') {
 				end = i - 1;
 				break;
@@ -624,6 +626,16 @@ uint64_t code_gen_lrelu(const command& cmd)
 }
 
 
+uint64_t code_gen_quad(const command& cmd)
+{
+	if(cmd.operands.size() != 1)
+		throw std::runtime_error(g_err_msg(cmd.opcode.line, cmd.opcode.start_col,
+			QUAD + " directive requires one integer operand."));
+
+	return cmd.operands[0].to_uint64();
+}
+
+
 uint64_t code_gen(const command& cmd)
 {
 	uint64_t code = 0;
@@ -652,6 +664,8 @@ uint64_t code_gen(const command& cmd)
 		code = code_gen_relu(cmd);
 	else if(cmd.opcode.lc() == LRELU)
 		code = code_gen_lrelu(cmd);
+	else if(cmd.opcode.lc() == QUAD)
+		code = code_gen_quad(cmd);
 	else
 		throw std::runtime_error(g_err_msg(cmd.opcode.line, cmd.opcode.start_col,
 			std::string("invalid command '") + cmd.opcode.tok + "'"));

@@ -31,34 +31,36 @@
 ; Available threads: th0 - th7
 
 ; Set VPU0, thread 0
-setacc vpu0, th0, 0.0   ; Accumulator register (floating-point value)
-setvl vpu0, th0, 8192   ; Vectors length
-setrs vpu0, th0, 0x8000 ; Vector1 address
-setrt vpu0, th0, 0xc000 ; Vector1 address
-setrd vpu0, th0, 0xa000 ; Result destination address
-seten vpu0, th0, set    ; Enable thread 0
-seten vpu0, th1, clr    ; Disable thread 1
+setacc vpu0, th0, 0.0    ; Accumulator register (floating-point value)
+setvl vpu0, th0, 8192    ; Vectors length
+setrs vpu0, th0, 0x8000  ; Address of 1st vector
+setrt vpu0, th0, 0xc000  ; Address of 2nd vector
+setrd vpu0, th0, 0xa000  ; Result destination address
+seten vpu0, th0, set     ; Enable thread 0
+seten vpu0, th1, clr     ; Disable thread 1
 
-prod                    ; Run product operation
-prod vpu0               ; Run product operation on VPU0 only
+prod                     ; Run product operation
+prod vpu0                ; Run product operation on VPU0 only
 
-store                   ; Run store operation
-store vpu0              ; Run store operation on VPU0 only
+store                    ; Run store operation
+store vpu0               ; Run store operation on VPU0 only
 
-nop                     ; No operation
+nop                      ; No operation
 
-sync stop, int          ; Sync: stop and send interrupt
-sync nostop, noint      ; Sync and continue
+sync stop, int           ; Sync: stop and send interrupt
+sync nostop, noint       ; Sync and continue
 
-relu                    ; Run relu operation
-relu vpu0               ; Run relu operation on VPU0 only
+relu                     ; Run relu operation
+relu vpu0                ; Run relu operation on VPU0 only
 
-lrelu 0                 ; Run lrelu operation
-lrelu vpu0, 0           ; Run lrelu operation on VPU0 only
-lrelu -9                ; Run lrelu operation with exp diff -9
-lrelu vpu1, -9          ; Run lrelu operation with exp diff -9 on VPU1 only
+lrelu 0                  ; Run lrelu operation
+lrelu vpu0, 0            ; Run lrelu operation on VPU0 only
+lrelu -9                 ; Run lrelu operation with exp diff -9
+lrelu vpu1, -9           ; Run lrelu operation with exp diff -9 on VPU1 only
 
-nop
-nop
+nop                      ; No operation
+nop                      ; No operation
+
+.quad 0xffff0000deadbeef ; Some 64-bit value
 
 ; END
