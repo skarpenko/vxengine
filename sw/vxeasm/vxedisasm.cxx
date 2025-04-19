@@ -36,46 +36,14 @@
 #include <iomanip>
 #include <vector>
 #include "vxe_instr.hxx"
+#include "common.hxx"
 
 
 ////////////// Constants /////////////////
 constexpr int WIDTH = 40;
 constexpr int IWIDTH = 10;
 
-
-////////////// Keywords //////////////////
-
-// Commands
-const std::string SETACC = "setacc";
-const std::string SETVL = "setvl";
-const std::string SETRS = "setrs";
-const std::string SETRT = "setrt";
-const std::string SETRD = "setrd";
-const std::string SETEN = "seten";
-const std::string PROD = "prod";
-const std::string STORE = "store";
-const std::string SYNC = "sync";
-const std::string NOP = "nop";
-const std::string RELU = "relu";
-const std::string LRELU = "lrelu";
-// Operands
-const std::string CLR = "clr";
-const std::string SET = "set";
-const std::string INT = "int";
-const std::string NOINT = "noint";
-const std::string STOP = "stop";
-const std::string NOSTOP = "nostop";
-const std::string VPU0 = "vpu0";
-const std::string VPU1 = "vpu1";
-const std::string TH0 = "th0";
-const std::string TH1 = "th1";
-const std::string TH2 = "th2";
-const std::string TH3 = "th3";
-const std::string TH4 = "th4";
-const std::string TH5 = "th5";
-const std::string TH6 = "th6";
-const std::string TH7 = "th7";
-
+/////////////////////////////////////////
 
 
 void load_file(const std::string& filename, bool hex, std::vector<uint64_t>& binary)
