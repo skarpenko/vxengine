@@ -1,0 +1,6 @@
+#
+# Local rules
+#
+vxeasm
+vxedisasm
+vxe.out
