@@ -231,7 +231,7 @@ wire [37:0]	rf_th7_rs;
 wire [37:0]	rf_th7_rt;
 wire [37:0]	rf_th7_rd;
 
-assign o_busy = cmdq_busy || cmdd_busy;
+assign o_busy = cmdq_busy || cmdd_busy || lsu_busy;
 assign o_err = lsu_err;
 
 
