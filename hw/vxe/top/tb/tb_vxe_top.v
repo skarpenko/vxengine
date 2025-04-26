@@ -32,6 +32,11 @@
 `define TRACE_FILE "trace.vcd"
 `endif
 
+//`define PROGRAM_IMAGE "hex/sync.hex"
+//`define PROGRAM_IMAGE "hex/nop_sync.hex"
+//`define PROGRAM_IMAGE "hex/sync2.hex"
+`define PROGRAM_IMAGE "hex/full_load.hex"
+
 
 module tb_vxe_top();
 `include "vxe_regio_params.vh"
@@ -88,15 +93,15 @@ module tb_vxe_top();
 	wire [3:0]	M0_AXI4_AWCACHE;
 	wire [2:0]	M0_AXI4_AWPROT;
 	wire		M0_AXI4_AWVALID;
-	reg		M0_AXI4_AWREADY;
+	wire		M0_AXI4_AWREADY;
 	wire [63:0]	M0_AXI4_WDATA;
 	wire [7:0]	M0_AXI4_WSTRB;
 	wire		M0_AXI4_WLAST;
 	wire		M0_AXI4_WVALID;
-	reg		M0_AXI4_WREADY;
-	reg [6:0]	M0_AXI4_BID;
-	reg [1:0]	M0_AXI4_BRESP;
-	reg		M0_AXI4_BVALID;
+	wire		M0_AXI4_WREADY;
+	wire [6:0]	M0_AXI4_BID;
+	wire [1:0]	M0_AXI4_BRESP;
+	wire		M0_AXI4_BVALID;
 	wire		M0_AXI4_BREADY;
 	wire [6:0]	M0_AXI4_ARID;
 	wire [39:0]	M0_AXI4_ARADDR;
@@ -107,12 +112,12 @@ module tb_vxe_top();
 	wire [3:0]	M0_AXI4_ARCACHE;
 	wire [2:0]	M0_AXI4_ARPROT;
 	wire		M0_AXI4_ARVALID;
-	reg		M0_AXI4_ARREADY;
-	reg [6:0]	M0_AXI4_RID;
-	reg [63:0]	M0_AXI4_RDATA;
-	reg [1:0]	M0_AXI4_RRESP;
-	reg		M0_AXI4_RLAST;
-	reg		M0_AXI4_RVALID;
+	wire		M0_AXI4_ARREADY;
+	wire [6:0]	M0_AXI4_RID;
+	wire [63:0]	M0_AXI4_RDATA;
+	wire [1:0]	M0_AXI4_RRESP;
+	wire		M0_AXI4_RLAST;
+	wire		M0_AXI4_RVALID;
 	wire		M0_AXI4_RREADY;
 	/* AXI4 Master 1 */
 	wire [6:0]	M1_AXI4_AWID;
@@ -124,15 +129,15 @@ module tb_vxe_top();
 	wire [3:0]	M1_AXI4_AWCACHE;
 	wire [2:0]	M1_AXI4_AWPROT;
 	wire		M1_AXI4_AWVALID;
-	reg		M1_AXI4_AWREADY;
+	wire		M1_AXI4_AWREADY;
 	wire [63:0]	M1_AXI4_WDATA;
 	wire [7:0]	M1_AXI4_WSTRB;
 	wire		M1_AXI4_WLAST;
 	wire		M1_AXI4_WVALID;
-	reg		M1_AXI4_WREADY;
-	reg [6:0]	M1_AXI4_BID;
-	reg [1:0]	M1_AXI4_BRESP;
-	reg		M1_AXI4_BVALID;
+	wire		M1_AXI4_WREADY;
+	wire [6:0]	M1_AXI4_BID;
+	wire [1:0]	M1_AXI4_BRESP;
+	wire		M1_AXI4_BVALID;
 	wire		M1_AXI4_BREADY;
 	wire [6:0]	M1_AXI4_ARID;
 	wire [39:0]	M1_AXI4_ARADDR;
@@ -143,12 +148,12 @@ module tb_vxe_top();
 	wire [3:0]	M1_AXI4_ARCACHE;
 	wire [2:0]	M1_AXI4_ARPROT;
 	wire		M1_AXI4_ARVALID;
-	reg		M1_AXI4_ARREADY;
-	reg [6:0]	M1_AXI4_RID;
-	reg [63:0]	M1_AXI4_RDATA;
-	reg [1:0]	M1_AXI4_RRESP;
-	reg		M1_AXI4_RLAST;
-	reg		M1_AXI4_RVALID;
+	wire		M1_AXI4_ARREADY;
+	wire [6:0]	M1_AXI4_RID;
+	wire [63:0]	M1_AXI4_RDATA;
+	wire [1:0]	M1_AXI4_RRESP;
+	wire		M1_AXI4_RLAST;
+	wire		M1_AXI4_RVALID;
 	wire		M1_AXI4_RREADY;
 
 
@@ -247,18 +252,6 @@ module tb_vxe_top();
 		S0_AXI4_ARPROT = 3'h0;
 		S0_AXI4_ARVALID = 1'h0;
 		S0_AXI4_RREADY = 1'h1;
-		/* AXI4 Master 0 */
-		M0_AXI4_AWREADY = 1'b1;
-		M0_AXI4_WREADY = 1'b1;
-		M0_AXI4_BVALID = 1'b0;
-		M0_AXI4_ARREADY = 1'b1;
-		M0_AXI4_RVALID = 1'b0;
-		/* AXI4 Master 1 */
-		M1_AXI4_AWREADY = 1'b1;
-		M1_AXI4_WREADY = 1'b1;
-		M1_AXI4_BVALID = 1'b0;
-		M1_AXI4_ARREADY = 1'b1;
-		M1_AXI4_RVALID = 1'b0;
 
 		wait_pos_clk(3);
 
@@ -268,11 +261,15 @@ module tb_vxe_top();
 
 		/*** *** *** *** *** *** *** *** *** *** ***/
 
-		axi_read_reg(REG_ID);
+		axi_read_reg(REG_ID);			/* Read device ID */
 
 		wait_pos_clk(10);
 
-		axi_write_reg(REG_START, 32'h0);
+		axi_write_reg(REG_START, 32'h0);	/* Start program */
+
+		wait_pos_clk(500);
+
+		axi_write_reg(REG_INTR_ACT, 32'h0f);	/* Ack interrupts */
 
 
 		#500 $finish;
@@ -398,6 +395,119 @@ module tb_vxe_top();
 		.M1_AXI4_RLAST(M1_AXI4_RLAST),
 		.M1_AXI4_RVALID(M1_AXI4_RVALID),
 		.M1_AXI4_RREADY(M1_AXI4_RREADY)
+	);
+
+
+
+	/* AXI4 master 0 read endpoint */
+	axi4_read_endpoint #(
+		.ID_WIDTH(7),	/* AXI ID width */
+		.CU_PGM_IMAGE(`PROGRAM_IMAGE)
+	) axi4_m0_read_ep (
+		.clk(clk),
+		.nrst(nrst),
+		/* AXI4 Slave: read channels */
+		.AXI4_ARID(M0_AXI4_ARID),
+		.AXI4_ARADDR(M0_AXI4_ARADDR),
+		.AXI4_ARLEN(M0_AXI4_ARLEN),
+		.AXI4_ARSIZE(M0_AXI4_ARSIZE),
+		.AXI4_ARBURST(M0_AXI4_ARBURST),
+		.AXI4_ARLOCK(M0_AXI4_ARLOCK),
+		.AXI4_ARCACHE(M0_AXI4_ARCACHE),
+		.AXI4_ARPROT(M0_AXI4_ARPROT),
+		.AXI4_ARVALID(M0_AXI4_ARVALID),
+		.AXI4_ARREADY(M0_AXI4_ARREADY),
+		.AXI4_RID(M0_AXI4_RID),
+		.AXI4_RDATA(M0_AXI4_RDATA),
+		.AXI4_RRESP(M0_AXI4_RRESP),
+		.AXI4_RLAST(M0_AXI4_RLAST),
+		.AXI4_RVALID(M0_AXI4_RVALID),
+		.AXI4_RREADY(M0_AXI4_RREADY)
+	);
+
+
+	/* AXI4 master 0 write endpoint */
+	axi4_write_endpoint #(
+		.ID_WIDTH(7)	/* AXI ID width */
+	) axi4_m0_write_ep (
+		.clk(clk),
+		.nrst(nrst),
+		/* AXI4 Slave: write channels */
+		.AXI4_AWID(M0_AXI4_AWID),
+		.AXI4_AWADDR(M0_AXI4_AWADDR),
+		.AXI4_AWLEN(M0_AXI4_AWLEN),
+		.AXI4_AWSIZE(M0_AXI4_AWSIZE),
+		.AXI4_AWBURST(M0_AXI4_AWBURST),
+		.AXI4_AWLOCK(M0_AXI4_AWLOCK),
+		.AXI4_AWCACHE(M0_AXI4_AWCACHE),
+		.AXI4_AWPROT(M0_AXI4_AWPROT),
+		.AXI4_AWVALID(M0_AXI4_AWVALID),
+		.AXI4_AWREADY(M0_AXI4_AWREADY),
+		.AXI4_WDATA(M0_AXI4_WDATA),
+		.AXI4_WSTRB(M0_AXI4_WSTRB),
+		.AXI4_WLAST(M0_AXI4_WLAST),
+		.AXI4_WVALID(M0_AXI4_WVALID),
+		.AXI4_WREADY(M0_AXI4_WREADY),
+		.AXI4_BID(M0_AXI4_BID),
+		.AXI4_BRESP(M0_AXI4_BRESP),
+		.AXI4_BVALID(M0_AXI4_BVALID),
+		.AXI4_BREADY(M0_AXI4_BREADY)
+	);
+
+
+	/* AXI4 master 1 read endpoint */
+	axi4_read_endpoint #(
+		.ID_WIDTH(7),	/* AXI ID width */
+		.CU_PGM_IMAGE(`PROGRAM_IMAGE)
+	) axi4_m1_read_ep (
+		.clk(clk),
+		.nrst(nrst),
+		/* AXI4 Slave: read channels */
+		.AXI4_ARID(M1_AXI4_ARID),
+		.AXI4_ARADDR(M1_AXI4_ARADDR),
+		.AXI4_ARLEN(M1_AXI4_ARLEN),
+		.AXI4_ARSIZE(M1_AXI4_ARSIZE),
+		.AXI4_ARBURST(M1_AXI4_ARBURST),
+		.AXI4_ARLOCK(M1_AXI4_ARLOCK),
+		.AXI4_ARCACHE(M1_AXI4_ARCACHE),
+		.AXI4_ARPROT(M1_AXI4_ARPROT),
+		.AXI4_ARVALID(M1_AXI4_ARVALID),
+		.AXI4_ARREADY(M1_AXI4_ARREADY),
+		.AXI4_RID(M1_AXI4_RID),
+		.AXI4_RDATA(M1_AXI4_RDATA),
+		.AXI4_RRESP(M1_AXI4_RRESP),
+		.AXI4_RLAST(M1_AXI4_RLAST),
+		.AXI4_RVALID(M1_AXI4_RVALID),
+		.AXI4_RREADY(M1_AXI4_RREADY)
+	);
+
+
+	/* AXI4 master 1 write endpoint */
+	axi4_write_endpoint #(
+		.ID_WIDTH(7)	/* AXI ID width */
+	) axi4_m1_write_ep (
+		.clk(clk),
+		.nrst(nrst),
+		/* AXI4 Slave: write channels */
+		.AXI4_AWID(M1_AXI4_AWID),
+		.AXI4_AWADDR(M1_AXI4_AWADDR),
+		.AXI4_AWLEN(M1_AXI4_AWLEN),
+		.AXI4_AWSIZE(M1_AXI4_AWSIZE),
+		.AXI4_AWBURST(M1_AXI4_AWBURST),
+		.AXI4_AWLOCK(M1_AXI4_AWLOCK),
+		.AXI4_AWCACHE(M1_AXI4_AWCACHE),
+		.AXI4_AWPROT(M1_AXI4_AWPROT),
+		.AXI4_AWVALID(M1_AXI4_AWVALID),
+		.AXI4_AWREADY(M1_AXI4_AWREADY),
+		.AXI4_WDATA(M1_AXI4_WDATA),
+		.AXI4_WSTRB(M1_AXI4_WSTRB),
+		.AXI4_WLAST(M1_AXI4_WLAST),
+		.AXI4_WVALID(M1_AXI4_WVALID),
+		.AXI4_WREADY(M1_AXI4_WREADY),
+		.AXI4_BID(M1_AXI4_BID),
+		.AXI4_BRESP(M1_AXI4_BRESP),
+		.AXI4_BVALID(M1_AXI4_BVALID),
+		.AXI4_BREADY(M1_AXI4_BREADY)
 	);
 
 
