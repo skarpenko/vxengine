@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -77,17 +77,17 @@ begin
 	begin
 		if(q_vaddr[0])			/* Address is not two words aligned. */
 		begin
-			q_vaddr <= q_vaddr + 2'h1;
-			q_vlen <= q_vlen - 2'h1;
+			q_vaddr <= q_vaddr + 38'h1;
+			q_vlen <= q_vlen - 20'h1;
 		end
 		else if(q_vlen == 20'h00001)	/* Only one word remaining. */
 		begin
-			q_vlen <= q_vlen - 2'h1;
+			q_vlen <= q_vlen - 20'h1;
 		end
 		else				/* Can load two words at a time. */
 		begin
-			q_vaddr <= q_vaddr + 2'h2;
-			q_vlen <= q_vlen - 2'h2;
+			q_vaddr <= q_vaddr + 38'h2;
+			q_vlen <= q_vlen - 20'h2;
 		end
 
 	end

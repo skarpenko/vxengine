@@ -147,26 +147,15 @@ wire		act_ecu_eu_busy;
 wire		act_ecu_leaky;
 wire [6:0]	act_ecu_expd;
 
-wire		act_eu_start;
-wire		act_eu_busy;
-wire		act_eu;
-wire [6:0]	act_eu_expd;
-
 
 /*** Product ***/
 wire		prod_ecu_eu_start;
 wire		prod_ecu_eu_busy;
 
-wire		prod_eu_start;
-wire		prod_eu_busy;
-
 
 /*** Store ***/
 wire		stor_ecu_eu_start;
 wire		stor_ecu_eu_busy;
-
-input wire	stor_eu_start;
-output wire	stor_eu_busy;
 
 
 /** Register file ***/

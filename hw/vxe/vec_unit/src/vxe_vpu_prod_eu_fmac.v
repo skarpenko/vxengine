@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -421,7 +421,7 @@ assign t[7].r[1].i_opd_vld = i_rt7_opd_vld;
 
 /* Dispatch FSM */
 wire fsm_fmacd_busy = (fsm_fmacd != FSM_FMACD_IDLE);
-reg [7:0] fsm_fmacd;
+reg [4:0] fsm_fmacd;
 
 always @(posedge clk or negedge nrst)
 begin
@@ -619,7 +619,7 @@ begin
 		if(fmac_p_vld)
 		begin
 			o_prod_th <= pipe_p_th;
-			o_prod_data <= fmac_p;
+			o_prod_data <= { 6'h0, fmac_p };
 			o_prod_wr_en <= 1'b1;
 		end
 		/* For debug */

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2022 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -282,7 +282,7 @@ reg ctl_halt_act;
 
 /** Commands decode and dispatch FSM **/
 
-reg [2:0]	cmd_dp_fsm;	/* FSM state */
+reg [1:0]	cmd_dp_fsm;	/* FSM state */
 
 always @(posedge clk or negedge nrst)
 begin
