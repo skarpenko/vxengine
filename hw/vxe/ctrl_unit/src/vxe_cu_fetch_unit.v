@@ -192,7 +192,7 @@ begin
 		if(f_rq_rdy)
 			f_rq_wr <= 1'b0;
 
-		if(~rq_stall)
+		if(~rq_stall && ~drain)
 		begin
 			f_rq_in <= fetch_addr;
 			o_rqa <= rq_txn;
@@ -200,6 +200,12 @@ begin
 			o_rqa_wr <= 1'b1;
 			fetch_addr <= fetch_addr + CMD_WORDS;
 			rq_fsm <= FSM_RQ_SEND;
+		end
+		else if(~rq_stall && drain)
+		begin
+			f_rq_wr <= 1'b0;
+			o_rqa_wr <= 1'b0;
+			rq_fsm <= FSM_RQ_IDLE;
 		end
 	end
 	else	/* FSM_RQ_IDLE */
