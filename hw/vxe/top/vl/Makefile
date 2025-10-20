@@ -41,9 +41,21 @@ BASIC_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 BASIC_TEST_LDFLAGS := --shared -fPIC
 
 
+# Store test build options
+STORE_TEST_TARGET := libstore_test.so
+STORE_TEST_CXX_FILES :=	\
+	tests/store_test/store_test.cxx
+STORE_TEST_HXX_FILES :=	\
+	include/fake_cpu_api.h
+STORE_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-Itests/include
+STORE_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(TBVXETOP_TARGET)
 TARGETS += $(BASIC_TEST_TARGET)
+TARGETS += $(STORE_TEST_TARGET)
 
 
 # Main goal
@@ -76,6 +88,13 @@ $(BASIC_TEST_TARGET): $(BASIC_TEST_CXX_FILES) $(BASIC_TEST_HXX_FILES)
 	@echo "Building [$(BASIC_TEST_TARGET)]"
 	@g++ $(BASIC_TEST_CFLAGS) -o $(BASIC_TEST_TARGET)	\
 		$(BASIC_TEST_CXX_FILES) $(BASIC_TEST_LDFLAGS)
+
+
+# Store test build target
+$(STORE_TEST_TARGET): $(STORE_TEST_CXX_FILES) $(STORE_TEST_HXX_FILES)
+	@echo "Building [$(STORE_TEST_TARGET)]"
+	@g++ $(STORE_TEST_CFLAGS) -o $(STORE_TEST_TARGET)	\
+		$(STORE_TEST_CXX_FILES) $(STORE_TEST_LDFLAGS)
 
 
 # Run tests

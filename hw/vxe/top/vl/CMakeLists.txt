@@ -74,3 +74,12 @@ add_library(basic_test SHARED
 
 target_include_directories(basic_test PUBLIC tests/include)
 target_compile_options(basic_test PUBLIC --std=c++17 -O3 -g -Wall)
+
+
+# Store test
+add_library(store_test SHARED
+	tests/store_test/store_test.cxx
+	include/fake_cpu_api.h)
+
+target_include_directories(store_test PUBLIC tests/include)
+target_compile_options(store_test PUBLIC --std=c++17 -O3 -g -Wall)

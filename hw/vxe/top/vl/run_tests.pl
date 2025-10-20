@@ -15,6 +15,10 @@ my @tests = (
 	{
 		name => "Basic test",
 		bin_path => "libbasic_test.so"
+	},
+	{
+		name => "Store test",
+		bin_path => "libstore_test.so"
 	}
 );
 
