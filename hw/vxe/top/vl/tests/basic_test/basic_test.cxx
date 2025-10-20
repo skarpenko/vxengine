@@ -280,7 +280,8 @@ void run_program(uint64_t addr)
 	std::ios state(nullptr);
 	state.copyfmt(std::cout);	// Save current stream state
 
-	std::cout << "Launching program at 0x" << std::setw(8) << std::setfill('0') << std::hex << addr;
+	std::cout << "Launching program at 0x" << std::setw(8) << std::setfill('0')
+		<< std::hex << addr;
 
 	mmio_wreg32(vxe::rego::REG_PGM_ADDR_LO, addr & 0xFFFFFFFF);
 	mmio_wreg32(vxe::rego::REG_PGM_ADDR_HI, addr >> 32);
