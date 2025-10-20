@@ -83,3 +83,12 @@ add_library(store_test SHARED
 
 target_include_directories(store_test PUBLIC tests/include)
 target_compile_options(store_test PUBLIC --std=c++17 -O3 -g -Wall)
+
+
+# ReLU test
+add_library(relu_test SHARED
+	tests/relu_test/relu_test.cxx
+	include/fake_cpu_api.h)
+
+target_include_directories(relu_test PUBLIC tests/include)
+target_compile_options(relu_test PUBLIC --std=c++17 -O3 -g -Wall)

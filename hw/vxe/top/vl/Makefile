@@ -52,10 +52,22 @@ STORE_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 STORE_TEST_LDFLAGS := --shared -fPIC
 
 
+# ReLU test build options
+RELU_TEST_TARGET := librelu_test.so
+RELU_TEST_CXX_FILES :=	\
+	tests/relu_test/relu_test.cxx
+RELU_TEST_HXX_FILES :=	\
+	include/fake_cpu_api.h
+RELU_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-Itests/include
+RELU_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(TBVXETOP_TARGET)
 TARGETS += $(BASIC_TEST_TARGET)
 TARGETS += $(STORE_TEST_TARGET)
+TARGETS += $(RELU_TEST_TARGET)
 
 
 # Main goal
@@ -95,6 +107,13 @@ $(STORE_TEST_TARGET): $(STORE_TEST_CXX_FILES) $(STORE_TEST_HXX_FILES)
 	@echo "Building [$(STORE_TEST_TARGET)]"
 	@g++ $(STORE_TEST_CFLAGS) -o $(STORE_TEST_TARGET)	\
 		$(STORE_TEST_CXX_FILES) $(STORE_TEST_LDFLAGS)
+
+
+# ReLU test build target
+$(RELU_TEST_TARGET): $(RELU_TEST_CXX_FILES) $(RELU_TEST_HXX_FILES)
+	@echo "Building [$(RELU_TEST_TARGET)]"
+	@g++ $(RELU_TEST_CFLAGS) -o $(RELU_TEST_TARGET)	\
+		$(RELU_TEST_CXX_FILES) $(RELU_TEST_LDFLAGS)
 
 
 # Run tests

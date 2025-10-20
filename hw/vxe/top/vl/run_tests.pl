@@ -19,6 +19,10 @@ my @tests = (
 	{
 		name => "Store test",
 		bin_path => "libstore_test.so"
+	},
+	{
+		name => "ReLU and Leaky ReLU test",
+		bin_path => "librelu_test.so"
 	}
 );
 
