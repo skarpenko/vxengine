@@ -63,7 +63,7 @@ RELU_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 RELU_TEST_LDFLAGS := --shared -fPIC
 
 
-# Broadcast cotrol test build options
+# Broadcast control test build options
 BCAST_CTRL_TEST_TARGET := libbcast_ctrl_test.so
 BCAST_CTRL_TEST_CXX_FILES :=	\
 	tests/bcast_ctrl_test/bcast_ctrl_test.cxx
