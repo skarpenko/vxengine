@@ -94,6 +94,10 @@ extern "C" int fake_cpu_entry(struct fake_cpu_api *cpu_api)
 
 	// Load programs 
 	auto prog_space = mem.allocate(0x2000); // Reserve 8KB
+	if(!prog_space.vaddr) {
+		std::cout << "No memory" << std::endl;
+		return -1;
+	}
 	load_programs(prog_space);
 
 
@@ -102,6 +106,10 @@ extern "C" int fake_cpu_entry(struct fake_cpu_api *cpu_api)
 	auto rd2 = mem.allocate(0x1000);
 	auto rd3 = mem.allocate(0x1000);
 	auto rd4 = mem.allocate(0x1000);
+	if(!rd1.vaddr || !rd2.vaddr || !rd3.vaddr || !rd4.vaddr) {
+		std::cout << "No memory" << std::endl;
+		return -1;
+	}
 	float *rd1_ptr = static_cast<float*>(rd1.vaddr);
 	float *rd2_ptr = static_cast<float*>(rd2.vaddr);
 	float *rd3_ptr = static_cast<float*>(rd3.vaddr);

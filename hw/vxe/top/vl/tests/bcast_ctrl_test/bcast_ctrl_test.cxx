@@ -102,12 +102,20 @@ extern "C" int fake_cpu_entry(struct fake_cpu_api *cpu_api)
 
 	// Load programs 
 	auto prog_space = mem.allocate(0x2000); // Reserve 8KB
+	if(!prog_space.vaddr) {
+		std::cout << "No memory" << std::endl;
+		return -1;
+	}
 	load_programs(prog_space);
 
 	// Allocate space for test results
 	auto rs = mem.allocate(0x1000);
 	auto rt = mem.allocate(0x1000);
 	auto rd = mem.allocate(0x1000);
+	if(!rs.vaddr || !rt.vaddr || !rd.vaddr) {
+		std::cout << "No memory" << std::endl;
+		return -1;
+	}
 	float *rs_ptr = static_cast<float*>(rs.vaddr);
 	float *rt_ptr = static_cast<float*>(rt.vaddr);
 	float *rd_ptr = static_cast<float*>(rd.vaddr);
