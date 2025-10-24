@@ -63,11 +63,23 @@ RELU_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 RELU_TEST_LDFLAGS := --shared -fPIC
 
 
+# Broadcast cotrol test build options
+BCAST_CTRL_TEST_TARGET := libbcast_ctrl_test.so
+BCAST_CTRL_TEST_CXX_FILES :=	\
+	tests/bcast_ctrl_test/bcast_ctrl_test.cxx
+BCAST_CTRL_TEST_HXX_FILES :=	\
+	include/fake_cpu_api.h
+BCAST_CTRL_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-Itests/include
+BCAST_CTRL_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(TBVXETOP_TARGET)
 TARGETS += $(BASIC_TEST_TARGET)
 TARGETS += $(STORE_TEST_TARGET)
 TARGETS += $(RELU_TEST_TARGET)
+TARGETS += $(BCAST_CTRL_TEST_TARGET)
 
 
 # Main goal
@@ -114,6 +126,13 @@ $(RELU_TEST_TARGET): $(RELU_TEST_CXX_FILES) $(RELU_TEST_HXX_FILES)
 	@echo "Building [$(RELU_TEST_TARGET)]"
 	@g++ $(RELU_TEST_CFLAGS) -o $(RELU_TEST_TARGET)	\
 		$(RELU_TEST_CXX_FILES) $(RELU_TEST_LDFLAGS)
+
+
+# Broadcast control test build target
+$(BCAST_CTRL_TEST_TARGET): $(BCAST_CTRL_TEST_CXX_FILES) $(BCAST_CTRL_TEST_HXX_FILES)
+	@echo "Building [$(BCAST_CTRL_TEST_TARGET)]"
+	@g++ $(BCAST_CTRL_TEST_CFLAGS) -o $(BCAST_CTRL_TEST_TARGET)	\
+		$(BCAST_CTRL_TEST_CXX_FILES) $(BCAST_CTRL_TEST_LDFLAGS)
 
 
 # Run tests

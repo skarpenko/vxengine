@@ -92,3 +92,12 @@ add_library(relu_test SHARED
 
 target_include_directories(relu_test PUBLIC tests/include)
 target_compile_options(relu_test PUBLIC --std=c++17 -O3 -g -Wall)
+
+
+# Broadcast control test
+add_library(bcast_ctrl_test SHARED
+	tests/bcast_ctrl_test/bcast_ctrl_test.cxx
+	include/fake_cpu_api.h)
+
+target_include_directories(bcast_ctrl_test PUBLIC tests/include)
+target_compile_options(bcast_ctrl_test PUBLIC --std=c++17 -O3 -g -Wall)
