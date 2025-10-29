@@ -370,7 +370,11 @@ private:
 				wrq.id = M0_AXI4_AWID.read();
 				wrq.addr = M0_AXI4_AWADDR.read();
 
-				m0_aw_fifo_out.write(wrq);
+				while(!m0_aw_fifo_out.nb_write(wrq)) {
+					M0_AXI4_AWREADY.write(false);
+					wait();
+					M0_AXI4_AWREADY.write(true);
+				}
 			}
 		}
 	}
@@ -389,7 +393,11 @@ private:
 				wrq.strb = M0_AXI4_WSTRB.read();
 				wrq.data = M0_AXI4_WDATA.read();
 
-				m0_w_fifo_out.write(wrq);
+				while(!m0_w_fifo_out.nb_write(wrq)) {
+					M0_AXI4_WREADY.write(false);
+					wait();
+					M0_AXI4_WREADY.write(true);
+				}
 			}
 		}
 	}
@@ -430,7 +438,11 @@ private:
 				rrq.id = M0_AXI4_ARID.read();
 				rrq.addr = M0_AXI4_ARADDR.read();
 
-				m0_ar_fifo_out.write(rrq);
+				while(!m0_ar_fifo_out.nb_write(rrq)) {
+					M0_AXI4_ARREADY.write(false);
+					wait();
+					M0_AXI4_ARREADY.write(true);
+				}
 			}
 		}
 	}
@@ -473,7 +485,11 @@ private:
 				wrq.id = M1_AXI4_AWID.read();
 				wrq.addr = M1_AXI4_AWADDR.read();
 
-				m1_aw_fifo_out.write(wrq);
+				while(!m1_aw_fifo_out.nb_write(wrq)) {
+					M1_AXI4_AWREADY.write(false);
+					wait();
+					M1_AXI4_AWREADY.write(true);
+				}
 			}
 		}
 	}
@@ -492,7 +508,11 @@ private:
 				wrq.strb = M1_AXI4_WSTRB.read();
 				wrq.data = M1_AXI4_WDATA.read();
 
-				m1_w_fifo_out.write(wrq);
+				while(!m1_w_fifo_out.nb_write(wrq)) {
+					M1_AXI4_WREADY.write(false);
+					wait();
+					M1_AXI4_WREADY.write(true);
+				}
 			}
 		}
 	}
@@ -533,7 +553,11 @@ private:
 				rrq.id = M1_AXI4_ARID.read();
 				rrq.addr = M1_AXI4_ARADDR.read();
 
-				m1_ar_fifo_out.write(rrq);
+				while(!m1_ar_fifo_out.nb_write(rrq)) {
+					M1_AXI4_ARREADY.write(false);
+					wait();
+					M1_AXI4_ARREADY.write(true);
+				}
 			}
 		}
 	}
