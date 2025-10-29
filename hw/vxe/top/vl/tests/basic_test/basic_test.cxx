@@ -107,7 +107,7 @@ extern "C" int fake_cpu_entry(struct fake_cpu_api *cpu_api)
 	std::cout << std::endl << "DevID = 0x" << std::hex << id
 		<< " " << (id != vxe::VXENGINE_ID ? "(MISMATCH!)" : "" ) << std::endl;
 
-	// Load programs 
+	// Load programs
 	auto prog_space = mem.allocate(0x2000); // Reserve 8KB
 	if(!prog_space.vaddr) {
 		std::cout << "No memory" << std::endl;
