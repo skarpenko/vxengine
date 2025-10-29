@@ -101,3 +101,12 @@ add_library(bcast_ctrl_test SHARED
 
 target_include_directories(bcast_ctrl_test PUBLIC tests/include)
 target_compile_options(bcast_ctrl_test PUBLIC --std=c++17 -O3 -g -Wall)
+
+
+# Product test
+add_library(product_test SHARED
+	tests/product_test/product_test.cxx
+	include/fake_cpu_api.h)
+
+target_include_directories(product_test PUBLIC tests/include)
+target_compile_options(product_test PUBLIC --std=c++17 -O3 -g -Wall)

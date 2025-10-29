@@ -74,12 +74,24 @@ BCAST_CTRL_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 BCAST_CTRL_TEST_LDFLAGS := --shared -fPIC
 
 
+# Product test build options
+PRODUCT_TEST_TARGET := libproduct_test.so
+PRODUCT_TEST_CXX_FILES :=	\
+	tests/product_test/product_test.cxx
+PRODUCT_TEST_HXX_FILES :=	\
+	include/fake_cpu_api.h
+PRODUCT_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-Itests/include
+PRODUCT_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(TBVXETOP_TARGET)
 TARGETS += $(BASIC_TEST_TARGET)
 TARGETS += $(STORE_TEST_TARGET)
 TARGETS += $(RELU_TEST_TARGET)
 TARGETS += $(BCAST_CTRL_TEST_TARGET)
+TARGETS += $(PRODUCT_TEST_TARGET)
 
 
 # Main goal
@@ -133,6 +145,13 @@ $(BCAST_CTRL_TEST_TARGET): $(BCAST_CTRL_TEST_CXX_FILES) $(BCAST_CTRL_TEST_HXX_FI
 	@echo "Building [$(BCAST_CTRL_TEST_TARGET)]"
 	@g++ $(BCAST_CTRL_TEST_CFLAGS) -o $(BCAST_CTRL_TEST_TARGET)	\
 		$(BCAST_CTRL_TEST_CXX_FILES) $(BCAST_CTRL_TEST_LDFLAGS)
+
+
+# Product test build target
+$(PRODUCT_TEST_TARGET): $(PRODUCT_TEST_CXX_FILES) $(PRODUCT_TEST_HXX_FILES)
+	@echo "Building [$(PRODUCT_TEST_TARGET)]"
+	@g++ $(PRODUCT_TEST_CFLAGS) -o $(PRODUCT_TEST_TARGET)	\
+		$(PRODUCT_TEST_CXX_FILES) $(PRODUCT_TEST_LDFLAGS)
 
 
 # Run tests
