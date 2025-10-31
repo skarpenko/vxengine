@@ -408,9 +408,12 @@ private:
 		M0_AXI4_BVALID.write(false);
 
 		while(true) {
-			wait();
+			axi4::bresp64 brs;
 
-			axi4::bresp64 brs = m0_b_fifo_in.read();
+			while(!m0_b_fifo_in.nb_read(brs)) {
+				M0_AXI4_BVALID.write(false);
+				wait();
+			}
 
 			M0_AXI4_BID.write(brs.id);
 			M0_AXI4_BRESP.write(brs.resp);
@@ -419,8 +422,6 @@ private:
 			wait();
 			while(M0_AXI4_BREADY.read() != true)
 				wait();
-
-			M0_AXI4_BVALID.write(false);
 		}
 	}
 
@@ -454,9 +455,12 @@ private:
 		M0_AXI4_RVALID.write(false);
 
 		while(true) {
-			wait();
+			axi4::rresp64 rrs;
 
-			axi4::rresp64 rrs = m0_r_fifo_in.read();
+			while(!m0_r_fifo_in.nb_read(rrs)) {
+				M0_AXI4_RVALID.write(false);
+				wait();
+			}
 
 			M0_AXI4_RID.write(rrs.id);
 			M0_AXI4_RRESP.write(rrs.resp);
@@ -466,8 +470,6 @@ private:
 			wait();
 			while(M0_AXI4_RREADY.read() != true)
 				wait();
-
-			M0_AXI4_RVALID.write(false);
 		}
 	}
 
@@ -523,9 +525,12 @@ private:
 		M1_AXI4_BVALID.write(false);
 
 		while(true) {
-			wait();
+			axi4::bresp64 brs;
 
-			axi4::bresp64 brs = m1_b_fifo_in.read();
+			while(!m1_b_fifo_in.nb_read(brs)) {
+				M1_AXI4_BVALID.write(false);
+				wait();
+			}
 
 			M1_AXI4_BID.write(brs.id);
 			M1_AXI4_BRESP.write(brs.resp);
@@ -534,8 +539,6 @@ private:
 			wait();
 			while(M1_AXI4_BREADY.read() != true)
 				wait();
-
-			M1_AXI4_BVALID.write(false);
 		}
 	}
 
@@ -569,9 +572,12 @@ private:
 		M1_AXI4_RVALID.write(false);
 
 		while(true) {
-			wait();
+			axi4::rresp64 rrs;
 
-			axi4::rresp64 rrs = m1_r_fifo_in.read();
+			while(!m1_r_fifo_in.nb_read(rrs)) {
+				M1_AXI4_RVALID.write(false);
+				wait();
+			}
 
 			M1_AXI4_RID.write(rrs.id);
 			M1_AXI4_RRESP.write(rrs.resp);
@@ -581,8 +587,6 @@ private:
 			wait();
 			while(M1_AXI4_RREADY.read() != true)
 				wait();
-
-			M1_AXI4_RVALID.write(false);
 		}
 	}
 
