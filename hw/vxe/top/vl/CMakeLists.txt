@@ -110,3 +110,12 @@ add_library(product_test SHARED
 
 target_include_directories(product_test PUBLIC tests/include)
 target_compile_options(product_test PUBLIC --std=c++17 -O3 -g -Wall)
+
+
+# Product unicast test
+add_library(product_ucast_test SHARED
+	tests/product_ucast_test/product_ucast_test.cxx
+	include/fake_cpu_api.h)
+
+target_include_directories(product_ucast_test PUBLIC tests/include)
+target_compile_options(product_ucast_test PUBLIC --std=c++17 -O3 -g -Wall)

@@ -85,6 +85,17 @@ PRODUCT_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
 PRODUCT_TEST_LDFLAGS := --shared -fPIC
 
 
+# Product unicast test build options
+PRODUCT_UCAST_TEST_TARGET := libproduct_ucast_test.so
+PRODUCT_UCAST_TEST_CXX_FILES :=	\
+	tests/product_ucast_test/product_ucast_test.cxx
+PRODUCT_UCAST_TEST_HXX_FILES :=	\
+	include/fake_cpu_api.h
+PRODUCT_UCAST_TEST_CFLAGS := --std=c++17 -O3 -g -Wall -Iinclude	\
+	-Itests/include
+PRODUCT_UCAST_TEST_LDFLAGS := --shared -fPIC
+
+
 # Add targets to build
 TARGETS += $(TBVXETOP_TARGET)
 TARGETS += $(BASIC_TEST_TARGET)
@@ -92,6 +103,7 @@ TARGETS += $(STORE_TEST_TARGET)
 TARGETS += $(RELU_TEST_TARGET)
 TARGETS += $(BCAST_CTRL_TEST_TARGET)
 TARGETS += $(PRODUCT_TEST_TARGET)
+TARGETS += $(PRODUCT_UCAST_TEST_TARGET)
 
 
 # Main goal
@@ -152,6 +164,13 @@ $(PRODUCT_TEST_TARGET): $(PRODUCT_TEST_CXX_FILES) $(PRODUCT_TEST_HXX_FILES)
 	@echo "Building [$(PRODUCT_TEST_TARGET)]"
 	@g++ $(PRODUCT_TEST_CFLAGS) -o $(PRODUCT_TEST_TARGET)	\
 		$(PRODUCT_TEST_CXX_FILES) $(PRODUCT_TEST_LDFLAGS)
+
+
+# Product unicast test build target
+$(PRODUCT_UCAST_TEST_TARGET): $(PRODUCT_UCAST_TEST_CXX_FILES) $(PRODUCT_UCAST_TEST_HXX_FILES)
+	@echo "Building [$(PRODUCT_UCAST_TEST_TARGET)]"
+	@g++ $(PRODUCT_UCAST_TEST_CFLAGS) -o $(PRODUCT_UCAST_TEST_TARGET)	\
+		$(PRODUCT_UCAST_TEST_CXX_FILES) $(PRODUCT_UCAST_TEST_LDFLAGS)
 
 
 # Run tests

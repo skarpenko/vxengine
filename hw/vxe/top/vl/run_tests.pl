@@ -31,6 +31,10 @@ my @tests = (
 	{
 		name => "Product test",
 		bin_path => "libproduct_test.so"
+	},
+	{
+		name => "Product unicast test",
+		bin_path => "libproduct_ucast_test.so"
 	}
 );
 
