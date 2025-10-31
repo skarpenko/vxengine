@@ -32,6 +32,9 @@ DIRECTORY STRUCTURE
   |- alg        - algorithmic reference models.
   |- fpga       - FPGA synthesis scripts and components.
   |- hw         - hardware components.
+    |- vxe      - design modules.
+      |- top    - top-level module.
+        |- vl   - Verilator-based testbench.
   |- slm        - system-level models.
   |- sw         - software components.
   -- setenv.sh  - environment configuration script.
