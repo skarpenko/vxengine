@@ -53,7 +53,9 @@ help:
 	@echo "  help     - print this help;"
 	@echo "  sim      - run simulation;"
 	@echo "  clean    - remove build results;"
-	@echo "  cleanall - remove build and simulation results."
+	@echo "  cleanall - remove build and simulation results;"
+	@echo "  drop     - create RTL drop;"
+	@echo "  rmdrop   - remove RTL drop files and directories."
 	@echo "Arguments:"
 	@echo "  TB=<testbench> - specifies testbench to use (default: all)."
 	@echo "Available testbenches:"
@@ -62,3 +64,7 @@ help:
 
 %: flists/%.lst
 	iverilog $(IVFLAGS) -s $@ -o $@ -f $<
+
+
+# Add RTL drop targets
+include RTLDrop.mk
