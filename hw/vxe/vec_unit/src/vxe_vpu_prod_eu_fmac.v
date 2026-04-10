@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -456,13 +456,18 @@ begin
 		case(fsm_fmacd)
 		FSM_FMACD_THR0: begin
 			if(th0_rdy)
-			begin
+			begin : t0_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[0].r[0].op_fifo_rp;
+				op1_fifo_rp = t[0].r[1].op_fifo_rp;
+
 				fmac_a <= i_th0_acc;
-				fmac_b <= t[0].r[0].op_fifo[ t[0].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[0].r[1].op_fifo[ t[0].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[0].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[0].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h0;
-				t[0].r[0].op_fifo_rp <= t[0].r[0].op_fifo_rp + 1'b1;
-				t[0].r[1].op_fifo_rp <= t[0].r[1].op_fifo_rp + 1'b1;
+				t[0].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[0].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end
@@ -470,13 +475,18 @@ begin
 		end
 		FSM_FMACD_THR1: begin
 			if(th1_rdy)
-			begin
+			begin : t1_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[1].r[0].op_fifo_rp;
+				op1_fifo_rp = t[1].r[1].op_fifo_rp;
+
 				fmac_a <= i_th1_acc;
-				fmac_b <= t[1].r[0].op_fifo[ t[1].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[1].r[1].op_fifo[ t[1].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[1].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[1].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h1;
-				t[1].r[0].op_fifo_rp <= t[1].r[0].op_fifo_rp + 1'b1;
-				t[1].r[1].op_fifo_rp <= t[1].r[1].op_fifo_rp + 1'b1;
+				t[1].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[1].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end
@@ -484,13 +494,18 @@ begin
 		end
 		FSM_FMACD_THR2: begin
 			if(th2_rdy)
-			begin
+			begin : t2_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[2].r[0].op_fifo_rp;
+				op1_fifo_rp = t[2].r[1].op_fifo_rp;
+
 				fmac_a <= i_th2_acc;
-				fmac_b <= t[2].r[0].op_fifo[ t[2].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[2].r[1].op_fifo[ t[2].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[2].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[2].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h2;
-				t[2].r[0].op_fifo_rp <= t[2].r[0].op_fifo_rp + 1'b1;
-				t[2].r[1].op_fifo_rp <= t[2].r[1].op_fifo_rp + 1'b1;
+				t[2].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[2].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end
@@ -498,13 +513,18 @@ begin
 		end
 		FSM_FMACD_THR3: begin
 			if(th3_rdy)
-			begin
+			begin : t3_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[3].r[0].op_fifo_rp;
+				op1_fifo_rp = t[3].r[1].op_fifo_rp;
+
 				fmac_a <= i_th3_acc;
-				fmac_b <= t[3].r[0].op_fifo[ t[3].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[3].r[1].op_fifo[ t[3].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[3].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[3].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h3;
-				t[3].r[0].op_fifo_rp <= t[3].r[0].op_fifo_rp + 1'b1;
-				t[3].r[1].op_fifo_rp <= t[3].r[1].op_fifo_rp + 1'b1;
+				t[3].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[3].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end
@@ -512,13 +532,18 @@ begin
 		end
 		FSM_FMACD_THR4: begin
 			if(th4_rdy)
-			begin
+			begin : t4_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[4].r[0].op_fifo_rp;
+				op1_fifo_rp = t[4].r[1].op_fifo_rp;
+
 				fmac_a <= i_th4_acc;
-				fmac_b <= t[4].r[0].op_fifo[ t[4].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[4].r[1].op_fifo[ t[4].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[4].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[4].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h4;
-				t[4].r[0].op_fifo_rp <= t[4].r[0].op_fifo_rp + 1'b1;
-				t[4].r[1].op_fifo_rp <= t[4].r[1].op_fifo_rp + 1'b1;
+				t[4].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[4].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end
@@ -526,13 +551,18 @@ begin
 		end
 		FSM_FMACD_THR5: begin
 			if(th5_rdy)
-			begin
+			begin : t5_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[5].r[0].op_fifo_rp;
+				op1_fifo_rp = t[5].r[1].op_fifo_rp;
+
 				fmac_a <= i_th5_acc;
-				fmac_b <= t[5].r[0].op_fifo[ t[5].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[5].r[1].op_fifo[ t[5].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[5].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[5].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h5;
-				t[5].r[0].op_fifo_rp <= t[5].r[0].op_fifo_rp + 1'b1;
-				t[5].r[1].op_fifo_rp <= t[5].r[1].op_fifo_rp + 1'b1;
+				t[5].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[5].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end
@@ -540,13 +570,18 @@ begin
 		end
 		FSM_FMACD_THR6: begin
 			if(th6_rdy)
-			begin
+			begin : t6_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[6].r[0].op_fifo_rp;
+				op1_fifo_rp = t[6].r[1].op_fifo_rp;
+
 				fmac_a <= i_th6_acc;
-				fmac_b <= t[6].r[0].op_fifo[ t[6].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[6].r[1].op_fifo[ t[6].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[6].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[6].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h6;
-				t[6].r[0].op_fifo_rp <= t[6].r[0].op_fifo_rp + 1'b1;
-				t[6].r[1].op_fifo_rp <= t[6].r[1].op_fifo_rp + 1'b1;
+				t[6].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[6].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end
@@ -554,13 +589,18 @@ begin
 		end
 		FSM_FMACD_THR7: begin
 			if(th7_rdy)
-			begin
+			begin : t7_rdy
+				reg [IN_OP_DEPTH_POW2:0]	op0_fifo_rp;
+				reg [IN_OP_DEPTH_POW2:0]	op1_fifo_rp;
+				op0_fifo_rp = t[7].r[0].op_fifo_rp;
+				op1_fifo_rp = t[7].r[1].op_fifo_rp;
+
 				fmac_a <= i_th7_acc;
-				fmac_b <= t[7].r[0].op_fifo[ t[7].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
-				fmac_c <= t[7].r[1].op_fifo[ t[7].r[0].op_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_b <= t[7].r[0].op_fifo[ op0_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
+				fmac_c <= t[7].r[1].op_fifo[ op1_fifo_rp[IN_OP_DEPTH_POW2-1:0] ];
 				pipe_op_th <= 3'h7;
-				t[7].r[0].op_fifo_rp <= t[7].r[0].op_fifo_rp + 1'b1;
-				t[7].r[1].op_fifo_rp <= t[7].r[1].op_fifo_rp + 1'b1;
+				t[7].r[0].op_fifo_rp <= op0_fifo_rp + 1'b1;
+				t[7].r[1].op_fifo_rp <= op1_fifo_rp + 1'b1;
 				fmac_op_vld <= 1'b1;
 				pipe_op_vld <= 1'b1;
 			end

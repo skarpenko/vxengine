@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -630,210 +630,306 @@ begin
 		rs_arg_fifo[rs_fifo_rp[IN_RS_DEPTH_POW2-1:0]] })
 	/* Thread 0, Rs */
 	5'b0_000_0: if(!t_we[0].r[0].we_fifo_empty && !t_op[0].r[0].op_fifo_stall)
-	begin
-		t_op[0].r[0].op_fifo[ t_op[0].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t0_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[0].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[0].r[0].we_fifo_rp;
+
+		t_op[0].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[0].r[0].op_w_fifo[ t_op[0].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[0].r[0].we_fifo[ t_we[0].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[0].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[0].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[0].r[0].op_fifo_wp <= t_op[0].r[0].op_fifo_wp + 1'b1;
-		t_we[0].r[0].we_fifo_rp <= t_we[0].r[0].we_fifo_rp + 1'b1;
+		t_op[0].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[0].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 0, Rt */
 	5'b0_000_1: if(!t_we[0].r[1].we_fifo_empty && !t_op[0].r[1].op_fifo_stall)
-	begin
-		t_op[0].r[1].op_fifo[ t_op[0].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t0_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[0].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[0].r[1].we_fifo_rp;
+
+		t_op[0].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[0].r[1].op_w_fifo[ t_op[0].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[0].r[1].we_fifo[ t_we[0].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[0].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[0].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[0].r[1].op_fifo_wp <= t_op[0].r[1].op_fifo_wp + 1'b1;
-		t_we[0].r[1].we_fifo_rp <= t_we[0].r[1].we_fifo_rp + 1'b1;
+		t_op[0].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[0].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 1, Rs */
 	5'b0_001_0: if(!t_we[1].r[0].we_fifo_empty && !t_op[1].r[0].op_fifo_stall)
-	begin
-		t_op[1].r[0].op_fifo[ t_op[1].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t1_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[1].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[1].r[0].we_fifo_rp;
+
+		t_op[1].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[1].r[0].op_w_fifo[ t_op[1].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[1].r[0].we_fifo[ t_we[1].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[1].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[1].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[1].r[0].op_fifo_wp <= t_op[1].r[0].op_fifo_wp + 1'b1;
-		t_we[1].r[0].we_fifo_rp <= t_we[1].r[0].we_fifo_rp + 1'b1;
+		t_op[1].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[1].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 1, Rt */
 	5'b0_001_1: if(!t_we[1].r[1].we_fifo_empty && !t_op[1].r[1].op_fifo_stall)
-	begin
-		t_op[1].r[1].op_fifo[ t_op[1].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t1_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[1].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[1].r[1].we_fifo_rp;
+
+		t_op[1].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[1].r[1].op_w_fifo[ t_op[1].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[1].r[1].we_fifo[ t_we[1].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[1].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[1].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[1].r[1].op_fifo_wp <= t_op[1].r[1].op_fifo_wp + 1'b1;
-		t_we[1].r[1].we_fifo_rp <= t_we[1].r[1].we_fifo_rp + 1'b1;
+		t_op[1].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[1].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 2, Rs */
 	5'b0_010_0: if(!t_we[2].r[0].we_fifo_empty && !t_op[2].r[0].op_fifo_stall)
-	begin
-		t_op[2].r[0].op_fifo[ t_op[2].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t2_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[2].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[2].r[0].we_fifo_rp;
+
+		t_op[2].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[2].r[0].op_w_fifo[ t_op[2].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[2].r[0].we_fifo[ t_we[2].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[2].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[2].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[2].r[0].op_fifo_wp <= t_op[2].r[0].op_fifo_wp + 1'b1;
-		t_we[2].r[0].we_fifo_rp <= t_we[2].r[0].we_fifo_rp + 1'b1;
+		t_op[2].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[2].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 2, Rt */
 	5'b0_010_1: if(!t_we[2].r[1].we_fifo_empty && !t_op[2].r[1].op_fifo_stall)
-	begin
-		t_op[2].r[1].op_fifo[ t_op[2].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t2_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[2].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[2].r[1].we_fifo_rp;
+
+		t_op[2].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[2].r[1].op_w_fifo[ t_op[2].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[2].r[1].we_fifo[ t_we[2].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[2].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[2].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[2].r[1].op_fifo_wp <= t_op[2].r[1].op_fifo_wp + 1'b1;
-		t_we[2].r[1].we_fifo_rp <= t_we[2].r[1].we_fifo_rp + 1'b1;
+		t_op[2].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[2].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 3, Rs */
 	5'b0_011_0: if(!t_we[3].r[0].we_fifo_empty && !t_op[3].r[0].op_fifo_stall)
-	begin
-		t_op[3].r[0].op_fifo[ t_op[3].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t3_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[3].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[3].r[0].we_fifo_rp;
+
+		t_op[3].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[3].r[0].op_w_fifo[ t_op[3].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[3].r[0].we_fifo[ t_we[3].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[3].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[3].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[3].r[0].op_fifo_wp <= t_op[3].r[0].op_fifo_wp + 1'b1;
-		t_we[3].r[0].we_fifo_rp <= t_we[3].r[0].we_fifo_rp + 1'b1;
+		t_op[3].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[3].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 3, Rt */
 	5'b0_011_1: if(!t_we[3].r[1].we_fifo_empty && !t_op[3].r[1].op_fifo_stall)
-	begin
-		t_op[3].r[1].op_fifo[ t_op[3].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t3_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[3].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[3].r[1].we_fifo_rp;
+
+		t_op[3].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[3].r[1].op_w_fifo[ t_op[3].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[3].r[1].we_fifo[ t_we[3].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[3].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[3].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[3].r[1].op_fifo_wp <= t_op[3].r[1].op_fifo_wp + 1'b1;
-		t_we[3].r[1].we_fifo_rp <= t_we[3].r[1].we_fifo_rp + 1'b1;
+		t_op[3].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[3].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 4, Rs */
 	5'b0_100_0: if(!t_we[4].r[0].we_fifo_empty && !t_op[4].r[0].op_fifo_stall)
-	begin
-		t_op[4].r[0].op_fifo[ t_op[4].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t4_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[4].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[4].r[0].we_fifo_rp;
+
+		t_op[4].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[4].r[0].op_w_fifo[ t_op[4].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[4].r[0].we_fifo[ t_we[4].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[4].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[4].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[4].r[0].op_fifo_wp <= t_op[4].r[0].op_fifo_wp + 1'b1;
-		t_we[4].r[0].we_fifo_rp <= t_we[4].r[0].we_fifo_rp + 1'b1;
+		t_op[4].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[4].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 4, Rt */
 	5'b0_100_1: if(!t_we[4].r[1].we_fifo_empty && !t_op[4].r[1].op_fifo_stall)
-	begin
-		t_op[4].r[1].op_fifo[ t_op[4].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t4_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[4].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[4].r[1].we_fifo_rp;
+
+		t_op[4].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[4].r[1].op_w_fifo[ t_op[4].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[4].r[1].we_fifo[ t_we[4].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[4].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[4].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[4].r[1].op_fifo_wp <= t_op[4].r[1].op_fifo_wp + 1'b1;
-		t_we[4].r[1].we_fifo_rp <= t_we[4].r[1].we_fifo_rp + 1'b1;
+		t_op[4].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[4].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 5, Rs */
 	5'b0_101_0: if(!t_we[5].r[0].we_fifo_empty && !t_op[5].r[0].op_fifo_stall)
-	begin
-		t_op[5].r[0].op_fifo[ t_op[5].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t5_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[5].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[5].r[0].we_fifo_rp;
+
+		t_op[5].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[5].r[0].op_w_fifo[ t_op[5].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[5].r[0].we_fifo[ t_we[5].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[5].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[5].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[5].r[0].op_fifo_wp <= t_op[5].r[0].op_fifo_wp + 1'b1;
-		t_we[5].r[0].we_fifo_rp <= t_we[5].r[0].we_fifo_rp + 1'b1;
+		t_op[5].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[5].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 5, Rt */
 	5'b0_101_1: if(!t_we[5].r[1].we_fifo_empty && !t_op[5].r[1].op_fifo_stall)
-	begin
-		t_op[5].r[1].op_fifo[ t_op[5].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t5_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[5].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[5].r[1].we_fifo_rp;
+
+		t_op[5].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[5].r[1].op_w_fifo[ t_op[5].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[5].r[1].we_fifo[ t_we[5].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[5].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[5].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[5].r[1].op_fifo_wp <= t_op[5].r[1].op_fifo_wp + 1'b1;
-		t_we[5].r[1].we_fifo_rp <= t_we[5].r[1].we_fifo_rp + 1'b1;
+		t_op[5].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[5].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 6, Rs */
 	5'b0_110_0: if(!t_we[6].r[0].we_fifo_empty && !t_op[6].r[0].op_fifo_stall)
-	begin
-		t_op[6].r[0].op_fifo[ t_op[6].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t6_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[6].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[6].r[0].we_fifo_rp;
+
+		t_op[6].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[6].r[0].op_w_fifo[ t_op[6].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[6].r[0].we_fifo[ t_we[6].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[6].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[6].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[6].r[0].op_fifo_wp <= t_op[6].r[0].op_fifo_wp + 1'b1;
-		t_we[6].r[0].we_fifo_rp <= t_we[6].r[0].we_fifo_rp + 1'b1;
+		t_op[6].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[6].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 6, Rt */
 	5'b0_110_1: if(!t_we[6].r[1].we_fifo_empty && !t_op[6].r[1].op_fifo_stall)
-	begin
-		t_op[6].r[1].op_fifo[ t_op[6].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t6_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[6].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[6].r[1].we_fifo_rp;
+
+		t_op[6].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[6].r[1].op_w_fifo[ t_op[6].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[6].r[1].we_fifo[ t_we[6].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[6].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[6].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[6].r[1].op_fifo_wp <= t_op[6].r[1].op_fifo_wp + 1'b1;
-		t_we[6].r[1].we_fifo_rp <= t_we[6].r[1].we_fifo_rp + 1'b1;
+		t_op[6].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[6].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 7, Rs */
 	5'b0_111_0: if(!t_we[7].r[0].we_fifo_empty && !t_op[7].r[0].op_fifo_stall)
-	begin
-		t_op[7].r[0].op_fifo[ t_op[7].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t7_rs
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[7].r[0].op_fifo_wp;
+		we_fifo_rp = t_we[7].r[0].we_fifo_rp;
+
+		t_op[7].r[0].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[7].r[0].op_w_fifo[ t_op[7].r[0].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[7].r[0].we_fifo[ t_we[7].r[0].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[7].r[0].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[7].r[0].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[7].r[0].op_fifo_wp <= t_op[7].r[0].op_fifo_wp + 1'b1;
-		t_we[7].r[0].we_fifo_rp <= t_we[7].r[0].we_fifo_rp + 1'b1;
+		t_op[7].r[0].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[7].r[0].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	/* Thread 7, Rt */
 	5'b0_111_1: if(!t_we[7].r[1].we_fifo_empty && !t_op[7].r[1].op_fifo_stall)
-	begin
-		t_op[7].r[1].op_fifo[ t_op[7].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+	begin : ds_t7_rt
+		reg [OUT_OP_DEPTH_POW2:0]	op_fifo_wp;
+		reg [IN_WE_DEPTH_POW2:0]	we_fifo_rp;
+
+		op_fifo_wp = t_op[7].r[1].op_fifo_wp;
+		we_fifo_rp = t_we[7].r[1].we_fifo_rp;
+
+		t_op[7].r[1].op_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
 			<= rs_data_fifo[ rs_fifo_rp[IN_RS_DEPTH_POW2-1:0] ];
 
-		t_op[7].r[1].op_w_fifo[ t_op[7].r[1].op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
-			<= t_we[7].r[1].we_fifo[ t_we[7].r[1].we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
+		t_op[7].r[1].op_w_fifo[ op_fifo_wp[OUT_OP_DEPTH_POW2-1:0] ]
+			<= t_we[7].r[1].we_fifo[ we_fifo_rp[IN_WE_DEPTH_POW2-1:0] ];
 
-		t_op[7].r[1].op_fifo_wp <= t_op[7].r[1].op_fifo_wp + 1'b1;
-		t_we[7].r[1].we_fifo_rp <= t_we[7].r[1].we_fifo_rp + 1'b1;
+		t_op[7].r[1].op_fifo_wp <= op_fifo_wp + 1'b1;
+		t_we[7].r[1].we_fifo_rp <= we_fifo_rp + 1'b1;
 		rs_fifo_rp <= rs_fifo_rp + 1'b1;
 	end
 	default: ;

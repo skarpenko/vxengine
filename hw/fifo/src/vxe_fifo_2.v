@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -74,6 +74,8 @@ assign empty = (wr_p[DEPTH_POW2-1:0] == rd_p[DEPTH_POW2-1:0]) &&
 assign full = (wr_p[DEPTH_POW2-1:0] == rd_p[DEPTH_POW2-1:0]) &&
 	(wr_p[DEPTH_POW2] != rd_p[DEPTH_POW2]);
 
+
+generate
 if(USE_EMPTY1 != 0)
 begin
 	wire [DEPTH_POW2:0] rd_p1 = rd_p - 1'b1;
@@ -84,6 +86,7 @@ else
 begin
 	assign empty1 = 1'b0;
 end
+endgenerate
 
 
 /* Write logic */

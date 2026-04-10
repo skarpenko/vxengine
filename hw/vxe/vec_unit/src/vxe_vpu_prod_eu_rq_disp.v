@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2024 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -882,15 +882,18 @@ begin
 		if(!t[0].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq00
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[0].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[0].r[0].rq_fifo[t[0].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[0].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h0,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[0].r[0].rq_fifo_rp <= t[0].r[0].rq_fifo_rp + 1'b1;
+				t[0].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_1_F_valid)
@@ -906,15 +909,18 @@ begin
 		if(!t[0].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq01
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[0].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[0].r[1].rq_fifo[t[0].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[0].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h0,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[0].r[1].rq_fifo_rp <= t[0].r[1].rq_fifo_rp + 1'b1;
+				t[0].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_2_F_valid)
@@ -935,15 +941,18 @@ begin
 		if(!t[1].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq02
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[1].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[1].r[0].rq_fifo[t[1].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[1].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h1,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[1].r[0].rq_fifo_rp <= t[1].r[0].rq_fifo_rp + 1'b1;
+				t[1].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_3_F_valid)
@@ -963,15 +972,18 @@ begin
 		if(!t[1].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq03
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[1].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[1].r[1].rq_fifo[t[1].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[1].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h1,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[1].r[1].rq_fifo_rp <= t[1].r[1].rq_fifo_rp + 1'b1;
+				t[1].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_4_F_valid)
@@ -992,15 +1004,18 @@ begin
 		if(!t[2].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq04
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[2].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[2].r[0].rq_fifo[t[2].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[2].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h2,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[2].r[0].rq_fifo_rp <= t[2].r[0].rq_fifo_rp + 1'b1;
+				t[2].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_5_F_valid)
@@ -1020,15 +1035,18 @@ begin
 		if(!t[2].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq05
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[2].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[2].r[1].rq_fifo[t[2].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[2].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h2,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[2].r[1].rq_fifo_rp <= t[2].r[1].rq_fifo_rp + 1'b1;
+				t[2].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_6_F_valid)
@@ -1049,15 +1067,18 @@ begin
 		if(!t[3].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq06
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[3].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[3].r[0].rq_fifo[t[3].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[3].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h3,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[3].r[0].rq_fifo_rp <= t[3].r[0].rq_fifo_rp + 1'b1;
+				t[3].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_7_F_valid)
@@ -1077,15 +1098,18 @@ begin
 		if(!t[3].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq07
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[3].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[3].r[1].rq_fifo[t[3].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[3].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h3,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[3].r[1].rq_fifo_rp <= t[3].r[1].rq_fifo_rp + 1'b1;
+				t[3].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_8_F_valid)
@@ -1106,15 +1130,18 @@ begin
 		if(!t[4].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq08
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[4].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[4].r[0].rq_fifo[t[4].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[4].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h4,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[4].r[0].rq_fifo_rp <= t[4].r[0].rq_fifo_rp + 1'b1;
+				t[4].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_9_F_valid)
@@ -1134,15 +1161,18 @@ begin
 		if(!t[4].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq09
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[4].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[4].r[1].rq_fifo[t[4].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[4].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h4,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[4].r[1].rq_fifo_rp <= t[4].r[1].rq_fifo_rp + 1'b1;
+				t[4].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_A_F_valid)
@@ -1163,15 +1193,18 @@ begin
 		if(!t[5].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq0a
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[5].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[5].r[0].rq_fifo[t[5].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[5].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h5,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[5].r[0].rq_fifo_rp <= t[5].r[0].rq_fifo_rp + 1'b1;
+				t[5].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_B_F_valid)
@@ -1191,15 +1224,18 @@ begin
 		if(!t[5].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq0b
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[5].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[5].r[1].rq_fifo[t[5].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[5].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h5,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[5].r[1].rq_fifo_rp <= t[5].r[1].rq_fifo_rp + 1'b1;
+				t[5].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_C_F_valid)
@@ -1220,15 +1256,18 @@ begin
 		if(!t[6].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq0c
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[6].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[6].r[0].rq_fifo[t[6].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[6].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h6,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[6].r[0].rq_fifo_rp <= t[6].r[0].rq_fifo_rp + 1'b1;
+				t[6].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_D_F_valid)
@@ -1248,15 +1287,18 @@ begin
 		if(!t[6].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq0d
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[6].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[6].r[1].rq_fifo[t[6].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[6].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h6,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[6].r[1].rq_fifo_rp <= t[6].r[1].rq_fifo_rp + 1'b1;
+				t[6].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_E_F_valid)
@@ -1277,15 +1319,18 @@ begin
 		if(!t[7].r[0].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq0e
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[7].r[0].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[7].r[0].rq_fifo[t[7].r[0].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[7].r[0].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h7,
 					1'b0
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[7].r[0].rq_fifo_rp <= t[7].r[0].rq_fifo_rp + 1'b1;
+				t[7].r[0].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_F_F_valid)
@@ -1305,15 +1350,18 @@ begin
 		if(!t[7].r[1].rq_fifo_empty)
 		begin
 			if(!rrq_fifo_full)
-			begin
+			begin : us_rq0f
+				reg [IN_DEPTH_POW2:0] rq_fifo_rp;
+				rq_fifo_rp = t[7].r[1].rq_fifo_rp;
+
 				/* Upstream request */
 				rrq_fifo[rrq_fifo_wp[OUT_DEPTH_POW2-1:0]] <= {
-					t[7].r[1].rq_fifo[t[7].r[1].rq_fifo_rp[IN_DEPTH_POW2-1:0]],
+					t[7].r[1].rq_fifo[rq_fifo_rp[IN_DEPTH_POW2-1:0]],
 					3'h7,
 					1'b1
 				};
 				rrq_fifo_wp <= rrq_fifo_wp + 1'b1;
-				t[7].r[1].rq_fifo_rp <= t[7].r[1].rq_fifo_rp + 1'b1;
+				t[7].r[1].rq_fifo_rp <= rq_fifo_rp + 1'b1;
 
 				/* Next state */
 				if(ST_0_E_valid)
