@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -130,7 +130,7 @@ extern "C" int fake_cpu_entry(struct fake_cpu_api *cpu_api)
 
 		// Verify results
 		std::cout << "Verifying results..." << std::endl;
-		verify_results(hint.str(), rd_ptr, static_cast<float>(t));
+		status |= verify_results(hint.str(), rd_ptr, static_cast<float>(t));
 	}
 
 	std::cout << std::endl << "All done." << std::endl;
