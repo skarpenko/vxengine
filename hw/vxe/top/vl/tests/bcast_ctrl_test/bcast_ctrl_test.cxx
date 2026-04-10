@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -140,6 +140,7 @@ extern "C" int fake_cpu_entry(struct fake_cpu_api *cpu_api)
 	// Product operation broadcast tests
 	init_mem(rs_ptr, 16, 1.0, 1.0);
 	init_mem(rt_ptr, 16, 10.0, 10.0);
+	init_mem(rd_ptr, 16, 0.0);
 
 	run_program(pgm_prod_vpu0);
 	fail |= verify_results("[ Prod (VPU0)   ]", rd_ptr, ref_prod_vpu0);
