@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -33,7 +33,8 @@ module vxe_top #(
 	parameter S0_ID_WIDTH = 7,		/* AXI slave 0 ID width */
 	parameter M0_ID_WIDTH = 7,		/* AXI master 0 ID width */
 	parameter M1_ID_WIDTH = 7,		/* AXI master 1 ID width */
-	parameter MEMIF_FIFO_DEPTH_POW2 = 5	/* Memory IF FIFOs depth */
+	parameter MEMIF_FIFO_DEPTH_POW2 = 5,	/* Memory IF FIFOs depth */
+	parameter SINGLE_VPU_CONFIG = 0		/* Instantiate only one VPU */
 )
 (
 	clk,
@@ -1029,37 +1030,76 @@ vxe_vec_unit #(
 );
 
 
-/* Vector unit 1 */
-vxe_vec_unit #(
-	.CLIENT_ID(CLNT_VPU1)
-) vec_unit1(
-	.clk(clk),
-	.nrst(nrst),
-	/* Memory request channel */
-	.i_rqa_rdy(vpu1_mh_rqa_rdy),
-	.o_rqa(vpu1_mh_rqa),
-	.o_rqa_wr(vpu1_mh_rqa_wr),
-	.i_rqd_rdy(vpu1_mh_rqd_rdy),
-	.o_rqd(vpu1_mh_rqd),
-	.o_rqd_wr(vpu1_mh_rqd_wr),
-	/* Memory response channel */
-	.i_rss_vld(vpu1_mh_rss_vld),
-	.i_rss(vpu1_mh_rss),
-	.o_rss_rd(vpu1_mh_rss_rd),
-	.i_rsd_vld(vpu1_mh_rsd_vld),
-	.i_rsd(vpu1_mh_rsd),
-	.o_rsd_rd(vpu1_mh_rsd_rd),
-	/* Control interface */
-	.i_start(rio_cu_start),
-	.o_busy(cu_vpu1_busy),
-	.o_err(cu_vpu1_err),
-	/* Command interface */
-	.i_cmd_sel(cu_vpu1_cmd_sel),
-	.o_cmd_ack(cu_vpu1_cmd_ack),
-	.i_cmd_op(cu_vpu1_cmd_op),
-	.i_cmd_th(cu_vpu1_cmd_th),
-	.i_cmd_pl(cu_vpu1_cmd_pl)
-);
+generate
+if(SINGLE_VPU_CONFIG == 0)
+begin
+	/* Vector unit 1 */
+	vxe_vec_unit #(
+		.CLIENT_ID(CLNT_VPU1)
+	) vec_unit1(
+		.clk(clk),
+		.nrst(nrst),
+		/* Memory request channel */
+		.i_rqa_rdy(vpu1_mh_rqa_rdy),
+		.o_rqa(vpu1_mh_rqa),
+		.o_rqa_wr(vpu1_mh_rqa_wr),
+		.i_rqd_rdy(vpu1_mh_rqd_rdy),
+		.o_rqd(vpu1_mh_rqd),
+		.o_rqd_wr(vpu1_mh_rqd_wr),
+		/* Memory response channel */
+		.i_rss_vld(vpu1_mh_rss_vld),
+		.i_rss(vpu1_mh_rss),
+		.o_rss_rd(vpu1_mh_rss_rd),
+		.i_rsd_vld(vpu1_mh_rsd_vld),
+		.i_rsd(vpu1_mh_rsd),
+		.o_rsd_rd(vpu1_mh_rsd_rd),
+		/* Control interface */
+		.i_start(rio_cu_start),
+		.o_busy(cu_vpu1_busy),
+		.o_err(cu_vpu1_err),
+		/* Command interface */
+		.i_cmd_sel(cu_vpu1_cmd_sel),
+		.o_cmd_ack(cu_vpu1_cmd_ack),
+		.i_cmd_op(cu_vpu1_cmd_op),
+		.i_cmd_th(cu_vpu1_cmd_th),
+		.i_cmd_pl(cu_vpu1_cmd_pl)
+	);
+end
+else
+begin
+	/* Vector unit 1 (Dummy instance) */
+	vxe_vec_unit_dummy #(
+		.CLIENT_ID(CLNT_VPU1)
+	) vec_unit1(
+		.clk(clk),
+		.nrst(nrst),
+		/* Memory request channel */
+		.i_rqa_rdy(vpu1_mh_rqa_rdy),
+		.o_rqa(vpu1_mh_rqa),
+		.o_rqa_wr(vpu1_mh_rqa_wr),
+		.i_rqd_rdy(vpu1_mh_rqd_rdy),
+		.o_rqd(vpu1_mh_rqd),
+		.o_rqd_wr(vpu1_mh_rqd_wr),
+		/* Memory response channel */
+		.i_rss_vld(vpu1_mh_rss_vld),
+		.i_rss(vpu1_mh_rss),
+		.o_rss_rd(vpu1_mh_rss_rd),
+		.i_rsd_vld(vpu1_mh_rsd_vld),
+		.i_rsd(vpu1_mh_rsd),
+		.o_rsd_rd(vpu1_mh_rsd_rd),
+		/* Control interface */
+		.i_start(rio_cu_start),
+		.o_busy(cu_vpu1_busy),
+		.o_err(cu_vpu1_err),
+		/* Command interface */
+		.i_cmd_sel(cu_vpu1_cmd_sel),
+		.o_cmd_ack(cu_vpu1_cmd_ack),
+		.i_cmd_op(cu_vpu1_cmd_op),
+		.i_cmd_th(cu_vpu1_cmd_th),
+		.i_cmd_pl(cu_vpu1_cmd_pl)
+	);
+end
+endgenerate
 
 
 /* CU request FIFO (address channel) */

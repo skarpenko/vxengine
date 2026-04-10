@@ -67,6 +67,7 @@ ${VXENGINE_HOME}/hw/vxe/vec_unit/src/vxe_vpu_stor_ecu.v
 ${VXENGINE_HOME}/hw/vxe/vec_unit/src/vxe_vpu_stor_eu.v
 ${VXENGINE_HOME}/hw/vxe/vec_unit/src/vxe_vpu_thread_rf.v
 ${VXENGINE_HOME}/hw/vxe/vec_unit/src/vxe_vec_unit.v
+${VXENGINE_HOME}/hw/vxe/vec_unit/src/vxe_vec_unit_dummy.v
 src/vxe_top.v
 tb/tb_vxe_top_util.v
 tb/tb_vxe_top.v
