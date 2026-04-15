@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,9 @@
 
 /* Control unit */
 module vxe_ctrl_unit #(
-	parameter [1:0] CLIENT_ID = 0	/* Client Id */
+	parameter [1:0] CLIENT_ID = 0,		/* Client Id */
+	parameter CMD_FETCH_DEPTH_POW2 = 4,	/* Command fetch FIFO depth */
+	parameter VPU_FWD_DEPTH_POW2 = 4	/* VPU forwarding FIFO depth */
 )
 (
 	clk,
@@ -145,7 +147,7 @@ wire		fetch_rd;
 
 vxe_cu_fetch_unit #(
 	.CLIENT_ID(CLIENT_ID),
-	.FETCH_DEPTH_POW2(4)
+	.FETCH_DEPTH_POW2(CMD_FETCH_DEPTH_POW2)
 ) fetch_unit (
 	.clk(clk),
 	.nrst(nrst),
@@ -275,7 +277,7 @@ wire	vpu0_fwd_busy;
 
 
 vxe_cu_vpu_fwd_unit #(
-	.DEPTH_POW2(4)
+	.DEPTH_POW2(VPU_FWD_DEPTH_POW2)
 ) vpu0_fwd_unit (
 	.clk(clk),
 	.nrst(nrst),
@@ -303,7 +305,7 @@ wire	vpu1_fwd_busy;
 
 
 vxe_cu_vpu_fwd_unit #(
-	.DEPTH_POW2(4)
+	.DEPTH_POW2(VPU_FWD_DEPTH_POW2)
 ) vpu1_fwd_unit (
 	.clk(clk),
 	.nrst(nrst),

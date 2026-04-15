@@ -30,11 +30,26 @@
 
 /* VxE top */
 module vxe_top #(
-	parameter S0_ID_WIDTH = 7,		/* AXI slave 0 ID width */
-	parameter M0_ID_WIDTH = 7,		/* AXI master 0 ID width */
-	parameter M1_ID_WIDTH = 7,		/* AXI master 1 ID width */
-	parameter MEMIF_FIFO_DEPTH_POW2 = 5,	/* Memory IF FIFOs depth */
-	parameter SINGLE_VPU_CONFIG = 0		/* Instantiate only one VPU */
+	parameter S0_ID_WIDTH = 7,				/* AXI slave 0 ID width */
+	parameter M0_ID_WIDTH = 7,				/* AXI master 0 ID width */
+	parameter M1_ID_WIDTH = 7,				/* AXI master 1 ID width */
+	parameter MEMIF_FIFO_DEPTH_POW2 = 5,			/* Memory IF FIFOs depth */
+	parameter SINGLE_VPU_CONFIG = 0,			/* Instantiate only one VPU */
+	parameter CU_CMD_FETCH_DEPTH_POW2 = 4,			/* Command fetch FIFO depth */
+	parameter CU_VPU_FWD_DEPTH_POW2 = 4,			/* VPU forwarding FIFO depth */
+	parameter VPU_CMD_DEPTH_POW2 = 4,			/* Command FIFO depth */
+	parameter VPU_LSU_NR_REQ_POW2 = 7,			/* No. Requests on the fly */
+	parameter VPU_LSU_RD_DEPTH_POW2 = 5,			/* Read requests FIFO depth */
+	parameter VPU_LSU_WR_DEPTH_POW2 = 2,			/* Write requests FIFO depth */
+	parameter VPU_LSU_RS_DEPTH_POW2 = 5,			/* Read responses FIFO depth */
+	parameter VPU_PROD_EU_WE_DEPTH_POW2 = 2,		/* Write enable FIFOs depth */
+	parameter VPU_PROD_EU_OP_DEPTH_POW2 = 2,		/* Operand FIFOs depth */
+	parameter VPU_PROD_EU_RQD_IN_DEPTH_POW2 = 2,		/* Incoming request FIFOs depth */
+	parameter VPU_PROD_EU_RQD_OUT_DEPTH_POW2 = 2,		/* Outgoing request FIFOs depth */
+	parameter VPU_PROD_EU_RSD_IN_WE_DEPTH_POW2 = 2,		/* Incoming write enable FIFOs depth */
+	parameter VPU_PROD_EU_RSD_IN_RS_DEPTH_POW2 = 3,		/* Incoming response FIFO depth */
+	parameter VPU_PROD_EU_RSD_OUT_OP_DEPTH_POW2 = 2,	/* Outgoing operand FIFOs depth */
+	parameter VPU_PROD_EU_FMAC_IN_OP_DEPTH_POW2 = 2		/* Incoming operand FIFOs depth */
 )
 (
 	clk,
@@ -953,7 +968,9 @@ vxe_intr_unit #(
 
 /* Control unit */
 vxe_ctrl_unit #(
-	.CLIENT_ID(CLNT_CU)
+	.CLIENT_ID(CLNT_CU),
+	.CMD_FETCH_DEPTH_POW2(CU_CMD_FETCH_DEPTH_POW2),
+	.VPU_FWD_DEPTH_POW2(CU_VPU_FWD_DEPTH_POW2)
 ) ctrl_unit(
 	.clk(clk),
 	.nrst(nrst),
@@ -999,7 +1016,20 @@ vxe_ctrl_unit #(
 
 /* Vector unit 0 */
 vxe_vec_unit #(
-	.CLIENT_ID(CLNT_VPU0)
+	.CLIENT_ID(CLNT_VPU0),
+	.CMD_DEPTH_POW2(VPU_CMD_DEPTH_POW2),
+	.LSU_NR_REQ_POW2(VPU_LSU_NR_REQ_POW2),
+	.LSU_RD_DEPTH_POW2(VPU_LSU_RD_DEPTH_POW2),
+	.LSU_WR_DEPTH_POW2(VPU_LSU_WR_DEPTH_POW2),
+	.LSU_RS_DEPTH_POW2(VPU_LSU_RS_DEPTH_POW2),
+	.PROD_EU_WE_DEPTH_POW2(VPU_PROD_EU_WE_DEPTH_POW2),
+	.PROD_EU_OP_DEPTH_POW2(VPU_PROD_EU_OP_DEPTH_POW2),
+	.PROD_EU_RQD_IN_DEPTH_POW2(VPU_PROD_EU_RQD_IN_DEPTH_POW2),
+	.PROD_EU_RQD_OUT_DEPTH_POW2(VPU_PROD_EU_RQD_OUT_DEPTH_POW2),
+	.PROD_EU_RSD_IN_WE_DEPTH_POW2(VPU_PROD_EU_RSD_IN_WE_DEPTH_POW2),
+	.PROD_EU_RSD_IN_RS_DEPTH_POW2(VPU_PROD_EU_RSD_IN_RS_DEPTH_POW2),
+	.PROD_EU_RSD_OUT_OP_DEPTH_POW2(VPU_PROD_EU_RSD_OUT_OP_DEPTH_POW2),
+	.PROD_EU_FMAC_IN_OP_DEPTH_POW2(VPU_PROD_EU_FMAC_IN_OP_DEPTH_POW2)
 ) vec_unit0(
 	.clk(clk),
 	.nrst(nrst),
@@ -1035,7 +1065,20 @@ if(SINGLE_VPU_CONFIG == 0)
 begin
 	/* Vector unit 1 */
 	vxe_vec_unit #(
-		.CLIENT_ID(CLNT_VPU1)
+		.CLIENT_ID(CLNT_VPU1),
+		.CMD_DEPTH_POW2(VPU_CMD_DEPTH_POW2),
+		.LSU_NR_REQ_POW2(VPU_LSU_NR_REQ_POW2),
+		.LSU_RD_DEPTH_POW2(VPU_LSU_RD_DEPTH_POW2),
+		.LSU_WR_DEPTH_POW2(VPU_LSU_WR_DEPTH_POW2),
+		.LSU_RS_DEPTH_POW2(VPU_LSU_RS_DEPTH_POW2),
+		.PROD_EU_WE_DEPTH_POW2(VPU_PROD_EU_WE_DEPTH_POW2),
+		.PROD_EU_OP_DEPTH_POW2(VPU_PROD_EU_OP_DEPTH_POW2),
+		.PROD_EU_RQD_IN_DEPTH_POW2(VPU_PROD_EU_RQD_IN_DEPTH_POW2),
+		.PROD_EU_RQD_OUT_DEPTH_POW2(VPU_PROD_EU_RQD_OUT_DEPTH_POW2),
+		.PROD_EU_RSD_IN_WE_DEPTH_POW2(VPU_PROD_EU_RSD_IN_WE_DEPTH_POW2),
+		.PROD_EU_RSD_IN_RS_DEPTH_POW2(VPU_PROD_EU_RSD_IN_RS_DEPTH_POW2),
+		.PROD_EU_RSD_OUT_OP_DEPTH_POW2(VPU_PROD_EU_RSD_OUT_OP_DEPTH_POW2),
+		.PROD_EU_FMAC_IN_OP_DEPTH_POW2(VPU_PROD_EU_FMAC_IN_OP_DEPTH_POW2)
 	) vec_unit1(
 		.clk(clk),
 		.nrst(nrst),

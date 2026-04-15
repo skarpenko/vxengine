@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2025 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,7 +30,20 @@
 
 /* Vector unit */
 module vxe_vec_unit #(
-	parameter [1:0] CLIENT_ID = 0	/* Client Id */
+	parameter [1:0] CLIENT_ID = 0,			/* Client Id */
+	parameter CMD_DEPTH_POW2 = 4,			/* Command FIFO depth */
+	parameter LSU_NR_REQ_POW2 = 7,			/* No. Requests on the fly */
+	parameter LSU_RD_DEPTH_POW2 = 5,		/* Read requests FIFO depth */
+	parameter LSU_WR_DEPTH_POW2 = 2,		/* Write requests FIFO depth */
+	parameter LSU_RS_DEPTH_POW2 = 5,		/* Read responses FIFO depth */
+	parameter PROD_EU_WE_DEPTH_POW2 = 2,		/* Write enable FIFOs depth */
+	parameter PROD_EU_OP_DEPTH_POW2 = 2,		/* Operand FIFOs depth */
+	parameter PROD_EU_RQD_IN_DEPTH_POW2 = 2,	/* Incoming request FIFOs depth */
+	parameter PROD_EU_RQD_OUT_DEPTH_POW2 = 2,	/* Outgoing request FIFOs depth */
+	parameter PROD_EU_RSD_IN_WE_DEPTH_POW2 = 2,	/* Incoming write enable FIFOs depth */
+	parameter PROD_EU_RSD_IN_RS_DEPTH_POW2 = 3,	/* Incoming response FIFO depth */
+	parameter PROD_EU_RSD_OUT_OP_DEPTH_POW2 = 2,	/* Outgoing operand FIFOs depth */
+	parameter PROD_EU_FMAC_IN_OP_DEPTH_POW2 = 2	/* Incoming operand FIFOs depth */
 )
 (
 	clk,
@@ -230,7 +243,7 @@ assign o_err = lsu_err;
 
 /*** Command queue ***/
 vxe_vpu_cmd_queue #(
-	.DEPTH_POW2(4)	/* Internal FIFO depth = 2^DEPTH_POW2 */
+	.DEPTH_POW2(CMD_DEPTH_POW2)	/* Internal FIFO depth = 2^DEPTH_POW2 */
 ) cmd_queue (
 	.clk(clk),
 	.nrst(nrst),
@@ -287,11 +300,11 @@ vxe_vpu_cmd_dispatch cmd_disp_unit(
 
 /*** Load-store unit ***/
 vxe_vpu_lsu #(
-	.CLIENT_ID(CLIENT_ID),	/* Client Id */
-	.NR_REQ_POW2(7),	/* Requests on the fly (2^NR_REQ_POW2) */
-	.RD_DEPTH_POW2(5),	/* Read requests FIFO depth (2^RD_DEPTH_POW2) */
-	.WR_DEPTH_POW2(2),	/* Write requests FIFO depth (2^WR_DEPTH_POW2) */
-	.RS_DEPTH_POW2(5)	/* Read responses FIFO depth (2^RS_DEPTH_POW2) */
+	.CLIENT_ID(CLIENT_ID),			/* Client Id */
+	.NR_REQ_POW2(LSU_NR_REQ_POW2),		/* Requests on the fly (2^NR_REQ_POW2) */
+	.RD_DEPTH_POW2(LSU_RD_DEPTH_POW2),	/* Read requests FIFO depth (2^RD_DEPTH_POW2) */
+	.WR_DEPTH_POW2(LSU_WR_DEPTH_POW2),	/* Write requests FIFO depth (2^WR_DEPTH_POW2) */
+	.RS_DEPTH_POW2(LSU_RS_DEPTH_POW2)	/* Read responses FIFO depth (2^RS_DEPTH_POW2) */
 ) lsu (
 	.clk(clk),
 	.nrst(nrst),
@@ -403,17 +416,17 @@ vxe_vpu_prod_ecu prod_ecu(
 
 /*** Product execution unit ***/
 vxe_vpu_prod_eu #(
-	.WE_DEPTH_POW2(2),		/* Write enable FIFOs depth (2^WE_DEPTH_POW2) */
-	.OP_DEPTH_POW2(2),		/* Operand FIFOs depth (2^WE_DEPTH_POW2) */
+	.WE_DEPTH_POW2(PROD_EU_WE_DEPTH_POW2),			/* Write enable FIFOs depth (2^WE_DEPTH_POW2) */
+	.OP_DEPTH_POW2(PROD_EU_OP_DEPTH_POW2),			/* Operand FIFOs depth (2^WE_DEPTH_POW2) */
 	/* Requests dispatcher unit */
-	.RQD_IN_DEPTH_POW2(2),		/* Incoming FIFOs depth (2^IN_DEPTH_POW2) */
-	.RQD_OUT_DEPTH_POW2(2),		/* Outgoing FIFOs depth (2^OUT_DEPTH_POW2) */
+	.RQD_IN_DEPTH_POW2(PROD_EU_RQD_IN_DEPTH_POW2),		/* Incoming FIFOs depth (2^IN_DEPTH_POW2) */
+	.RQD_OUT_DEPTH_POW2(PROD_EU_RQD_OUT_DEPTH_POW2),	/* Outgoing FIFOs depth (2^OUT_DEPTH_POW2) */
 	/* Responses distributor unit */
-	.RSD_IN_WE_DEPTH_POW2(2),	/* Incoming write enable FIFOs depth (2^IN_WE_DEPTH_POW2) */
-	.RSD_IN_RS_DEPTH_POW2(3),	/* Incoming response FIFO depth (2^IN_RS_DEPTH_POW2) */
-	.RSD_OUT_OP_DEPTH_POW2(2),	/* Outgoing operand FIFOs depth (2^OUT_OP_DEPTH_POW2) */
+	.RSD_IN_WE_DEPTH_POW2(PROD_EU_RSD_IN_WE_DEPTH_POW2),	/* Incoming write enable FIFOs depth (2^IN_WE_DEPTH_POW2) */
+	.RSD_IN_RS_DEPTH_POW2(PROD_EU_RSD_IN_RS_DEPTH_POW2),	/* Incoming response FIFO depth (2^IN_RS_DEPTH_POW2) */
+	.RSD_OUT_OP_DEPTH_POW2(PROD_EU_RSD_OUT_OP_DEPTH_POW2),	/* Outgoing operand FIFOs depth (2^OUT_OP_DEPTH_POW2) */
 	/* FMAC scheduler unit */
-	.FMAC_IN_OP_DEPTH_POW2(2)	/* Incoming operand FIFOs depth (2^IN_OP_DEPTH_POW2) */
+	.FMAC_IN_OP_DEPTH_POW2(PROD_EU_FMAC_IN_OP_DEPTH_POW2)	/* Incoming operand FIFOs depth (2^IN_OP_DEPTH_POW2) */
 ) prod_eu (
 	/* Global signals */
 	.clk(clk),
