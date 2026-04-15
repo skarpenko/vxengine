@@ -1111,9 +1111,7 @@ end
 else
 begin
 	/* Vector unit 1 (Dummy instance) */
-	vxe_vec_unit_dummy #(
-		.CLIENT_ID(CLNT_VPU1)
-	) vec_unit1(
+	vxe_vec_unit_dummy vec_unit1(
 		.clk(clk),
 		.nrst(nrst),
 		/* Memory request channel */

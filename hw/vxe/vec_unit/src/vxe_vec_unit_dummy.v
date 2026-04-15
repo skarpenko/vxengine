@@ -29,10 +29,7 @@
 
 
 /* Vector unit dummy */
-module vxe_vec_unit_dummy #(
-	parameter [1:0] CLIENT_ID = 0	/* Client Id */
-)
-(
+module vxe_vec_unit_dummy(
 	clk,
 	nrst,
 	/* Memory request channel */
