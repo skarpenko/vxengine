@@ -2,6 +2,9 @@
 # Quartus compilation flow
 
 
+BUILD_TYPE ?= "sdram_2axi"
+
+
 # Targets
 all: vxengine.sof
 rbf: vxengine.rbf
@@ -25,7 +28,7 @@ synth/output_files/vxengine.sof: synth/vxengine.qpf
 # Create Quartus project
 synth/vxengine.qpf: config/creat_proj.tcl
 	mkdir synth
-	quartus_sh -t config/creat_proj.tcl
+	quartus_sh -t config/creat_proj.tcl $(BUILD_TYPE)
 
 
 # Program FPGA target

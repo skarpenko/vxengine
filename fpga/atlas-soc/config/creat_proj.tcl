@@ -29,6 +29,25 @@
 project_new synth/vxengine
 
 
+# Capture script argument list
+set args_list $quartus(args)
+set num_args  [llength $args_list]
+
+# Check that arguments are provided
+if {$num_args < 1} {
+	puts "Error: Build type is a required argument."
+	puts "Usage: quartus_sh -t creat_proj.tcl <build_type>"
+	puts "Build types:"
+	puts "  l3_main    - connection to L3 Main Switch (SDRAM is not accessible)"
+	puts "  sdram_1axi - connection to SDRAM via single AXI3 port"
+	puts "  sdram_2axi - connection to SDRAM via two AXI3 ports"
+	exit 1
+}
+
+# Assign build type
+set build_type [lindex $args_list 0]
+
+
 # Project config
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CSEMA4U23C6
@@ -656,4 +675,13 @@ set_global_assignment -name VERILOG_FILE $::env(VXENGINE_HOME)/hw/vxe/vec_unit/s
 set_global_assignment -name VERILOG_FILE $::env(VXENGINE_HOME)/hw/vxe/top/src/vxe_top.v
 set_global_assignment -name VERILOG_FILE $::env(VXENGINE_HOME)/fpga/atlas-soc/hw/fpga_top/de0_nano_soc_baseline.v
 
-set_global_assignment -name QSYS_FILE $::env(VXENGINE_HOME)/fpga/atlas-soc/hw/hps/hps.qsys
+if {$build_type == "l3_main"} {
+	set_global_assignment -name QSYS_FILE $::env(VXENGINE_HOME)/fpga/atlas-soc/hw/hps/l3_main/hps.qsys
+} elseif {$build_type == "sdram_1axi"} {
+	set_global_assignment -name QSYS_FILE $::env(VXENGINE_HOME)/fpga/atlas-soc/hw/hps/sdram_1axi/hps.qsys
+} elseif {$build_type == "sdram_2axi"} {
+	set_global_assignment -name QSYS_FILE $::env(VXENGINE_HOME)/fpga/atlas-soc/hw/hps/sdram_2axi/hps.qsys
+} else {
+	puts "Invalid build type: $build_type"
+	exit 1
+}
