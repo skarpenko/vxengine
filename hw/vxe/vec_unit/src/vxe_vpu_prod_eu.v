@@ -31,7 +31,7 @@
 /* Product execution unit */
 module vxe_vpu_prod_eu #(
 	parameter WE_DEPTH_POW2 = 2,		/* Write enable FIFOs depth (2^WE_DEPTH_POW2) */
-	parameter OP_DEPTH_POW2 = 2,		/* Operand FIFOs depth (2^WE_DEPTH_POW2) */
+	parameter OP_DEPTH_POW2 = 2,		/* Operand FIFOs depth (2^OP_DEPTH_POW2) */
 	/* Requests dispatcher unit */
 	parameter RQD_IN_DEPTH_POW2 = 2,	/* Incoming FIFOs depth (2^IN_DEPTH_POW2) */
 	parameter RQD_OUT_DEPTH_POW2 = 2,	/* Outgoing FIFOs depth (2^OUT_DEPTH_POW2) */
