@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020-2023 The VxEngine Project. All rights reserved.
+ * Copyright (c) 2020-2026 The VxEngine Project. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -374,6 +374,8 @@ end
 
 
 /* Responses handling FSM */
+reg fsm_rnw_state;
+
 always @(posedge clk or negedge nrst)
 begin
 	if(!nrst)
@@ -382,6 +384,7 @@ begin
 		rss_fifo_rp <= 3'b000;
 		rsd_fifo_rp <= 3'b000;
 		fifo_rrs_wr <= 1'b0;
+		fsm_rnw_state <= 1'b0;
 	end
 	else if(i_reinit)
 	begin
@@ -394,22 +397,44 @@ begin
 		rsd_fifo_rp <= rsd_fifo_wp;
 		disabled_q <= 1'b1;
 		fifo_rrs_wr <= 1'b0;
+		fsm_rnw_state <= 1'b0;
 	end
-	else if(!rss_fifo_empty && !fifo_rrs_full)
+	else if(fsm_rnw_state == 1'b0)
 	begin
-		rss_fifo_rp <= rss_fifo_rp + 1'b1;
-		fifo_rrs_wr <= 1'b0;
-
-		/* Read response */
-		if(rsp_rnw)
+		if(!rss_fifo_empty)
 		begin
-			fifo_rrs_in <= { rsp_th, rsp_arg, rsd_fifo[rsd_fifo_rp[1:0]] };
-			fifo_rrs_wr <= 1'b1;
-			rsd_fifo_rp <= rsd_fifo_rp + 1'b1;
+			rss_fifo_rp <= rss_fifo_rp + 1'b1;
+
+			/* Read response */
+			if(rsp_rnw)
+			begin
+				fifo_rrs_in <= { rsp_th, rsp_arg, rsd_fifo[rsd_fifo_rp[1:0]] };
+				fifo_rrs_wr <= 1'b1;
+				rsd_fifo_rp <= rsd_fifo_rp + 1'b1;
+				fsm_rnw_state <= 1'b1;
+			end
 		end
 	end
-	else
-		fifo_rrs_wr <= 1'b0;
+	else if(fsm_rnw_state == 1'b1)
+	begin
+		if(!fifo_rrs_full)
+		begin
+			if(!rss_fifo_empty && rsp_rnw)
+			begin
+				rss_fifo_rp <= rss_fifo_rp + 1'b1;
+				fifo_rrs_in <= { rsp_th, rsp_arg, rsd_fifo[rsd_fifo_rp[1:0]] };
+				rsd_fifo_rp <= rsd_fifo_rp + 1'b1;
+			end
+			else
+			begin
+				if(!rss_fifo_empty)
+					rss_fifo_rp <= rss_fifo_rp + 1'b1;
+
+				fifo_rrs_wr <= 1'b0;
+				fsm_rnw_state <= 1'b0;
+			end
+		end
+	end
 end
 
 
