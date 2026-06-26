@@ -412,17 +412,17 @@ vxe_top #(
 	.SINGLE_VPU_CONFIG(1),			/* Instantiate only one VPU */
 	.CU_CMD_FETCH_DEPTH_POW2(2),		/* Command fetch FIFO depth */
 	.CU_VPU_FWD_DEPTH_POW2(2),		/* VPU forwarding FIFO depth */
-	.VPU_CMD_DEPTH_POW2(2),			/* Command FIFO depth */
-	.VPU_LSU_NR_REQ_POW2(7),		/* No. Requests on the fly */
-	.VPU_LSU_RD_DEPTH_POW2(2),		/* Read requests FIFO depth */
-	.VPU_LSU_WR_DEPTH_POW2(2),		/* Write requests FIFO depth */
-	.VPU_LSU_RS_DEPTH_POW2(2),		/* Read responses FIFO depth */
-	.VPU_PROD_EU_WE_DEPTH_POW2(1),		/* Write enable FIFOs depth */
-	.VPU_PROD_EU_OP_DEPTH_POW2(1),		/* Operand FIFOs depth */
+	.VPU_CMD_DEPTH_POW2(1),			/* Command FIFO depth */
+	.VPU_LSU_NR_REQ_POW2(2),		/* No. Requests on the fly */
+	.VPU_LSU_RD_DEPTH_POW2(1),		/* Read requests FIFO depth */
+	.VPU_LSU_WR_DEPTH_POW2(1),		/* Write requests FIFO depth */
+	.VPU_LSU_RS_DEPTH_POW2(1),		/* Read responses FIFO depth */
+	.VPU_PROD_EU_WE_DEPTH_POW2(2),		/* Write enable FIFOs depth */
+	.VPU_PROD_EU_OP_DEPTH_POW2(2),		/* Operand FIFOs depth */
 	.VPU_PROD_EU_RQD_IN_DEPTH_POW2(1),	/* Incoming request FIFOs depth */
 	.VPU_PROD_EU_RQD_OUT_DEPTH_POW2(1),	/* Outgoing request FIFOs depth */
 	.VPU_PROD_EU_RSD_IN_WE_DEPTH_POW2(1),	/* Incoming write enable FIFOs depth */
-	.VPU_PROD_EU_RSD_IN_RS_DEPTH_POW2(2),	/* Incoming response FIFO depth */
+	.VPU_PROD_EU_RSD_IN_RS_DEPTH_POW2(1),	/* Incoming response FIFO depth */
 	.VPU_PROD_EU_RSD_OUT_OP_DEPTH_POW2(1),	/* Outgoing operand FIFOs depth */
 	.VPU_PROD_EU_FMAC_IN_OP_DEPTH_POW2(1)	/* Incoming operand FIFOs depth */
 ) vxe (
