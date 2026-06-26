@@ -1,0 +1,2 @@
+obj-y := vxengine.o
+vxengine-y := vxe_init.o vxe_device.o vxe_context.o vxe_buffer.o vxe_ioctl.o vxe_prog.o

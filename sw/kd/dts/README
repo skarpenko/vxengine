@@ -1,0 +1,28 @@
+README
+======
+
+Device tree for DE0-Nano-SoC Kit/Atlas-SoC Kit
+----------------------------------------------
+
+To build, copy "socfpga_cyclone5_de0_sockit_vxe.dts" file to "linux-socfpga/arch/arm/boot/dts".
+
+Then run make, using ARM as a target, for example:
+
+ > make ARCH=arm CROSS_COMPILE=arm-none-eabi- O=<build_dir> socfpga_cyclone5_de0_sockit_vxe.dtb
+
+where <build_dir> is a build directory path.
+
+To use, copy "<build_dir>/arch/arm/boot/dts/socfpga_cyclone5_de0_sockit_vxe.dtb" file to
+U-Boot partition on SD card and modify boot script (boot.script) as the following example:
+
+---< boot.script >---
+  # Set the devicetree image to be used
+  setenv fdtimage socfpga_cyclone5_de0_sockit_vxe.dtb;
+
+  # Set the kernel image to be used
+  setenv bootimage zImage-4.14.130-ltsi-altera;
+---< boot.script >---
+
+Then create a new config image for U-Boot:
+
+ > mkimage -T script -d boot.script u-boot.scr
