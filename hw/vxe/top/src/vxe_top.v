@@ -38,18 +38,24 @@ module vxe_top #(
 	parameter CU_CMD_FETCH_DEPTH_POW2 = 4,			/* Command fetch FIFO depth */
 	parameter CU_VPU_FWD_DEPTH_POW2 = 4,			/* VPU forwarding FIFO depth */
 	parameter VPU_CMD_DEPTH_POW2 = 4,			/* Command FIFO depth */
-	parameter VPU_LSU_NR_REQ_POW2 = 7,			/* No. Requests on the fly */
+	parameter VPU_LSU_NR_REQ_POW2 = 5,			/* No. Requests on the fly */
+	/**
+	 ** NOTE: Number of requests on the fly cannot be more than a sum of operand FIFOs depth:
+	 **   2^OP_DEPTH + 2^OUT_OP_DEPTH + 2^(IN_OP_DEPTH-1)  (-1 - since FMAC FIFO has 32b width).
+	 ** Larger number of requests may cause a deadlock if all operand FIFOs for the one operand
+	 ** get full because read responses for the other operand are delayed.
+	 **/
 	parameter VPU_LSU_RD_DEPTH_POW2 = 5,			/* Read requests FIFO depth */
 	parameter VPU_LSU_WR_DEPTH_POW2 = 2,			/* Write requests FIFO depth */
 	parameter VPU_LSU_RS_DEPTH_POW2 = 5,			/* Read responses FIFO depth */
-	parameter VPU_PROD_EU_WE_DEPTH_POW2 = 2,		/* Write enable FIFOs depth */
-	parameter VPU_PROD_EU_OP_DEPTH_POW2 = 2,		/* Operand FIFOs depth */
+	parameter VPU_PROD_EU_WE_DEPTH_POW2 = 4,		/* Write enable FIFOs depth */
+	parameter VPU_PROD_EU_OP_DEPTH_POW2 = 4,		/* Operand FIFOs depth */
 	parameter VPU_PROD_EU_RQD_IN_DEPTH_POW2 = 2,		/* Incoming request FIFOs depth */
 	parameter VPU_PROD_EU_RQD_OUT_DEPTH_POW2 = 2,		/* Outgoing request FIFOs depth */
 	parameter VPU_PROD_EU_RSD_IN_WE_DEPTH_POW2 = 2,		/* Incoming write enable FIFOs depth */
 	parameter VPU_PROD_EU_RSD_IN_RS_DEPTH_POW2 = 3,		/* Incoming response FIFO depth */
-	parameter VPU_PROD_EU_RSD_OUT_OP_DEPTH_POW2 = 2,	/* Outgoing operand FIFOs depth */
-	parameter VPU_PROD_EU_FMAC_IN_OP_DEPTH_POW2 = 2		/* Incoming operand FIFOs depth */
+	parameter VPU_PROD_EU_RSD_OUT_OP_DEPTH_POW2 = 4,	/* Outgoing operand FIFOs depth */
+	parameter VPU_PROD_EU_FMAC_IN_OP_DEPTH_POW2 = 4		/* Incoming operand FIFOs depth */
 )
 (
 	clk,
