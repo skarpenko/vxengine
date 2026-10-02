@@ -293,7 +293,8 @@ long vxe_ioctl_cmd_buffer_runpgm(struct vxe_context *ctx, void __user *arg)
 			buf->flags |= VXE_BUF_F_LOCKED;
 			err = 0;
 		}
-	}
+	} else
+		err = -ENOENT;
 	vxe_buffer_ctx_unlock(ctx);
 
 	if(err) {
@@ -350,7 +351,8 @@ long vxe_ioctl_cmd_buffer_update(struct vxe_context *ctx, void __user *arg)
 			buf->flags |= VXE_BUF_F_LOCKED;
 			err = 0;
 		}
-	}
+	} else
+		err = -ENOENT;
 	vxe_buffer_ctx_unlock(ctx);
 
 	if(err)
