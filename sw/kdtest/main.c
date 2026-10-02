@@ -39,6 +39,7 @@
 #define DEVICE_FILE	"/dev/vxengine0"
 #define DEVICE_ID	0xFEFEFAFA
 #define BUFFER_SIZE	4096
+#define BAD_BUFFER_ID	1000
 
 #define FAIL_CODE(adjust)	\
 	(-(__LINE__ + (adjust)))
@@ -622,6 +623,128 @@ err_destroy_buffers:
 }
 
 
+/*
+ * Test: non-existent buffer deallocate
+ */
+int kd_test_bad_buffer_dealloc()
+{
+	int fd;
+	int ret = 0;
+
+	fd = device_open();
+	if(fd < 0)
+		return FAIL_CODE(-2);
+
+	/* Must fail */
+	if(!ioctl_buffer_destroy(fd, BAD_BUFFER_ID)) {
+		ret = FAIL_CODE(-1);
+		goto err_device_close;
+	}
+
+	if(device_close(fd))
+		return FAIL_CODE(-1);
+
+	return 0;
+
+err_device_close:
+	device_close(fd);
+
+	return ret;
+}
+
+
+/*
+ * Test: non-existent buffer unmap
+ */
+int kd_test_bad_buffer_unmap()
+{
+	int fd;
+	int ret = 0;
+
+	fd = device_open();
+	if(fd < 0)
+		return FAIL_CODE(-2);
+
+	/* Must fail */
+	if(!ioctl_buffer_unmap(fd, BAD_BUFFER_ID)) {
+		ret = FAIL_CODE(-1);
+		goto err_device_close;
+	}
+
+	if(device_close(fd))
+		return FAIL_CODE(-1);
+
+	return 0;
+
+err_device_close:
+	device_close(fd);
+
+	return ret;
+}
+
+
+/*
+ * Test: run program from non-existent command buffer
+ */
+int kd_test_bad_cmd_buffer_run_program()
+{
+	int fd;
+	int ret = 0;
+	__u64 fence;
+
+	fd = device_open();
+	if(fd < 0)
+		return FAIL_CODE(-2);
+
+	/* Must fail */
+	if(!ioctl_cmd_buffer_runpgm(fd, BAD_BUFFER_ID, &fence)) {
+		ret = FAIL_CODE(-1);
+		goto err_device_close;
+	}
+
+	if(device_close(fd))
+		return FAIL_CODE(-1);
+
+	return 0;
+
+err_device_close:
+	device_close(fd);
+
+	return ret;
+}
+
+
+/*
+ * Test: update bindings for non-existent command buffer
+ */
+int kd_test_bad_cmd_buffer_bindings_update()
+{
+	int fd;
+	int ret = 0;
+	struct vxe_binding bindings[3];
+
+	fd = device_open();
+	if(fd < 0)
+		return FAIL_CODE(-2);
+
+	/* Must fail */
+	if(!ioctl_cmd_buffer_update(fd, BAD_BUFFER_ID, bindings, 3)) {
+		ret = FAIL_CODE(-1);
+		goto err_device_close;
+	}
+
+	if(device_close(fd))
+		return FAIL_CODE(-1);
+
+	return 0;
+
+err_device_close:
+	device_close(fd);
+
+	return ret;
+}
+
+
 struct test_descr kd_tests_list[] = {
 	{
 		.name = "Device open and close",
@@ -654,6 +777,22 @@ struct test_descr kd_tests_list[] = {
 	{
 		.name = "Run program from cmd buffer",
 		.func = kd_test_cmd_buffer_run_program
+	},
+	{
+		.name = "Bad buffer dealloc",
+		.func = kd_test_bad_buffer_dealloc
+	},
+	{
+		.name = "Bad buffer unmap",
+		.func = kd_test_bad_buffer_unmap
+	},
+	{
+		.name = "Run program from bad cmd buffer",
+		.func = kd_test_bad_cmd_buffer_run_program
+	},
+	{
+		.name = "Bad cmd buffer bindings update",
+		.func = kd_test_bad_cmd_buffer_bindings_update
 	},
 	/***/
 	{ NULL, NULL }
