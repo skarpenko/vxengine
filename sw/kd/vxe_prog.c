@@ -339,7 +339,7 @@ static int prog_verif_prod(struct vxe_prog_state *state, unsigned vpu)
 			return -EINVAL;
 		}
 
-		if(min(state->ts[vpu][th].rs_len, state->ts[vpu][th].rs_len) < state->ts[vpu][th].vlen) {
+		if(min(state->ts[vpu][th].rs_len, state->ts[vpu][th].rt_len) < state->ts[vpu][th].vlen) {
 			dev_err(ps_dev(state), "<prod> vpu%u, th%u: invalid operand vector length.\n", vpu, th);
 			return -EINVAL;
 		}
