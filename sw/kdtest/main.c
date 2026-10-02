@@ -181,7 +181,7 @@ int ioctl_cmd_buffer_update(int fd, __s32 id, struct vxe_binding *bindings,
 }
 
 
-int ioctl_fence_wait(int fd, __s32 id, __u64 fence)
+int ioctl_fence_wait(int fd, __u64 fence)
 {
 	struct vxe_fence f;
 
@@ -560,7 +560,7 @@ int kd_test_cmd_buffer_run_program()
 	}
 
 	/* Wait for completion */
-	if(ioctl_fence_wait(fd, cmdid, fence)) {
+	if(ioctl_fence_wait(fd, fence)) {
 		ret = FAIL_CODE(-1);
 		goto err_destroy_cmd_buffer;
 	}
@@ -584,7 +584,7 @@ int kd_test_cmd_buffer_run_program()
 	}
 
 	/* Wait for completion */
-	if(ioctl_fence_wait(fd, cmdid, fence)) {
+	if(ioctl_fence_wait(fd, fence)) {
 		ret = FAIL_CODE(-1);
 		goto err_destroy_cmd_buffer;
 	}
