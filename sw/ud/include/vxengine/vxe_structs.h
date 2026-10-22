@@ -41,7 +41,7 @@ typedef struct VxInstanceCreateInfo {
 /* Context info */
 typedef struct VxContextCreateInfo {
 	VxDevice device;		/* Device to use */
-	VxVPUMask vpuMask;		/* Enabled VPUs mask */
+	uint32_t vpuMask;		/* Enabled VPUs mask (0 - default) */
 } VxContextCreateInfo;
 
 
@@ -71,6 +71,14 @@ typedef struct VxMatrixDesc {
 } VxMatrixDesc;
 
 
+/* Bias values */
+typedef struct VxBias {
+	VxFloat *pValue;		/* Pointer to bias values */
+	VxSize rows;			/* Number of rows */
+	VxSize cols;			/* Number of cols */
+} VxBias;
+
+
 /* Pipeline special operation base */
 typedef struct VxPipelineSpecialOp {
 	VxPipelineSpecialOpType opType;
@@ -86,7 +94,7 @@ typedef struct VxPipelineSpecialOpReLU {
 /* Pipeline special operation - Leaky ReLU */
 typedef struct VxPipelineSpecialOpLReLU {
 	VxPipelineSpecialOp base;
-//	VxExpDiff
+	int negExpD;
 } VxPipelineSpecialOpLReLU;
 
 
@@ -103,7 +111,8 @@ typedef struct VxPipelineStageVxV {
 	const VxVectorDesc *pSrc1;		/* Source operands 1  */
 	const VxVectorDesc *pSrc2;		/* Source operands 2 */
 	const VxVectorDesc *pDst;		/* Destinations */
-	const VxPipelineSpecialOp *specialOp;	/* Special operation */
+	const VxBias *pBias;			/* (Optional) Bias values */
+	const VxPipelineSpecialOp *pSpecialOp;	/* (Optional) Special operation */
 } VxPipelineStageVxV;
 
 
@@ -114,7 +123,8 @@ typedef struct VxPipelineStageMxV {
 	const VxMatrixDesc *pSrc1;		/* Source matrix operands 1  */
 	const VxVectorDesc *pSrc2;		/* Source vector operands 2 */
 	const VxVectorDesc *pDst;		/* Destination vectors */
-	const VxPipelineSpecialOp *specialOp;	/* Special operation */
+	const VxBias *pBias;			/* (Optional) Bias values */
+	const VxPipelineSpecialOp *pSpecialOp;	/* (Optional) Special operation */
 } VxPipelineStageMxV;
 
 
@@ -125,7 +135,8 @@ typedef struct VxPipelineStageMxM {
 	const VxMatrixDesc *pSrc1;		/* Source matrix operands 1  */
 	const VxMatrixDesc *pSrc2_T;		/* Source transposed matrix operands 2  */
 	const VxMatrixDesc *pDst;		/* Destination matrices */
-	const VxPipelineSpecialOp *specialOp;	/* Special operation */
+	const VxBias *pBias;			/* (Optional) Bias values */
+	const VxPipelineSpecialOp *pSpecialOp;	/* (Optional) Special operation */
 } VxPipelineStageMxM;
 
 
@@ -133,5 +144,5 @@ typedef struct VxPipelineStageMxM {
 typedef struct VxPipelineCreateInfo {
 	VxContext context;			/* Context */
 	VxSize nStages;				/* Number of stages */
-	const VxPipelineStage *pStages;		/* Stages list */
+	const VxPipelineStage* const *ppStages;	/* Stages list */
 } VxPipelineCreateInfo;

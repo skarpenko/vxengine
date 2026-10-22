@@ -27,23 +27,13 @@
  * Program verification and assembly
  */
 
-#include <stdio.h>
+#define DEBUG_PREFIX	"[asm] "
+
 #include <errno.h>
 #include <algorithm>
+#include "../../debug.hxx"
 #include "swemu_impl.hxx"
 #include "swemu_prog.hxx"
-
-
-#define DEBUG	0
-
-#if DEBUG == 1
-#  define debug_printf(fmt, ...)		\
-	do {					\
-		printf("[ASM] " fmt, __VA_ARGS__);	\
-	} while(0)
-#else
-#  define debug_printf(fmt, ...)
-#endif
 
 
 namespace cmd {
@@ -192,7 +182,7 @@ int ProgramAssembler::prepSETRS(uint32_t pc)
 	idx = m_cmdBuf->resData()[ri].index;	// User provided index to the buffer
 
 	if(idx > blen) {
-		debug_printf("Error: <setrs> index out of range (res: %zu).\n", ri);
+		debug_printf("Error: <setrs> index out of range (res: %u).\n", ri);
 		return EINVAL;
 	}
 
@@ -232,7 +222,7 @@ int ProgramAssembler::prepSETRT(uint32_t pc)
 	idx = m_cmdBuf->resData()[ri].index;	// User provided index to the buffer
 
 	if(idx > blen) {
-		debug_printf("Error: <setrt> index out of range (res: %zu).\n", ri);
+		debug_printf("Error: <setrt> index out of range (res: %u).\n", ri);
 		return EINVAL;
 	}
 
@@ -272,7 +262,7 @@ int ProgramAssembler::prepSETRD(uint32_t pc)
 	idx = m_cmdBuf->resData()[ri].index;	// User provided index to the buffer
 
 	if(idx > blen) {
-		debug_printf("Error: <setrd> index out of range (res: %zu).\n", ri);
+		debug_printf("Error: <setrd> index out of range (res: %u).\n", ri);
 		return EINVAL;
 	}
 

@@ -27,24 +27,13 @@
  * Program executor
  */
 
-#include <stdio.h>
-#include <errno.h>
+#define DEBUG_PREFIX	"[exec] "
+
 #include <cmath>
 #include <new>
+#include "../../debug.hxx"
 #include "swemu_impl.hxx"
 #include "swemu_exec.hxx"
-
-
-#define DEBUG	0
-
-#if DEBUG == 1
-#  define debug_printf(fmt, ...)		\
-	do {					\
-		printf("[EXE] " fmt, __VA_ARGS__);	\
-	} while(0)
-#else
-#  define debug_printf(fmt, ...)
-#endif
 
 
 namespace cmd {
@@ -256,11 +245,13 @@ void ProgramExecutor::execSTORE(uint32_t pc)
 			if(!isEnabledVPU(vpu))
 				continue;
 			for(unsigned th = 0; th < VXE_NR_THR; ++th)
-				m_threads[vpu][th].rd[0] = m_threads[vpu][th].acc;
+				if(m_threads[vpu][th].en)
+					m_threads[vpu][th].rd[0] = m_threads[vpu][th].acc;
 		}
 	} else if(isEnabledVPU(vpu)) {
 		for(unsigned th = 0; th < VXE_NR_THR; ++th)
-			m_threads[vpu][th].rd[0] = m_threads[vpu][th].acc;
+			if(m_threads[vpu][th].en)
+				m_threads[vpu][th].rd[0] = m_threads[vpu][th].acc;
 	}
 }
 
@@ -294,11 +285,13 @@ void ProgramExecutor::execACTF(uint32_t pc)
 			if(!isEnabledVPU(vpu))
 				continue;
 			for(unsigned th = 0; th < VXE_NR_THR; ++th)
-				m_threads[vpu][th].acc = islr ? lrelu(vpu, th) : relu(vpu, th);
+				if(m_threads[vpu][th].en)
+					m_threads[vpu][th].acc = islr ? lrelu(vpu, th) : relu(vpu, th);
 		}
 	} else if(isEnabledVPU(vpu)) {
 		for(unsigned th = 0; th < VXE_NR_THR; ++th)
-			m_threads[vpu][th].acc = islr ? lrelu(vpu, th) : relu(vpu, th);
+			if(m_threads[vpu][th].en)
+				m_threads[vpu][th].acc = islr ? lrelu(vpu, th) : relu(vpu, th);
 	}
 }
 
@@ -397,7 +390,7 @@ void ProgramExecutor::execute(SwEmuCmdBuffer *cmdBuf)
 			case cmd::nop::OP:
 				break;
 			default:
-				debug_printf("Error: invalid opcode.");
+				debug_printf("Error: invalid opcode.\n");
 				break;
 		}
 	}

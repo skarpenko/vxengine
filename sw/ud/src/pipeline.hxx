@@ -32,10 +32,24 @@
 #pragma once
 
 
+class CodeGenerator;
+
 class Pipeline {
+	static constexpr unsigned MAX_VEC_LEN = 1048575;	// Maximum vector length supported by hardware
+
 	VxeDriverBackend *m_drv;
 	int m_fd;
 	int m_id;
+
+private:
+	VxResult verifVec(const VxVectorDesc& v);
+	VxResult verifMtx(const VxMatrixDesc& m);
+	VxResult verifVxV(const VxPipelineStageVxV& stage);
+	VxResult verifMxV(const VxPipelineStageMxV& stage);
+	VxResult verifMxM(const VxPipelineStageMxM& stage);
+	void compileVxV(CodeGenerator& cg, const VxPipelineStageVxV& stage);
+	void compileMxV(CodeGenerator& cg, const VxPipelineStageMxV& stage);
+	void compileMxM(CodeGenerator& cg, const VxPipelineStageMxM& stage);
 public:
 	Pipeline();
 	~Pipeline() = default;

@@ -34,7 +34,7 @@
 struct VxeBinding {
 	int32_t bufferId;	// Buffer Id
 	uint32_t index;		// Index of fp32 value within the buffer
-	explicit VxeBinding(int32_t id)
+	explicit VxeBinding(int32_t id = -1)
 		: bufferId(id), index(0)
 	{}
 };
@@ -55,7 +55,7 @@ public:
 	// Device open / close API
 	virtual int deviceOpen(uint32_t no) = 0;
 	virtual int deviceClose(int fd) = 0;
-	virtual int deviceGetinfo(int fd, uint32_t *hwid) = 0;
+	virtual int deviceGetinfo(int fd, uint32_t *hwid, uint32_t *vpus) = 0;
 
 	// Buffer API
 	virtual int bufferCreate(int fd, uint32_t size, int map, int32_t *out_id, void **out_vaddr) = 0;

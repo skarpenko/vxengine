@@ -40,11 +40,9 @@ VxResult vxEnumerateDevices(VxInstance instance, VxCount* pDeviceCount, VxDevice
 VxResult vxCreateContext(VxContextCreateInfo* pCreateInfo, VxContext* pContext);
 VxResult vxDestroyContext(VxContext context);
 
-//VxResult vxCreateBuffer(VxBufferCreateInfo* pCreateInfo, VxBuffer* pBuffer, void** pCpuAddr);
 VxResult vxCreateBuffer(VxBufferCreateInfo* pCreateInfo, VxBuffer* pBuffer, VxFloat** pCpuAddr);
 VxResult vxDestroyBuffer(VxBuffer buffer);
 
-//VxResult vxMapBuffer(VxBuffer buffer, void** pCpuAddr);
 VxResult vxMapBuffer(VxBuffer buffer, VxFloat** pCpuAddr);
 VxResult vxUnmapBuffer(VxBuffer buffer);
 

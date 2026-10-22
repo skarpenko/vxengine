@@ -43,7 +43,6 @@ typedef uint32_t VxBool;
 typedef uint32_t VxOffset;
 typedef uint32_t VxSize;
 typedef uint32_t VxCount;
-typedef uint32_t VxVPUMask;
 typedef float VxFloat;
 
 VX_DEFINE_HANDLE(VxInstance);

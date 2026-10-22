@@ -40,7 +40,7 @@ public:
 
 	virtual int deviceOpen(uint32_t no);
 	virtual int deviceClose(int fd);
-	virtual int deviceGetinfo(int fd, uint32_t *hwid);
+	virtual int deviceGetinfo(int fd, uint32_t *hwid, uint32_t *vpus);
 
 	virtual int bufferCreate(int fd, uint32_t size, int map, int32_t *out_id, void **out_vaddr);
 	virtual int bufferDestroy(int fd, int32_t id);

@@ -35,7 +35,8 @@
 class Context {
 	VxeDriverBackend *m_drv;
 	int m_fd;
-	VxVPUMask m_vpuMask;
+	uint32_t  m_vpus;
+	uint32_t m_vpuMask;
 public:
 	Context();
 	~Context() = default;
@@ -48,5 +49,6 @@ public:
 
 	VxeDriverBackend* getDrv() const { return m_drv; }
 	int getFd() const { return m_fd; }
-	VxVPUMask getVPUMask() const { return m_vpuMask; }
+	uint32_t getVPUs() const { return m_vpus; }
+	uint32_t getVPUMask() const { return m_vpuMask; }
 };

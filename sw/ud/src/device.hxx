@@ -33,11 +33,12 @@
 
 class Device {
 	VxeDriverBackend *m_drv;
-	uint32_t m_no;
-	uint32_t m_hwId;
+	const uint32_t m_no;
+	const uint32_t m_hwId;
+	const uint32_t m_vpus;
 public:
-	Device(VxeDriverBackend *drv, uint32_t no, uint32_t hwId)
-		: m_drv(drv), m_no(no), m_hwId(hwId)
+	Device(VxeDriverBackend *drv, uint32_t no, uint32_t hwId, uint32_t vpus)
+		: m_drv(drv), m_no(no), m_hwId(hwId), m_vpus(vpus)
 	{}
 	~Device() = default;
 
@@ -45,4 +46,5 @@ public:
 
 	uint32_t getNo() const { return m_no; }
 	uint32_t getHWId() const { return m_hwId; }
+	uint32_t getVPUs() const { return m_vpus; }
 };

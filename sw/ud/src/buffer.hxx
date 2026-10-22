@@ -37,6 +37,7 @@ class Buffer {
 	int m_fd;
 	int32_t m_id;
 	void *m_vaddr;
+	uint32_t m_length;
 public:
 	Buffer();
 	~Buffer() = default;
@@ -53,4 +54,5 @@ public:
 	VxeDriverBackend* getDrv() const { return m_drv; }
 	int getFd() const { return m_fd; }
 	int getId() const { return m_id; }
+	uint32_t getLength() const { return m_length; }
 };

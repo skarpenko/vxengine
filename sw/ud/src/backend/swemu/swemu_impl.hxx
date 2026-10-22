@@ -91,7 +91,7 @@ public:
 	bool locked() const { return m_bindCount != 0; }
 	unsigned getBindCount() const { return m_bindCount; }
 	void incBindCount() { ++m_bindCount; }
-	void decBindCount() { ++m_bindCount; }
+	void decBindCount() { --m_bindCount; }
 };
 
 

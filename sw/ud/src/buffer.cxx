@@ -44,8 +44,9 @@ VxResult Buffer::init(const VxBufferCreateInfo& createInfo)
 	m_drv = ctx->getDrv();
 	m_fd = ctx->getFd();
 	m_vaddr = nullptr;
+	m_length = createInfo.rows * createInfo.cols;
 
-	uint32_t size = createInfo.rows * createInfo.cols * sizeof(float);
+	uint32_t size = m_length * sizeof(float);
 
 	int res = m_drv->bufferCreate(m_fd, size, createInfo.map, &m_id, &m_vaddr);
 	if(res != 0)

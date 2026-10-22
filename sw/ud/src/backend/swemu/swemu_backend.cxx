@@ -252,12 +252,13 @@ int SwEmuDriverBackend::deviceClose(int fd)
 }
 
 
-int SwEmuDriverBackend::deviceGetinfo(int fd, uint32_t *hwid)
+int SwEmuDriverBackend::deviceGetinfo(int fd, uint32_t *hwid, uint32_t *vpus)
 {
 	if(m_impl == nullptr || fd < 0 || m_impl->getContext(fd) == nullptr)
 		return EBADF;
 
 	*hwid = DEVICE_HWID;
+	*vpus = DEFAULT_VPU_MASK;
 
 	return 0;
 }
@@ -305,6 +306,14 @@ int SwEmuDriverBackend::bufferDestroy(int fd, int32_t id)
 		return ENOENT;
 	if(buffer->locked())
 		return EPERM;
+
+	// Check if the buffer is command buffer
+	SwEmuCmdBuffer *cbuf = toCmdBuffer(buffer);
+	if(cbuf != nullptr) {
+		// Unbind buffers
+		for(uint32_t i = 0; i < cbuf->resLength(); ++i)
+			cbuf->resData()[i].data->decBindCount();
+	}
 
 	ctx->deleteBuffer(id, true);
 

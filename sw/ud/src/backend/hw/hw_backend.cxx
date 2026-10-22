@@ -51,7 +51,7 @@ uint32_t HwDriverBackend::devicesCount() const
 
 int HwDriverBackend::deviceOpen(uint32_t no)
 {
-	//TODO: need to check errno for error code afre ioctl call
+	//TODO: need to check errno for error code after ioctl call
 	return 0;
 }
 
@@ -62,7 +62,7 @@ int HwDriverBackend::deviceClose(int fd)
 }
 
 
-int HwDriverBackend::deviceGetinfo(int fd, uint32_t *hwid)
+int HwDriverBackend::deviceGetinfo(int fd, uint32_t *hwid, uint32_t *vpus)
 {
 	return 0;
 }

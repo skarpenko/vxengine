@@ -42,7 +42,8 @@ VxResult Context::init(const VxContextCreateInfo& createInfo)
 	Device *dev = reinterpret_cast<Device*>(createInfo.device);
 
 	m_drv = dev->getDrv();
-	m_vpuMask = createInfo.vpuMask;
+	m_vpus = dev->getVPUs();
+	m_vpuMask = createInfo.vpuMask ? createInfo.vpuMask : m_vpus;
 
 	m_fd = m_drv->deviceOpen(dev->getNo());
 	if(m_fd < 0)

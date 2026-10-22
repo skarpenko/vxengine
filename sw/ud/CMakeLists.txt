@@ -32,23 +32,14 @@ include_directories(include)
 
 # User mode driver library
 add_library(vxengine SHARED
-	src/instance.cxx
-	src/instance.hxx
-	src/backend.hxx
-	src/backend/swemu/swemu_sema.hxx
-	src/backend/swemu/swemu_backend.cxx
-	src/backend/swemu/swemu_backend.hxx
-	src/backend/swemu/swemu_prog.cxx
-	src/backend/swemu/swemu_prog.hxx
-	src/backend/swemu/swemu_exec.cxx
-	src/backend/swemu/swemu_exec.hxx
-	src/backend/hw/hw_backend.cxx
-	src/backend/hw/hw_backend.hxx
 	include/vxengine/vxe_types.h
 	include/vxengine/vxe_enums.h
 	include/vxengine/vxengine.h
 	include/vxengine/vxe_structs.h
 	include/vxengine/vxe_funcs.h
+	src/instance.cxx
+	src/instance.hxx
+	src/backend.hxx
 	src/device.hxx
 	src/context.cxx
 	src/context.hxx
@@ -58,23 +49,32 @@ add_library(vxengine SHARED
 	src/pipeline.hxx
 	src/error.cxx
 	src/error.hxx
-	src/backend/swemu/swemu_impl.hxx)
+	src/codegen.cxx
+	src/codegen.hxx
+	src/debug.cxx
+	src/debug.hxx
+	src/backend/swemu/swemu_sema.hxx
+	src/backend/swemu/swemu_backend.cxx
+	src/backend/swemu/swemu_backend.hxx
+	src/backend/swemu/swemu_prog.cxx
+	src/backend/swemu/swemu_prog.hxx
+	src/backend/swemu/swemu_exec.cxx
+	src/backend/swemu/swemu_exec.hxx
+	src/backend/swemu/swemu_impl.hxx
+	src/backend/hw/hw_backend.cxx
+	src/backend/hw/hw_backend.hxx)
 
 target_include_directories(vxengine PUBLIC $ENV{VXENGINE_HOME}/sw/kd)
 target_include_directories(vxengine PUBLIC $ENV{VXENGINE_HOME}/sw/vxeasm)
 target_compile_options(vxengine PUBLIC --std=c++11 -O3 -g -Wall)
-target_link_libraries(vxengine -lpthread) # TODO: revisit
-
+target_link_libraries(vxengine -lpthread)
 
 
 # Simple test application
 add_executable(simpletest
 	test/simpletest.cxx)
 
-#target_include_directories(simpletest PUBLIC include)
 add_dependencies(simpletest vxengine)
 target_compile_options(simpletest PUBLIC --std=c++11 -O3 -g -Wall)
 target_link_options(simpletest PUBLIC -Wl,-rpath=. -L.)
-###target_link_options(simpletest PUBLIC -L.)
-##target_link_libraries(simpletest -lpthread -ldl -lvxengine) # TODO: revisit
-target_link_libraries(simpletest -lvxengine) # TODO: revisit
+target_link_libraries(simpletest -lvxengine)

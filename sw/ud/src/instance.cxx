@@ -52,16 +52,17 @@ VxResult Instance::init(const VxInstanceCreateInfo &createInfo)
 
 	for(uint32_t i = 0; i < m_drv->devicesCount(); ++i) {
 		uint32_t hwid;
+		uint32_t vpus;
 		int fd = m_drv->deviceOpen(i);
 		if(fd < 0)
 			continue;
-		if(m_drv->deviceGetinfo(fd, &hwid)) {
+		if(m_drv->deviceGetinfo(fd, &hwid, &vpus)) {
 			m_drv->deviceClose(fd);
 			continue;
 		}
 		m_drv->deviceClose(fd);
 		try {
-			m_devices.push_back(Device(m_drv, i, hwid));
+			m_devices.push_back(Device(m_drv, i, hwid, vpus));
 		}
 		catch(...)
 		{
