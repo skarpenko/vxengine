@@ -112,11 +112,13 @@ void finishBatch(CodeGenerator& cg, SpecType st, int ned)
 
 void debugDumpProgram(void *pipe, const std::vector<uint64_t>& prog)
 {
+	static unsigned ctr = 0;
+
 	if(!vxe_drv_debug_dump)
 		return;
 
 	std::stringstream fn;
-	fn << pipe << "_prog.bin";
+	fn << pipe << ctr++ << "_prog.bin";
 
 	std::ofstream f(fn.str(), std::ios::out | std::ios::binary);
 	f.write(reinterpret_cast<const char*>(prog.data()), prog.size() * sizeof(uint64_t));
@@ -125,11 +127,13 @@ void debugDumpProgram(void *pipe, const std::vector<uint64_t>& prog)
 
 void debugDumpBindings(void *pipe, const std::vector<VxeBinding>& bind)
 {
+	static unsigned ctr = 0;
+
 	if(!vxe_drv_debug_dump)
 		return;
 
 	std::stringstream fn;
-	fn << pipe << "_bind.txt";
+	fn << pipe << ctr++ << "_bind.txt";
 
 	std::ofstream f(fn.str(), std::ios::out);
 	for(size_t i = 0; i < bind.size(); ++i) {
@@ -374,7 +378,7 @@ void Pipeline::compileMxM(CodeGenerator& cg, const VxPipelineStageMxM& stage)
 		for(uint32_t rl = 0; rl < stage.pSrc1[i].rows; ++rl) {
 			VxeBinding rt2 = rt;
 			for(uint32_t rr = 0; rr < stage.pSrc2_T[i].rows; ++rr) {
-				float bias = stage.pBias ? stage.pBias[i].pValue[rr * stage.pSrc2_T[i].rows + rr] : 0.0f;
+				float bias = stage.pBias ? stage.pBias[i].pValue[rl * stage.pSrc2_T[i].rows + rr] : 0.0f;
 
 				if(!cg.allocThread(bias, rs, rt2, rd, len)) {
 					finishBatch(cg, st, ned);
