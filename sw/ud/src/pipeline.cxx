@@ -447,6 +447,10 @@ VxResult Pipeline::init(const VxPipelineCreateInfo& createInfo)
 			}
 		}
 
+		// Debug log
+		debug_printf("program_length = %zu\n", codeGen.program.size());
+		debug_printf("binding_length = %zu\n", codeGen.bindings.size());
+
 		// Debug dumps
 		debugDumpProgram(this, codeGen.program);
 		debugDumpBindings(this, codeGen.bindings);
