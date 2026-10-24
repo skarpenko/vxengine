@@ -32,6 +32,7 @@
 
 
 class HwDriverBackend: public VxeDriverBackend {
+	uint32_t m_devCount;
 public:
 	HwDriverBackend();
 	virtual ~HwDriverBackend();
