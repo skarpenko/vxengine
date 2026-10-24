@@ -1,0 +1,7 @@
+Old g++ versions do not allow static members of unions. The header here was
+changed from the original version to workaround the issue by replacing unions
+with structs and placing anonymous union inside. This enables driver compilation
+with older versions of g++ that support c++11.
+
+More details: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=60184
+Fixed in v4.10.0.
