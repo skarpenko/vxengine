@@ -30,9 +30,9 @@
 
 
 /* Maximum number of commands in a program */
-#define VXE_IOCTL_MAX_COMMANDS	8192
+#define VXE_IOCTL_MAX_COMMANDS	262144
 /* Maximum number of bindings per program/command buffer */
-#define VXE_IOCTL_MAX_BINDINGS	(VXE_IOCTL_MAX_COMMANDS>>1)
+#define VXE_IOCTL_MAX_BINDINGS	(10*(VXE_IOCTL_MAX_COMMANDS)/17)
 
 
 struct vxe_device_info {
