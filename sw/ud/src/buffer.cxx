@@ -99,7 +99,7 @@ VxResult Buffer::unmap()
 }
 
 
-VxResult vxCreateBuffer(VxBufferCreateInfo* pCreateInfo, VxBuffer* pBuffer, VxFloat** pCpuAddr)
+VxResult vxCreateBuffer(const VxBufferCreateInfo* pCreateInfo, VxBuffer* pBuffer, VxFloat** pCpuAddr)
 {
 	VxResult res;
 

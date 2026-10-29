@@ -32,21 +32,21 @@
 #endif
 
 
-VxResult vxCreateInstance(VxInstanceCreateInfo* pCreateInfo, VxInstance* pInstance);
+VxResult vxCreateInstance(const VxInstanceCreateInfo* pCreateInfo, VxInstance* pInstance);
 VxResult vxDestroyInstance(VxInstance instance);
 
 VxResult vxEnumerateDevices(VxInstance instance, VxCount* pDeviceCount, VxDevice* pDevices);
 
-VxResult vxCreateContext(VxContextCreateInfo* pCreateInfo, VxContext* pContext);
+VxResult vxCreateContext(const VxContextCreateInfo* pCreateInfo, VxContext* pContext);
 VxResult vxDestroyContext(VxContext context);
 
-VxResult vxCreateBuffer(VxBufferCreateInfo* pCreateInfo, VxBuffer* pBuffer, VxFloat** pCpuAddr);
+VxResult vxCreateBuffer(const VxBufferCreateInfo* pCreateInfo, VxBuffer* pBuffer, VxFloat** pCpuAddr);
 VxResult vxDestroyBuffer(VxBuffer buffer);
 
 VxResult vxMapBuffer(VxBuffer buffer, VxFloat** pCpuAddr);
 VxResult vxUnmapBuffer(VxBuffer buffer);
 
-VxResult vxCreatePipeline(VxPipelineCreateInfo* pCreateInfo, VxPipeline* pPipeline);
+VxResult vxCreatePipeline(const VxPipelineCreateInfo* pCreateInfo, VxPipeline* pPipeline);
 VxResult vxDestroyPipeline(VxPipeline pipeline);
 
 VxResult vxPipelineRun(VxPipeline pipeline, VxFence* pFence);

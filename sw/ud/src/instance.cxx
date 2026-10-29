@@ -93,7 +93,7 @@ void Instance::populateDevices(VxDevice *devices)
 }
 
 
-VxResult vxCreateInstance(VxInstanceCreateInfo* pCreateInfo, VxInstance* pInstance)
+VxResult vxCreateInstance(const VxInstanceCreateInfo* pCreateInfo, VxInstance* pInstance)
 {
 	Instance *inst = new(std::nothrow) Instance();
 	VxResult result;

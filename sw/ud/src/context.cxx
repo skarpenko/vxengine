@@ -63,7 +63,7 @@ VxResult Context::deinit()
 }
 
 
-VxResult vxCreateContext(VxContextCreateInfo* pCreateInfo, VxContext* pContext)
+VxResult vxCreateContext(const VxContextCreateInfo* pCreateInfo, VxContext* pContext)
 {
 	VxResult res;
 

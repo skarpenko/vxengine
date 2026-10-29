@@ -485,7 +485,7 @@ VxResult Pipeline::deinit()
 }
 
 
-VxResult vxCreatePipeline(VxPipelineCreateInfo* pCreateInfo, VxPipeline* pPipeline)
+VxResult vxCreatePipeline(const VxPipelineCreateInfo* pCreateInfo, VxPipeline* pPipeline)
 {
 	VxResult res;
 
