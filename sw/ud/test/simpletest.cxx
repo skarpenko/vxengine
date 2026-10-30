@@ -708,6 +708,230 @@ void testRELU(VxContext context)
 }
 
 
+void testUpdate(VxContext context)
+{
+	const int vec_len = 256;	// Vectors length
+	const int num_vop = 100;	// Number of vector operations
+
+	std::cout << "Test: " << __func__ << std::endl;
+
+	struct Cleaner {
+		VxBuffer Rs1 = VX_NULL_HANDLE;
+		VxBuffer Rt1 = VX_NULL_HANDLE;
+		VxBuffer Rd1 = VX_NULL_HANDLE;
+		VxBuffer Rs2 = VX_NULL_HANDLE;
+		VxBuffer Rt2 = VX_NULL_HANDLE;
+		VxBuffer Rd2 = VX_NULL_HANDLE;
+		VxPipeline Pipe = VX_NULL_HANDLE;
+
+		~Cleaner() {
+			VxResult res;
+			if(Pipe != VX_NULL_HANDLE) {
+				res = vxDestroyPipeline(Pipe);
+				if(res != VX_SUCCESS)
+					std::cerr << "Failed to destroy pipeline!" << std::endl;
+			}
+			if(Rs1 != VX_NULL_HANDLE) {
+				res = vxDestroyBuffer(Rs1);
+				if(res != VX_SUCCESS)
+					std::cerr << "Failed to destroy Rs1 buffer!" << std::endl;
+			}
+			if(Rt1 != VX_NULL_HANDLE) {
+				res = vxDestroyBuffer(Rt1);
+				if(res != VX_SUCCESS)
+					std::cerr << "Failed to destroy Rt1 buffer!" << std::endl;
+			}
+			if(Rd1 != VX_NULL_HANDLE) {
+				res = vxDestroyBuffer(Rd1);
+				if(res != VX_SUCCESS)
+					std::cerr << "Failed to destroy Rd1 buffer!" << std::endl;
+			}
+			if(Rs2 != VX_NULL_HANDLE) {
+				res = vxDestroyBuffer(Rs2);
+				if(res != VX_SUCCESS)
+					std::cerr << "Failed to destroy Rs2 buffer!" << std::endl;
+			}
+			if(Rt2 != VX_NULL_HANDLE) {
+				res = vxDestroyBuffer(Rt2);
+				if(res != VX_SUCCESS)
+					std::cerr << "Failed to destroy Rt2 buffer!" << std::endl;
+			}
+			if(Rd2 != VX_NULL_HANDLE) {
+				res = vxDestroyBuffer(Rd2);
+				if(res != VX_SUCCESS)
+					std::cerr << "Failed to destroy Rd2 buffer!" << std::endl;
+			}
+		}
+	} cl;
+
+	VxResult res;
+
+	// Create buffers
+	VxBufferCreateInfo bufferCreateInfo;
+	bufferCreateInfo.context = context;
+	bufferCreateInfo.cols = vec_len;
+	bufferCreateInfo.rows = 1;
+	bufferCreateInfo.map = VX_TRUE;
+
+	VxFloat *Rs1, *Rt1, *Rd1;
+	VxFloat Ref1;
+	VxFloat *Rs2, *Rt2, *Rd2;
+	VxFloat Ref2;
+
+	res = vxCreateBuffer(&bufferCreateInfo, &cl.Rs1, &Rs1);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to create Rs1 buffer!" << std::endl;
+		return;
+	}
+
+	res = vxCreateBuffer(&bufferCreateInfo, &cl.Rt1, &Rt1);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to create Rt1 buffer!" << std::endl;
+		return;
+	}
+
+	res = vxCreateBuffer(&bufferCreateInfo, &cl.Rs2, &Rs2);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to create Rs2 buffer!" << std::endl;
+		return;
+	}
+
+	res = vxCreateBuffer(&bufferCreateInfo, &cl.Rt2, &Rt2);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to create Rt2 buffer!" << std::endl;
+		return;
+	}
+
+	bufferCreateInfo.cols = num_vop;	// Rd contains results for each operation
+
+	res = vxCreateBuffer(&bufferCreateInfo, &cl.Rd1, &Rd1);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to create Rd1 buffer!" << std::endl;
+		return;
+	}
+
+	res = vxCreateBuffer(&bufferCreateInfo, &cl.Rd2, &Rd2);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to create Rd2 buffer!" << std::endl;
+		return;
+	}
+
+	// Generate input data and reference value
+	Ref1 = 0.0f;
+	Ref2 = 0.0f;
+	for(int i = 0; i < vec_len; ++i) {
+		Rs1[i] = (float)(i + 1);
+		Rt1[i] = 1.0f / (float)(i + 1);
+		Ref1 += Rs1[i] * Rt1[i];
+		Rs2[i] = 2.0f * (float)(i + 1);
+		Rt2[i] = 2.0f / (float)(i + 1);
+		Ref2 += Rs2[i] * Rt2[i];
+	}
+
+	// Create pipeline
+	std::vector<VxVectorDesc> RsDesc;
+	std::vector<VxVectorDesc> RtDesc;
+	std::vector<VxVectorDesc> RdDesc;
+	for(int i = 0; i < num_vop; ++i) {
+		VxVectorDesc d;
+		// Rs
+		d.buffer = cl.Rs1;
+		d.offset = 0;
+		d.length = vec_len;
+		RsDesc.push_back(d);
+		// Rt
+		d.buffer = cl.Rt1;
+		d.offset = 0;
+		d.length = vec_len;
+		RtDesc.push_back(d);
+		// Rd
+		d.buffer = cl.Rd1;
+		d.offset = i;
+		d.length = 1;
+		RdDesc.push_back(d);
+	}
+
+	// Pipeline stage
+	VxPipelineStageVxV stg_vxv;
+	stg_vxv.base.stageType = VX_PIPELINE_STAGE_TYPE_VXV;
+	stg_vxv.nDescriptors = num_vop;
+	stg_vxv.pSrc1 = RsDesc.data();
+	stg_vxv.pSrc2 = RtDesc.data();
+	stg_vxv.pDst = RdDesc.data();
+	stg_vxv.pSpecialOp = nullptr;
+	stg_vxv.pBias = nullptr;
+
+	VxPipelineStage *stg = &stg_vxv.base;
+
+	VxPipelineCreateInfo pipelineCreateInfo;
+	pipelineCreateInfo.context = context;
+	pipelineCreateInfo.nStages = 1;
+	pipelineCreateInfo.ppStages = &stg;
+
+	res = vxCreatePipeline(&pipelineCreateInfo, &cl.Pipe);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to create pipeline!" << std::endl;
+		return;
+	}
+
+	// Run pipeline
+	VxFence f;
+	res = vxPipelineRun(cl.Pipe, &f);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to run pipeline!" << std::endl;
+		return;
+	}
+
+	// Wait for completion
+	res = vxFenceWait(cl.Pipe, f);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to wait for fence!" << std::endl;
+		return;
+	}
+
+	// Update resource for the second run
+	for(int i = 0; i < num_vop; ++i) {
+		// Rs
+		RsDesc[i].buffer = cl.Rs2;
+		// Rt
+		RtDesc[i].buffer = cl.Rt2;
+		// Rd
+		RdDesc[i].buffer = cl.Rd2;
+	}
+
+	// Update
+	res = vxUpdateResources(cl.Pipe, &pipelineCreateInfo);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to update resources!" << std::endl;
+		return;
+	}
+
+	// Run pipeline (2nd run)
+	res = vxPipelineRun(cl.Pipe, &f);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to run pipeline!" << std::endl;
+		return;
+	}
+
+	// Wait for completion
+	res = vxFenceWait(cl.Pipe, f);
+	if(res != VX_SUCCESS) {
+		std::cerr << "Failed to wait for fence!" << std::endl;
+		return;
+	}
+
+	// Verify result
+	for(int i = 0; i < num_vop; ++i) {
+		if(Rd1[i] != Ref1)
+			std::cerr << "Result 1 mismatch! "
+				<< i << ": " << Rd1[i] << " != " << Ref1 << std::endl;
+		if(Rd2[i] != Ref2)
+			std::cerr << "Result 2 mismatch! "
+				<< i << ": " << Rd2[i] << " != " << Ref2 << std::endl;
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	VxInstanceType itype = VX_INSTANCE_TYPE_SW;
@@ -802,6 +1026,7 @@ int main(int argc, char **argv)
 	testMxM(cl.context, false);
 	testMxM(cl.context, true);
 	testRELU(cl.context);
+	testUpdate(cl.context);
 
 	std::cout << "===" << std::endl
 		<< "Done." << std::endl;

@@ -27,6 +27,7 @@
  * Pipeline
  */
 
+#include <vector>
 #include <vxengine/vxengine.h>
 #include "backend.hxx"
 #pragma once
@@ -50,6 +51,9 @@ private:
 	void compileVxV(CodeGenerator& cg, const VxPipelineStageVxV& stage);
 	void compileMxV(CodeGenerator& cg, const VxPipelineStageMxV& stage);
 	void compileMxM(CodeGenerator& cg, const VxPipelineStageMxM& stage);
+	void updateVxV(const VxPipelineStageVxV& stage, std::vector<VxeBinding>& bindings);
+	void updateMxV(const VxPipelineStageMxV& stage, std::vector<VxeBinding>& bindings);
+	void updateMxM(const VxPipelineStageMxM& stage, std::vector<VxeBinding>& bindings);
 public:
 	Pipeline();
 	~Pipeline() = default;
@@ -58,6 +62,7 @@ public:
 	Pipeline& operator=(const Pipeline&) = delete;
 
 	VxResult init(const VxPipelineCreateInfo& createInfo);
+	VxResult update(const VxPipelineCreateInfo& createInfo);
 	VxResult deinit();
 
 	VxeDriverBackend* getDrv() const { return m_drv; }

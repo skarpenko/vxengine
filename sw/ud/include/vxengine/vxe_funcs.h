@@ -49,5 +49,7 @@ VxResult vxUnmapBuffer(VxBuffer buffer);
 VxResult vxCreatePipeline(const VxPipelineCreateInfo* pCreateInfo, VxPipeline* pPipeline);
 VxResult vxDestroyPipeline(VxPipeline pipeline);
 
+VxResult vxUpdateResources(VxPipeline pipeline, const VxPipelineCreateInfo* pCreateInfo);
+
 VxResult vxPipelineRun(VxPipeline pipeline, VxFence* pFence);
 VxResult vxFenceWait(VxPipeline pipeline, VxFence fence);

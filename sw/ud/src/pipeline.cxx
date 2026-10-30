@@ -396,6 +396,62 @@ void Pipeline::compileMxM(CodeGenerator& cg, const VxPipelineStageMxM& stage)
 }
 
 
+void Pipeline::updateVxV(const VxPipelineStageVxV& stage, std::vector<VxeBinding>& bindings)
+{
+	for(uint32_t i = 0; i < stage.nDescriptors; ++i) {
+		VxeBinding rs = descToBinding(stage.pSrc1[i]);
+		VxeBinding rt = descToBinding(stage.pSrc2[i]);
+		VxeBinding rd = descToBinding(stage.pDst[i]);
+
+		bindings.push_back(rs);
+		bindings.push_back(rt);
+		bindings.push_back(rd);
+	}
+}
+
+
+void Pipeline::updateMxV(const VxPipelineStageMxV& stage, std::vector<VxeBinding>& bindings)
+{
+	for(uint32_t i = 0; i < stage.nDescriptors; ++i) {
+		VxeBinding rs = descToBinding(stage.pSrc1[i]);
+		VxeBinding rt = descToBinding(stage.pSrc2[i]);
+		VxeBinding rd = descToBinding(stage.pDst[i]);
+
+		for(uint32_t r = 0; r < stage.pSrc1[i].rows; ++r) {
+			bindings.push_back(rs);
+			bindings.push_back(rt);
+			bindings.push_back(rd);
+
+			rs.index += stage.pSrc1[i].cols;
+			rd.index += 1;
+		}
+	}
+}
+
+
+void Pipeline::updateMxM(const VxPipelineStageMxM& stage, std::vector<VxeBinding>& bindings)
+{
+	for(uint32_t i = 0; i < stage.nDescriptors; ++i) {
+		VxeBinding rs = descToBinding(stage.pSrc1[i]);
+		VxeBinding rt = descToBinding(stage.pSrc2_T[i]);
+		VxeBinding rd = descToBinding(stage.pDst[i]);
+
+		for(uint32_t rl = 0; rl < stage.pSrc1[i].rows; ++rl) {
+			VxeBinding rt2 = rt;
+			for(uint32_t rr = 0; rr < stage.pSrc2_T[i].rows; ++rr) {
+				bindings.push_back(rs);
+				bindings.push_back(rt2);
+				bindings.push_back(rd);
+
+				rt2.index += stage.pSrc2_T[i].cols;
+				rd.index += 1;
+			}
+			rs.index += stage.pSrc1[i].cols;
+		}
+	}
+}
+
+
 Pipeline::Pipeline()
 {}
 
@@ -474,6 +530,69 @@ VxResult Pipeline::init(const VxPipelineCreateInfo& createInfo)
 }
 
 
+VxResult Pipeline::update(const VxPipelineCreateInfo& createInfo)
+{
+	// Verify inputs
+	for(VxSize i = 0; i < createInfo.nStages; ++i) {
+		VxResult err;
+		switch(createInfo.ppStages[i]->stageType) {
+			case VX_PIPELINE_STAGE_TYPE_VXV:
+				err = verifVxV(*reinterpret_cast<const VxPipelineStageVxV*>(createInfo.ppStages[i]));
+				break;
+			case VX_PIPELINE_STAGE_TYPE_MXV:
+				err = verifMxV(*reinterpret_cast<const VxPipelineStageMxV*>(createInfo.ppStages[i]));
+				break;
+			case VX_PIPELINE_STAGE_TYPE_MXM:
+				err = verifMxM(*reinterpret_cast<const VxPipelineStageMxM*>(createInfo.ppStages[i]));
+				break;
+			default:
+				err = VX_ERROR_INVALID;
+		}
+		if(err != VX_SUCCESS)
+			return err;
+	}
+
+	// Generate new set of resources
+	try {
+		std::vector<VxeBinding> bindings;
+
+		for(VxSize i = 0; i < createInfo.nStages; ++i) {
+			switch(createInfo.ppStages[i]->stageType) {
+				case VX_PIPELINE_STAGE_TYPE_VXV:
+					updateVxV(*reinterpret_cast<const VxPipelineStageVxV*>(createInfo.ppStages[i]), bindings);
+					break;
+				case VX_PIPELINE_STAGE_TYPE_MXV:
+					updateMxV(*reinterpret_cast<const VxPipelineStageMxV*>(createInfo.ppStages[i]), bindings);
+					break;
+				case VX_PIPELINE_STAGE_TYPE_MXM:
+					updateMxM(*reinterpret_cast<const VxPipelineStageMxM*>(createInfo.ppStages[i]), bindings);
+					break;
+				default:
+					return VX_ERROR_UNKNOWN;
+			}
+		}
+
+		// Debug dump
+		debugDumpBindings(this, bindings);
+
+		// Update bindings of a command buffer
+		int res = m_drv->cmdBufferUpdate(m_fd, m_id, bindings.data(), static_cast<uint32_t>(bindings.size()));
+		if(res != 0)
+			return errnoToVxResult(res);
+	}
+	catch(const std::bad_alloc& e)
+	{
+		return VX_ERROR_NO_MEMORY;
+	}
+	catch(...)
+	{
+		return VX_ERROR_UNKNOWN;
+	}
+
+	return VX_SUCCESS;
+}
+
+
 VxResult Pipeline::deinit()
 {
 	int res = m_drv->bufferDestroy(m_fd, m_id);
@@ -516,6 +635,14 @@ VxResult vxDestroyPipeline(VxPipeline pipeline)
 	delete pipe;
 
 	return VX_SUCCESS;
+}
+
+
+VxResult vxUpdateResources(VxPipeline pipeline, const VxPipelineCreateInfo* pCreateInfo)
+{
+	Pipeline *pipe = reinterpret_cast<Pipeline*>(pipeline);
+
+	return pipe->update(*pCreateInfo);
 }
 
 
