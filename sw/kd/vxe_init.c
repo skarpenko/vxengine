@@ -27,7 +27,7 @@ int max_jobs_per_ctx = 32;
 module_param(max_jobs_per_ctx, int, 0444);
 MODULE_PARM_DESC(max_jobs_per_ctx, "Maximum jobs per context (>0)");
 
-int job_timeout_sec = 10;
+int job_timeout_sec = 90;
 module_param(job_timeout_sec, int, 0444);
 MODULE_PARM_DESC(job_timeout_sec, "Job timeout in seconds (>0)");
 
